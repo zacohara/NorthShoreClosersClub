@@ -122,5 +122,4 @@ export default async (req) => {
 // Run every Monday at 8am CT (13:00 UTC in CDT, 14:00 UTC in CST)
 export const config = {
   schedule: '0 14 * * 1',
-  path: '/api/digest',
 };
