@@ -214,35 +214,13 @@ function NavBar({ left, center, right, progress }) {
 
 function StatPill({ label, value }) {
   return (
-    <div style={{background:"rgba(255,255,255,0.08)",borderRadius:10,padding:"8px 14px",border:"1px solid rgba(255,255,255,0.08)"}}>
-      <span style={{color:"rgba(255,255,255,0.45)",fontSize:10,fontWeight:600,letterSpacing:0.3}}>{label}</span>
+    <div style={{background:"rgba(255,255,255,0.08)",borderRadius:8,padding:"7px 14px",border:"1px solid rgba(255,255,255,0.1)"}}>
+      <span style={{color:"rgba(255,255,255,0.45)",fontSize:11,fontWeight:600}}>{label}</span>
       <span style={{color:"#fff",fontSize:15,fontWeight:800,marginLeft:8}}>{value}</span>
     </div>
   );
 }
 
-function TabBar({ active, onNav, darkMode }) {
-  const C = darkMode ? {bg:"#0D1117",bdr:"#1E2A3A",dk:"#E8ECF1",mut:"#5A6A7A",navy:"#1B4F72"} : {bg:"#FFFFFF",bdr:"#E8ECF0",dk:"#2C3E50",mut:"#8896A6",navy:"#1B4F72"};
-  const tabs = [
-    {id:"home",icon:"🏠",label:"Home"},
-    {id:"blindspot",icon:"🔍",label:"Analysis"},
-    {id:"resources",icon:"📁",label:"Resources"},
-    {id:"leaderboard",icon:"🏆",label:"Rankings"},
-  ];
-  return (
-    <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:999,background:C.bg,borderTop:`1px solid ${C.bdr}`,paddingBottom:"env(safe-area-inset-bottom,0px)"}}>
-      <div style={{display:"flex",maxWidth:500,margin:"0 auto"}}>
-        {tabs.map(t => (
-          <button key={t.id} onClick={()=>onNav(t.id)}
-            style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"8px 4px 6px",background:"none",border:"none",cursor:"pointer",opacity:active===t.id?1:0.5,transition:"opacity 0.15s"}}>
-            <span style={{fontSize:20,lineHeight:1}}>{t.icon}</span>
-            <span style={{fontSize:9,fontWeight:active===t.id?700:500,color:active===t.id?C.navy:C.mut,letterSpacing:0.3}}>{t.label}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -351,17 +329,6 @@ export default function App() {
   const totalRight = Object.values(myProg).reduce((s,p) => s + (p.score||0), 0);
   const totalAns = Object.values(myProg).reduce((s,p) => s + (p.total||0), 0);
   const nextQuiz = Q.findIndex((_, i) => !myProg[i]?.passed);
-  const tabScreens = ["home","blindspot","resources","leaderboard"];
-  const handleTabNav = (tab) => {
-    if (tab === "blindspot") {
-      setBsTranscript("");setBsResult(null);setBsViewIdx(null);
-      loadAnalyses(user).then(d=>setBsHistory(d));
-    }
-    if (tab === "leaderboard") {
-      loadAllProgress().then(d=>setAllProg(d));
-    }
-    setScreen(tab);
-  };
 
   function getShuffled(qi) {
     if (!shuffleRef.current[qi]) {
@@ -660,19 +627,29 @@ export default function App() {
         </div>
 
         <div style={{maxWidth:960,margin:"0 auto",padding:"16px 16px 24px"}}>
-          {/* Quick Actions */}
+          {/* Primary Action: Blind Spot Revealer */}
+          <button type="button" onClick={()=>{setBsTranscript("");setBsResult(null);setBsViewIdx(null);loadAnalyses(user).then(d=>setBsHistory(d));setScreen("blindspot");}}
+            style={{width:"100%",background:`linear-gradient(145deg, ${C.navy} 0%, #0D2B45 100%)`,borderRadius:14,padding:"20px",border:"none",cursor:"pointer",marginBottom:12,textAlign:"left",position:"relative",overflow:"hidden",fontFamily:"inherit"}}>
+            <div style={{position:"absolute",right:-10,top:-10,fontSize:64,opacity:0.08}}>🔍</div>
+            <div style={{color:"#fff",fontSize:16,fontWeight:800,marginBottom:2}}>Blind Spot Revealer</div>
+            <div style={{color:"rgba(255,255,255,0.6)",fontSize:11,fontWeight:500}}>Analyze your sales appointments against Sandler</div>
+          </button>
           <div style={{display:"flex",gap:8,marginBottom:16}}>
-            <button type="button" onClick={()=>handleTabNav("blindspot")}
-              style={{flex:2,background:`linear-gradient(145deg, ${C.navy} 0%, #0D2B45 100%)`,borderRadius:14,padding:"16px",border:"none",cursor:"pointer",textAlign:"left",position:"relative",overflow:"hidden",fontFamily:"inherit"}}>
-              <div style={{color:"#fff",fontSize:14,fontWeight:800}}>🔍 Analyze</div>
-              <div style={{color:"rgba(255,255,255,0.5)",fontSize:10,fontWeight:500,marginTop:2}}>Blind Spot Revealer</div>
+            <button onClick={()=>setScreen("resources")} style={{flex:1,background:C.card,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"12px 14px",cursor:"pointer",textAlign:"left"}}>
+              <div style={{fontSize:12,fontWeight:700,color:C.dk}}>📁 Resources</div>
+              <div style={{fontSize:10,color:C.mut}}>Sell sheets & specs</div>
             </button>
-            {allPassed && <button onClick={()=>setScreen("certificate")}
-              style={{flex:1,background:C.grn+"10",border:`1px solid ${C.grn}25`,borderRadius:14,padding:"16px",cursor:"pointer",textAlign:"left",fontFamily:"inherit"}}>
-              <div style={{fontSize:14,fontWeight:800,color:C.grn}}>📜</div>
-              <div style={{fontSize:10,color:C.mut,marginTop:2}}>Certificate</div>
-            </button>}
+            <button onClick={()=>{loadAllProgress().then(d=>setAllProg(d));setScreen("leaderboard");}} style={{flex:1,background:C.card,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"12px 14px",cursor:"pointer",textAlign:"left"}}>
+              <div style={{fontSize:12,fontWeight:700,color:C.dk}}>🏆 Leaderboard</div>
+              <div style={{fontSize:10,color:C.mut}}>Team rankings</div>
+            </button>
           </div>
+          {allPassed && <div style={{marginBottom:16}}>
+            <button onClick={()=>setScreen("certificate")} style={{width:"100%",background:C.grn+"10",border:`1px solid ${C.grn}30`,borderRadius:10,padding:"12px 14px",cursor:"pointer",textAlign:"left"}}>
+              <div style={{fontSize:12,fontWeight:700,color:C.grn}}>📜 Certificate</div>
+              <div style={{fontSize:10,color:C.mut}}>View your achievement</div>
+            </button>
+          </div>}
 
           {/* Welcome popup — Level Up of the Day */}
           {showWelcome && dailyTip && (
@@ -828,9 +805,7 @@ export default function App() {
               );
             })}
           </div>
-          <div style={{height:70}}/>
         </div>
-        <TabBar active="home" onNav={handleTabNav} darkMode={darkMode}/>
       </div>
     );
   }
@@ -1210,9 +1185,7 @@ export default function App() {
               </div>
             </div>
           ))}
-          <div style={{height:70}}/>
         </div>
-        <TabBar active="leaderboard" onNav={handleTabNav} darkMode={darkMode}/>
       </div>
     );
   }
@@ -1674,9 +1647,7 @@ export default function App() {
               ))}
             </div>
           )}
-          <div style={{height:70}}/>
         </div>
-        <TabBar active="blindspot" onNav={handleTabNav} darkMode={darkMode}/>
       </div>
     );
   }
@@ -1689,7 +1660,7 @@ export default function App() {
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
-          left={<span/>}
+          left={<button onClick={()=>setScreen("home")} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>← Back</button>}
           center="Resources"
           right={<span/>}
         />
@@ -1718,9 +1689,7 @@ export default function App() {
               </div>
             </div>
           ))}
-          <div style={{height:70}}/>
         </div>
-        <TabBar active="resources" onNav={handleTabNav} darkMode={darkMode}/>
       </div>
     );
   }
