@@ -11,33 +11,39 @@
     <link rel="apple-touch-icon" href="/icon-192.png" />
     <title>Sandler Daily Drill — North Shore Closer's Club</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <style>
       * { box-sizing: border-box; margin: 0; padding: 0; }
       body { font-family: 'Outfit', sans-serif; background: #F0F3F6; -webkit-tap-highlight-color: transparent; }
-      @supports(padding: env(safe-area-inset-bottom)) {
-        body { padding-bottom: env(safe-area-inset-bottom); }
-      }
     </style>
+    <script>
+      // Cache-buster: runs BEFORE any SW can intercept
+      // Kills all service workers and caches on first load after deploy
+      (function() {
+        var BUILD_ID = '__BUILD__';
+        var stored = localStorage.getItem('cc_build');
+        if (stored !== BUILD_ID) {
+          localStorage.setItem('cc_build', BUILD_ID);
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(regs) {
+              regs.forEach(function(r) { r.unregister(); });
+            });
+          }
+          if ('caches' in window) {
+            caches.keys().then(function(keys) {
+              keys.forEach(function(k) { caches.delete(k); });
+            });
+          }
+          if (stored !== null) {
+            // Not first visit, was a different build — force reload
+            setTimeout(function() { location.reload(true); }, 200);
+          }
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/main.jsx"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').then((reg) => {
-            // Force check for new SW on every page load
-            reg.update();
-          }).catch(() => {});
-          // Listen for SW telling us to reload
-          navigator.serviceWorker.addEventListener('message', (e) => {
-            if (e.data?.type === 'SW_UPDATED') {
-              window.location.reload();
-            }
-          });
-        });
-      }
-    </script>
   </body>
 </html>
