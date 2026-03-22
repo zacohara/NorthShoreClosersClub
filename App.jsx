@@ -154,6 +154,12 @@ export default function App() {
   const [myProfile, setMyProfile] = useState(null);
   const [streak, setStreak] = useState({current:0,best:0});
   const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [cropSrc, setCropSrc] = useState(null);
+  const [cropZoom, setCropZoom] = useState(1);
+  const [cropPos, setCropPos] = useState({x:0,y:0});
+  const cropCanvasRef = useRef(null);
+  const cropImgRef = useRef(null);
+  const cropDragRef = useRef(null);
   const shuffleRef = useRef({});
   const scrollRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -359,28 +365,56 @@ export default function App() {
       const file = e.target.files?.[0]; if (!file) return;
       const reader = new FileReader();
       reader.onload = (ev) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas'); const sz = 200;
-          canvas.width = sz; canvas.height = sz;
-          const ctx = canvas.getContext('2d');
-          const mn = Math.min(img.width, img.height);
-          ctx.drawImage(img, (img.width-mn)/2, (img.height-mn)/2, mn, mn, 0, 0, sz, sz);
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-          saveProfile(user, { avatar: dataUrl, pic_prompts_left: 0 });
-          setMyProfile(p => ({ ...p, avatar: dataUrl, pic_prompts_left: 0 }));
-          setProfiles(p => ({ ...p, [user]: { ...p[user], avatar: dataUrl } }));
-          setShowPhotoModal(false);
-        };
-        img.src = ev.target.result;
+        setCropSrc(ev.target.result);
+        setCropZoom(1);
+        setCropPos({x:0,y:0});
       };
       reader.readAsDataURL(file);
+      e.target.value = '';
+    };
+    const saveCrop = () => {
+      const img = cropImgRef.current;
+      if (!img) return;
+      const canvas = document.createElement('canvas');
+      const sz = 400;
+      canvas.width = sz; canvas.height = sz;
+      const ctx = canvas.getContext('2d');
+      ctx.beginPath(); ctx.arc(sz/2,sz/2,sz/2,0,Math.PI*2); ctx.clip();
+      const scale = cropZoom;
+      const imgW = img.naturalWidth * scale;
+      const imgH = img.naturalHeight * scale;
+      const ox = (sz - imgW) / 2 + cropPos.x * scale;
+      const oy = (sz - imgH) / 2 + cropPos.y * scale;
+      ctx.drawImage(img, ox, oy, imgW, imgH);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      saveProfile(user, { avatar: dataUrl, pic_prompts_left: 0 });
+      setMyProfile(p => ({ ...p, avatar: dataUrl, pic_prompts_left: 0 }));
+      setProfiles(p => ({ ...p, [user]: { ...p[user], avatar: dataUrl } }));
+      setCropSrc(null);
+      setShowPhotoModal(false);
     };
     const skipPhoto = () => {
       const left = Math.max(0, (myProfile?.pic_prompts_left ?? 3) - 1);
       saveProfile(user, { pic_prompts_left: left });
       setMyProfile(p => ({ ...p, pic_prompts_left: left }));
+      setCropSrc(null);
       setShowPhotoModal(false);
+    };
+    const handleCropDrag = (e) => {
+      e.preventDefault();
+      const startX = e.clientX || e.touches?.[0]?.clientX;
+      const startY = e.clientY || e.touches?.[0]?.clientY;
+      const startPos = {...cropPos};
+      const move = (ev) => {
+        const cx = ev.clientX || ev.touches?.[0]?.clientX;
+        const cy = ev.clientY || ev.touches?.[0]?.clientY;
+        setCropPos({x: startPos.x + (cx - startX) / cropZoom, y: startPos.y + (cy - startY) / cropZoom});
+      };
+      const up = () => { document.removeEventListener('mousemove',move); document.removeEventListener('mouseup',up); document.removeEventListener('touchmove',move); document.removeEventListener('touchend',up); };
+      document.addEventListener('mousemove',move);
+      document.addEventListener('mouseup',up);
+      document.addEventListener('touchmove',move,{passive:false});
+      document.addEventListener('touchend',up);
     };
     const currentBadge = [...BADGE_TIERS].reverse().find(t => bsHistory.length >= t.count);
 
@@ -390,23 +424,61 @@ export default function App() {
         <style>{CSS}</style>
         <input type="file" accept="image/*" capture="user" ref={fileInputRef} style={{display:"none"}} onChange={handlePhotoUpload}/>
 
-        {/* Photo Upload Modal */}
+        {/* Photo Upload / Crop Modal */}
         {showPhotoModal && (
-          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-            <div style={{background:C.card,borderRadius:16,padding:"28px 24px",maxWidth:340,width:"100%",textAlign:"center",animation:"popIn 0.3s ease"}}>
-              <div style={{width:80,height:80,borderRadius:"50%",background:C.navy,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,fontWeight:800,margin:"0 auto 16px",overflow:"hidden"}}>
-                {myProfile?.avatar ? <img src={myProfile.avatar} alt="" style={{width:80,height:80,objectFit:"cover"}}/> : user?.[0]}
-              </div>
-              <div style={{fontSize:17,fontWeight:800,color:C.dk,marginBottom:4}}>Add your photo</div>
-              <div style={{fontSize:12,color:C.mut,marginBottom:20}}>Your photo shows on the leaderboard and login screen.</div>
-              <button onClick={()=>fileInputRef.current?.click()} className="btn-primary"
-                style={{width:"100%",padding:"12px",borderRadius:10,background:C.navy,color:"#fff",border:"none",fontSize:14,fontWeight:700,cursor:"pointer",marginBottom:8}}>
-                Upload Photo
-              </button>
-              <button onClick={skipPhoto}
-                style={{width:"100%",padding:"10px",borderRadius:10,background:"transparent",border:"none",color:C.mut,fontSize:12,cursor:"pointer"}}>
-                {(myProfile?.pic_prompts_left ?? 3) > 1 ? `Skip (${(myProfile?.pic_prompts_left ?? 3) - 1} left)` : "Don't ask again"}
-              </button>
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+            <div style={{background:C.card,borderRadius:16,padding:"24px",maxWidth:380,width:"100%",textAlign:"center",animation:"popIn 0.3s ease"}}>
+              {cropSrc ? (
+                <>
+                  <div style={{fontSize:15,fontWeight:800,color:C.dk,marginBottom:12}}>Resize & position</div>
+                  <div style={{width:200,height:200,borderRadius:"50%",overflow:"hidden",margin:"0 auto 16px",position:"relative",border:`3px solid ${C.navy}`,cursor:"grab",touchAction:"none",background:"#000"}}
+                    onMouseDown={handleCropDrag} onTouchStart={handleCropDrag}>
+                    <img ref={cropImgRef} src={cropSrc} alt="" draggable={false}
+                      style={{position:"absolute",left:"50%",top:"50%",transform:`translate(calc(-50% + ${cropPos.x * cropZoom}px), calc(-50% + ${cropPos.y * cropZoom}px)) scale(${cropZoom})`,maxWidth:"none",maxHeight:"none",width:"100%",height:"auto",pointerEvents:"none",userSelect:"none"}}
+                      onLoad={(e) => {
+                        const img = e.target;
+                        const aspect = img.naturalWidth / img.naturalHeight;
+                        if (aspect > 1) { img.style.width = "auto"; img.style.height = "100%"; }
+                        else { img.style.width = "100%"; img.style.height = "auto"; }
+                      }}
+                    />
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16,padding:"0 12px"}}>
+                    <span style={{fontSize:11,color:C.mut}}>Zoom</span>
+                    <input type="range" min="0.5" max="3" step="0.05" value={cropZoom}
+                      onChange={e=>setCropZoom(parseFloat(e.target.value))}
+                      style={{flex:1,accentColor:C.navy}}/>
+                    <span style={{fontSize:11,color:C.mut,minWidth:30}}>{Math.round(cropZoom*100)}%</span>
+                  </div>
+                  <div style={{fontSize:10,color:C.mut,marginBottom:12}}>Drag to reposition. Slide to zoom.</div>
+                  <div style={{display:"flex",gap:8}}>
+                    <button onClick={()=>{setCropSrc(null);setCropZoom(1);setCropPos({x:0,y:0});}}
+                      style={{flex:1,padding:"10px",borderRadius:8,background:"transparent",border:`1px solid ${C.bdr}`,color:C.mut,fontSize:13,fontWeight:600,cursor:"pointer"}}>
+                      Cancel
+                    </button>
+                    <button onClick={saveCrop}
+                      style={{flex:1,padding:"10px",borderRadius:8,background:C.navy,border:"none",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer"}}>
+                      Save Photo
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={{width:80,height:80,borderRadius:"50%",background:C.navy,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,fontWeight:800,margin:"0 auto 16px",overflow:"hidden"}}>
+                    {myProfile?.avatar ? <img src={myProfile.avatar} alt="" style={{width:80,height:80,objectFit:"cover"}}/> : user?.[0]}
+                  </div>
+                  <div style={{fontSize:17,fontWeight:800,color:C.dk,marginBottom:4}}>Add your photo</div>
+                  <div style={{fontSize:12,color:C.mut,marginBottom:20}}>Your photo shows on the leaderboard and login screen.</div>
+                  <button onClick={()=>fileInputRef.current?.click()} className="btn-primary"
+                    style={{width:"100%",padding:"12px",borderRadius:10,background:C.navy,color:"#fff",border:"none",fontSize:14,fontWeight:700,cursor:"pointer",marginBottom:8}}>
+                    Choose Photo
+                  </button>
+                  <button onClick={skipPhoto}
+                    style={{width:"100%",padding:"10px",borderRadius:10,background:"transparent",border:"none",color:C.mut,fontSize:12,cursor:"pointer"}}>
+                    {(myProfile?.pic_prompts_left ?? 3) > 1 ? `Skip (${(myProfile?.pic_prompts_left ?? 3) - 1} left)` : "Don't ask again"}
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}
