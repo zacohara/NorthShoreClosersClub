@@ -144,6 +144,8 @@ const CSS = `
 @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 * { box-sizing: border-box; }
 button { font-family: inherit; }
+.quiz-card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.quiz-card:active { transform: scale(0.98) !important; }
 button:focus-visible, div[role="radio"]:focus-visible { outline: 3px solid #5DA5BA; outline-offset: 2px; }
 @media(max-width:400px){
   .qgrid{grid-template-columns:1fr !important}
@@ -433,9 +435,9 @@ export default function App() {
                   }}>
                   <div style={{display:"flex",alignItems:"center",gap:12}}>
                     {profiles[u]?.avatar ? (
-                      <img src={profiles[u].avatar} alt="" style={{width:40,height:40,borderRadius:10,objectFit:"cover"}}/>
+                      <img src={profiles[u].avatar} alt="" style={{width:40,height:40,borderRadius:"50%",objectFit:"cover"}}/>
                     ) : (
-                      <div style={{width:40,height:40,borderRadius:10,background:C.navy,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:800}}>{u[0]}</div>
+                      <div style={{width:40,height:40,borderRadius:"50%",background:C.navy,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:800}}>{u[0]}</div>
                     )}
                     <div style={{textAlign:"left"}}>
                       <div style={{fontSize:15,fontWeight:700,color:C.dk}}>{u}</div>
@@ -478,16 +480,24 @@ export default function App() {
       const img = cropImgRef.current;
       if (!img) return;
       const canvas = document.createElement('canvas');
-      const sz = 400;
+      const sz = 400; // output size
+      const preview = 200; // preview circle size
+      const ratio = sz / preview;
       canvas.width = sz; canvas.height = sz;
       const ctx = canvas.getContext('2d');
       ctx.beginPath(); ctx.arc(sz/2,sz/2,sz/2,0,Math.PI*2); ctx.clip();
-      const scale = cropZoom;
-      const imgW = img.naturalWidth * scale;
-      const imgH = img.naturalHeight * scale;
-      const ox = (sz - imgW) / 2 + cropPos.x * scale;
-      const oy = (sz - imgH) / 2 + cropPos.y * scale;
-      ctx.drawImage(img, ox, oy, imgW, imgH);
+      // Replicate the CSS fitting logic from the preview
+      const aspect = img.naturalWidth / img.naturalHeight;
+      let fitW, fitH;
+      if (aspect > 1) { fitH = preview; fitW = preview * aspect; }
+      else { fitW = preview; fitH = preview / aspect; }
+      // Apply zoom
+      const drawW = fitW * cropZoom * ratio;
+      const drawH = fitH * cropZoom * ratio;
+      // Center + offset (offset is in preview coords, scale to canvas)
+      const ox = (sz - drawW) / 2 + cropPos.x * cropZoom * ratio;
+      const oy = (sz - drawH) / 2 + cropPos.y * cropZoom * ratio;
+      ctx.drawImage(img, ox, oy, drawW, drawH);
       const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
       saveProfile(user, { avatar: dataUrl, pic_prompts_left: 0 });
       setMyProfile(p => ({ ...p, avatar: dataUrl, pic_prompts_left: 0 }));
@@ -738,35 +748,57 @@ export default function App() {
             </div>
           </div>
 
-          <div className="qgrid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:12}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+            <div>
+              <div style={{fontSize:16,fontWeight:800,color:C.dk}}>Daily Drills</div>
+              <div style={{fontSize:11,color:C.mut}}>{passedCount} of 15 completed</div>
+            </div>
+            <div style={{fontSize:11,fontWeight:700,color:C.navy}}>{Math.round(passedCount/15*100)}%</div>
+          </div>
+          <div className="qgrid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:10}}>
             {Q.map((quiz, i) => {
               const p = myProg[i];
               const cats = quiz.categories.split(" • ").slice(0,3);
               const extra = quiz.categories.split(" • ").length - 3;
               return (
                 <div key={i} onClick={()=>launch(i)} className="quiz-card"
-                  style={{background:C.card,borderRadius:12,padding:"16px 16px 12px",cursor:"pointer",
-                    border: p?.passed ? `2px solid ${C.grn}44` : p ? `2px solid ${C.gold}44` : `1px solid ${C.bdr}`,
-                    boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-                    <span style={{fontSize:12,fontWeight:800,color:C.navy,background:C.skyL,borderRadius:6,padding:"3px 9px"}}>DAY {quiz.quiz_number}</span>
-                    {p?.passed && <span style={{fontSize:12,fontWeight:700,color:C.grn}}>✓ PASSED {p.score}/{p.total}</span>}
-                    {p && !p.passed && <span style={{fontSize:12,fontWeight:700,color:C.gold}}>{p.score}/{p.total} — Retry</span>}
+                  style={{background:p?.passed?`linear-gradient(145deg, ${C.grn}08, ${C.grn}03)`:C.card,borderRadius:16,padding:"18px 18px 14px",cursor:"pointer",
+                    border: p?.passed ? `1px solid ${C.grn}30` : p ? `1px solid ${C.gold}30` : `1px solid ${C.bdr}`,
+                    boxShadow:i===nextQuiz?"0 4px 20px rgba(27,79,114,0.15)":"0 2px 8px rgba(0,0,0,0.04)",
+                    transform:i===nextQuiz?"scale(1)":"scale(1)",
+                    position:"relative",overflow:"hidden"}}>
+                  {i===nextQuiz && <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:`linear-gradient(90deg, ${C.navy}, ${C.sky})`}}/>}
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8}}>
+                      <div style={{width:32,height:32,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:800,
+                        background:p?.passed?C.grn:p?C.gold:i===nextQuiz?C.navy:"transparent",
+                        color:p||i===nextQuiz?"#fff":C.mut,
+                        border:!p&&i!==nextQuiz?`2px solid ${C.bdr}`:"none"}}>
+                        {p?.passed?"✓":quiz.quiz_number}
+                      </div>
+                      <div>
+                        <div style={{fontSize:13,fontWeight:800,color:C.dk}}>Day {quiz.quiz_number}</div>
+                        <div style={{fontSize:10,color:C.mut}}>{quiz.questions.length} questions</div>
+                      </div>
+                    </div>
+                    {p?.passed && <span style={{fontSize:10,fontWeight:700,color:C.grn,background:C.grnBg,padding:"3px 8px",borderRadius:6}}>{p.score}/{p.total}</span>}
+                    {p && !p.passed && <span style={{fontSize:10,fontWeight:700,color:C.gold,background:C.goldBg,padding:"3px 8px",borderRadius:6}}>{p.score}/{p.total}</span>}
+                    {!p && i===nextQuiz && <span style={{fontSize:10,fontWeight:700,color:C.navy,background:C.navy+"12",padding:"3px 8px",borderRadius:6}}>Start →</span>}
                   </div>
-                  <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:10}}>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:12}}>
                     {cats.map((c,j)=>(
-                      <span key={j} style={{fontSize:10,color:C.mut,background:C.inp,borderRadius:4,padding:"2px 6px",border:`1px solid ${C.bdr}`,whiteSpace:"nowrap"}}>
+                      <span key={j} style={{fontSize:9,color:C.mut,background:darkMode?"#1A2332":"#F4F6F8",borderRadius:6,padding:"3px 8px",whiteSpace:"nowrap",fontWeight:600}}>
                         {CI[c.trim()]||"📋"} {c.trim()}
                       </span>
                     ))}
-                    {extra > 0 && <span style={{fontSize:10,color:C.mut,padding:"2px 4px"}}>+{extra}</span>}
+                    {extra > 0 && <span style={{fontSize:9,color:C.mut,padding:"3px 4px",fontWeight:600}}>+{extra}</span>}
                   </div>
                   <div style={{display:"flex",gap:3}}>
                     {quiz.questions.map((q,qi)=>{
                       const right = p?.trail?.[qi]?.picked === p?.trail?.[qi]?.correct;
                       return <div key={qi} style={{flex:1,height:4,borderRadius:2,
-                        background: p ? (right ? C.grn : C.red) : DB[q.difficulty].bd,
-                        opacity: p ? 0.65 : 0.3}}/>;
+                        background: p ? (right ? C.grn : C.red) : i===nextQuiz ? C.navy+"30" : C.bdr,
+                        opacity: p ? 0.7 : 0.5}}/>;
                     })}
                   </div>
                 </div>
