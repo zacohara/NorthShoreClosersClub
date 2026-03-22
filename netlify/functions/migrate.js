@@ -3,14 +3,13 @@ const { Client } = pg;
 
 const REF = 'wkrtbjvbjebhbcjwurhb';
 const PASS = Buffer.from('RGllZ29EYWtvdGEzNzQyIQ==', 'base64').toString();
-const DB = 'postgres';
 
 const HOSTS = [
-  `aws-0-us-east-1.pooler.supabase.com`,
-  `aws-0-us-east-2.pooler.supabase.com`,
-  `aws-0-us-west-1.pooler.supabase.com`,
-  `aws-0-us-central-1.pooler.supabase.com`,
-  `db.${REF}.supabase.co`,
+  { host: `${REF}.pooler.supabase.com`, port: 6543, user: `postgres.${REF}` },
+  { host: `${REF}.pooler.supabase.com`, port: 5432, user: `postgres.${REF}` },
+  { host: `db.${REF}.supabase.co`, port: 5432, user: 'postgres' },
+  { host: `aws-0-us-east-1.pooler.supabase.com`, port: 6543, user: `postgres.${REF}` },
+  { host: `aws-0-us-east-2.pooler.supabase.com`, port: 6543, user: `postgres.${REF}` },
 ];
 
 export default async (req) => {
@@ -41,26 +40,22 @@ export default async (req) => {
   `;
 
   const errors = [];
-  for (const host of HOSTS) {
-    for (const port of [6543, 5432]) {
-      const user = host.includes('pooler') ? `postgres.${REF}` : 'postgres';
-      const cs = `postgresql://${user}:${encodeURIComponent(PASS)}@${host}:${port}/${DB}`;
-      const client = new Client({ connectionString: cs, ssl: { rejectUnauthorized: false }, connectionTimeoutMillis: 8000 });
-      try {
-        await client.connect();
-        await client.query(sql);
-        await client.end();
-        return new Response(JSON.stringify({ success: true, host, port, message: 'weekly_digests created' }), {
-          status: 200, headers: { 'Content-Type': 'application/json' },
-        });
-      } catch (err) {
-        errors.push({ host, port, error: err.message });
-        try { await client.end(); } catch(e) {}
-      }
+  for (const h of HOSTS) {
+    const cs = `postgresql://${h.user}:${encodeURIComponent(PASS)}@${h.host}:${h.port}/postgres`;
+    const client = new Client({ connectionString: cs, ssl: { rejectUnauthorized: false }, connectionTimeoutMillis: 8000 });
+    try {
+      await client.connect();
+      await client.query(sql);
+      await client.end();
+      return new Response(JSON.stringify({ success: true, host: h.host, port: h.port, message: 'weekly_digests created' }), {
+        status: 200, headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (err) {
+      errors.push({ host: h.host, port: h.port, user: h.user, error: err.message });
+      try { await client.end(); } catch(e) {}
     }
   }
-
-  return new Response(JSON.stringify({ error: 'All connection attempts failed', attempts: errors }), {
+  return new Response(JSON.stringify({ error: 'All failed', attempts: errors }), {
     status: 500, headers: { 'Content-Type': 'application/json' },
   });
 };
