@@ -652,7 +652,7 @@ export default function App() {
           <div onClick={()=>{if(!heatmapData)fetch('/heatmap.json').then(r=>r.json()).then(d=>setHeatmapData(d));setScreen("heatmap");}}
             style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"14px 16px",cursor:"pointer",marginBottom:12}}>
             <div style={{fontSize:15,fontWeight:700,color:C.dk,pointerEvents:"none"}}>🗺️ Heat Map</div>
-            <div style={{fontSize:13,color:C.mut,pointerEvents:"none"}}>2,600+ jobs across 4 markets</div>
+            <div style={{fontSize:13,color:C.mut,pointerEvents:"none"}}>185 approved orders across 4 markets</div>
           </div>
           {allPassed && <div style={{marginBottom:16}}>
             <button onClick={()=>setScreen("certificate")} style={{width:"100%",background:C.grn+"10",border:`1px solid ${C.grn}30`,borderRadius:10,padding:"12px 14px",cursor:"pointer",textAlign:"left"}}>
