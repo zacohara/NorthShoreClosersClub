@@ -117,3 +117,21 @@ export async function saveAnalysis(userName, transcript, analysis, overallGrade)
   }
   return true;
 }
+
+/**
+ * Load the most recent weekly digest for a user
+ */
+export async function loadLatestDigest(userName) {
+  const { data, error } = await supabase
+    .from('weekly_digests')
+    .select('*')
+    .eq('user_name', userName)
+    .order('week_of', { ascending: false })
+    .limit(1);
+
+  if (error) {
+    console.error('Load digest failed:', error);
+    return null;
+  }
+  return data?.[0] || null;
+}
