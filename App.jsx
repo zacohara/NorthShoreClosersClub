@@ -408,14 +408,14 @@ export default function App() {
       <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif",display:"flex",flexDirection:"column"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
-        <div style={{position:"relative",overflow:"hidden",background:C.navy,padding:"40px 24px 36px",textAlign:"center"}}>
+        <div style={{position:"relative",overflow:"hidden",background:C.navy,paddingTop:"max(40px, calc(env(safe-area-inset-top, 0px) + 24px))",paddingBottom:"36px",paddingLeft:"24px",paddingRight:"24px",textAlign:"center"}}>
           <div style={{position:"absolute",inset:0,backgroundImage:`url(${BG})`,backgroundSize:"cover",backgroundPosition:"center",opacity:0.2}}/>
           <div style={{position:"relative"}}>
             <img src={ICON} alt="North Shore Masonry" style={{width:72,height:72,marginBottom:16}}/>
-            <div style={{color:"rgba(255,255,255,0.55)",fontSize:11,fontWeight:700,letterSpacing:2.5,textTransform:"uppercase",marginBottom:4}}>North Shore Masonry</div>
+            <div style={{color:"rgba(255,255,255,0.55)",fontSize:12,fontWeight:700,letterSpacing:2.5,textTransform:"uppercase",marginBottom:4}}>North Shore Masonry</div>
             <div className="hero-title" style={{color:"#fff",fontSize:30,fontWeight:900,letterSpacing:-0.5}}>Closer’s Club</div>
-            <div style={{color:C.sky,fontSize:14,fontWeight:600,marginTop:6}}>Sandler Daily Drill</div>
-            <div style={{color:"rgba(255,255,255,0.45)",fontSize:12,marginTop:4}}>15-day sales training · 90 questions</div>
+            <div style={{color:C.sky,fontSize:16,fontWeight:600,marginTop:6}}>Sandler Daily Drill</div>
+            <div style={{color:"rgba(255,255,255,0.45)",fontSize:14,marginTop:4}}>15-day sales training · 90 questions</div>
           </div>
         </div>
         <div style={{flex:1,maxWidth:420,margin:"0 auto",padding:"28px 20px",width:"100%"}}>
@@ -440,8 +440,8 @@ export default function App() {
                       <div style={{width:40,height:40,borderRadius:"50%",background:C.navy,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:800}}>{u[0]}</div>
                     )}
                     <div style={{textAlign:"left"}}>
-                      <div style={{fontSize:15,fontWeight:700,color:C.dk}}>{u}</div>
-                      <div style={{fontSize:11,color:C.mut}}>{pc > 0 ? `${pc}/15 passed` : "Not started"}</div>
+                      <div style={{fontSize:17,fontWeight:700,color:C.dk}}>{u}</div>
+                      <div style={{fontSize:13,color:C.mut}}>{pc > 0 ? `${pc}/15 passed` : "Not started"}</div>
                     </div>
                   </div>
                   {done && <span style={{fontSize:18}}>🏆</span>}
@@ -597,7 +597,7 @@ export default function App() {
 
         <div style={{position:"relative",overflow:"hidden",background:C.navy}}>
           <div style={{position:"absolute",inset:0,backgroundImage:`url(${BG})`,backgroundSize:"cover",backgroundPosition:"center",opacity:0.2}}/>
-          <div style={{position:"relative",padding:"28px 24px 24px",maxWidth:960,margin:"0 auto"}}>
+          <div style={{position:"relative",paddingTop:"max(28px, calc(env(safe-area-inset-top, 0px) + 12px))",paddingBottom:"24px",paddingLeft:"24px",paddingRight:"24px",maxWidth:960,margin:"0 auto"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
               <div style={{display:"flex",alignItems:"center",gap:14}}>
                 {myProfile?.avatar ? (
@@ -606,8 +606,8 @@ export default function App() {
                   <div onClick={()=>{setPhotoManualOpen(true);setShowPhotoModal(true);}} style={{width:44,height:44,borderRadius:"50%",background:"rgba(255,255,255,0.12)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,fontWeight:800,cursor:"pointer",border:"2px dashed rgba(255,255,255,0.25)",flexShrink:0}}>{user?.[0]}</div>
                 )}
                 <div>
-                  <div style={{color:"rgba(255,255,255,0.55)",fontSize:11,fontWeight:700,letterSpacing:2.5,textTransform:"uppercase"}}>Closer's Club</div>
-                  <div className="hero-title" style={{color:"#fff",fontSize:24,fontWeight:900,lineHeight:1.1}}>{user}'s Dashboard</div>
+                  <div style={{color:"rgba(255,255,255,0.55)",fontSize:12,fontWeight:700,letterSpacing:2.5,textTransform:"uppercase"}}>Closer's Club</div>
+                  <div className="hero-title" style={{color:"#fff",fontSize:28,fontWeight:900,lineHeight:1.1}}>{user}'s Dashboard</div>
                 </div>
               </div>
               <div style={{display:"flex",gap:8,alignItems:"center"}}>
@@ -631,17 +631,17 @@ export default function App() {
           <div
             onClick={(e)=>{e.preventDefault();e.stopPropagation();setBsTranscript("");setBsResult(null);setBsViewIdx(null);loadAnalyses(user).then(d=>setBsHistory(d));setScreen("blindspot");}}
             style={{width:"100%",background:C.navy,borderRadius:14,padding:"20px",marginBottom:12,cursor:"pointer",WebkitUserSelect:"none",userSelect:"none"}}>
-            <p style={{color:"#fff",fontSize:16,fontWeight:800,margin:"0 0 2px",pointerEvents:"none"}}>🔍 Blind Spot Revealer</p>
-            <p style={{color:"rgba(255,255,255,0.6)",fontSize:11,fontWeight:500,margin:0,pointerEvents:"none"}}>Analyze your sales appointments against Sandler</p>
+            <p style={{color:"#fff",fontSize:18,fontWeight:800,margin:"0 0 4px",pointerEvents:"none"}}>🔍 Blind Spot Revealer</p>
+            <p style={{color:"rgba(255,255,255,0.6)",fontSize:14,fontWeight:500,margin:0,pointerEvents:"none"}}>Analyze your sales appointments against Sandler</p>
           </div>
           <div style={{display:"flex",gap:8,marginBottom:16}}>
             <div onClick={()=>setScreen("resources")} style={{flex:1,background:C.card,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"12px 14px",cursor:"pointer",textAlign:"left"}}>
-              <div style={{fontSize:12,fontWeight:700,color:C.dk,pointerEvents:"none"}}>📁 Resources</div>
-              <div style={{fontSize:10,color:C.mut,pointerEvents:"none"}}>Sell sheets & specs</div>
+              <div style={{fontSize:15,fontWeight:700,color:C.dk,pointerEvents:"none"}}>📁 Resources</div>
+              <div style={{fontSize:13,color:C.mut,pointerEvents:"none"}}>Sell sheets & specs</div>
             </div>
             <div onClick={()=>{loadAllProgress().then(d=>setAllProg(d));setScreen("leaderboard");}} style={{flex:1,background:C.card,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"12px 14px",cursor:"pointer",textAlign:"left"}}>
-              <div style={{fontSize:12,fontWeight:700,color:C.dk,pointerEvents:"none"}}>🏆 Leaderboard</div>
-              <div style={{fontSize:10,color:C.mut,pointerEvents:"none"}}>Team rankings</div>
+              <div style={{fontSize:15,fontWeight:700,color:C.dk,pointerEvents:"none"}}>🏆 Leaderboard</div>
+              <div style={{fontSize:13,color:C.mut,pointerEvents:"none"}}>Team rankings</div>
             </div>
           </div>
           {allPassed && <div style={{marginBottom:16}}>
@@ -662,9 +662,9 @@ export default function App() {
                 </div>
                 <div style={{padding:"24px 24px 28px",textAlign:"center"}}>
                   <div style={{display:"inline-block",fontSize:9,fontWeight:700,color:C.navy,background:C.navy+"15",padding:"4px 14px",borderRadius:20,marginBottom:16,letterSpacing:0.5,textTransform:"uppercase"}}>{dailyTip.category}</div>
-                  <div style={{fontSize:14,lineHeight:1.75,color:C.dk,textAlign:"left"}}>{dailyTip.tip}</div>
+                  <div style={{fontSize:16,lineHeight:1.75,color:C.dk,textAlign:"left"}}>{dailyTip.tip}</div>
                   <button onClick={()=>setShowWelcome(false)}
-                    style={{width:"100%",marginTop:24,padding:"16px",borderRadius:14,background:`linear-gradient(145deg, ${C.navy} 0%, #0D2B45 100%)`,color:"#fff",border:"none",fontSize:16,fontWeight:800,cursor:"pointer",letterSpacing:0.3}}>
+                    style={{width:"100%",marginTop:24,padding:"16px",borderRadius:14,background:`linear-gradient(145deg, ${C.navy} 0%, #0D2B45 100%)`,color:"#fff",border:"none",fontSize:18,fontWeight:800,cursor:"pointer",letterSpacing:0.3}}>
                     Let's grow! 🚀
                   </button>
                 </div>
@@ -716,7 +716,7 @@ export default function App() {
 
           {/* Progress Path */}
           <div style={{background:C.card,borderRadius:12,padding:"16px",border:`1px solid ${C.bdr}`,marginBottom:16,overflowX:"auto"}}>
-            <div style={{fontSize:10,fontWeight:700,color:C.mut,letterSpacing:0.5,marginBottom:10}}>YOUR JOURNEY</div>
+            <div style={{fontSize:12,fontWeight:700,color:C.mut,letterSpacing:0.5,marginBottom:10}}>YOUR JOURNEY</div>
             <div style={{display:"flex",alignItems:"center",minWidth:600}}>
               {Q.map((quiz, i) => {
                 const p = myProg[i];
@@ -750,8 +750,8 @@ export default function App() {
 
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
             <div>
-              <div style={{fontSize:16,fontWeight:800,color:C.dk}}>Daily Drills</div>
-              <div style={{fontSize:11,color:C.mut}}>{passedCount} of 15 completed</div>
+              <div style={{fontSize:18,fontWeight:800,color:C.dk}}>Daily Drills</div>
+              <div style={{fontSize:13,color:C.mut}}>{passedCount} of 15 completed</div>
             </div>
             <div style={{fontSize:11,fontWeight:700,color:C.navy}}>{Math.round(passedCount/15*100)}%</div>
           </div>
@@ -777,8 +777,8 @@ export default function App() {
                         {p?.passed?"✓":quiz.quiz_number}
                       </div>
                       <div>
-                        <div style={{fontSize:13,fontWeight:800,color:C.dk}}>Day {quiz.quiz_number}</div>
-                        <div style={{fontSize:10,color:C.mut}}>{quiz.questions.length} questions</div>
+                        <div style={{fontSize:15,fontWeight:800,color:C.dk}}>Day {quiz.quiz_number}</div>
+                        <div style={{fontSize:12,color:C.mut}}>{quiz.questions.length} questions</div>
                       </div>
                     </div>
                     {p?.passed && <span style={{fontSize:10,fontWeight:700,color:C.grn,background:C.grnBg,padding:"3px 8px",borderRadius:6}}>{p.score}/{p.total}</span>}
@@ -1666,8 +1666,8 @@ export default function App() {
         />
         <div style={{maxWidth:960,margin:"0 auto",padding:"16px 16px 48px"}}>
           <div style={{textAlign:"center",marginBottom:20}}>
-            <div style={{fontSize:18,fontWeight:800,color:C.dk}}>Sales & Marketing</div>
-            <div style={{fontSize:12,color:C.mut}}>Reference docs from JobTread — tap to view or download</div>
+            <div style={{fontSize:22,fontWeight:800,color:C.dk}}>Sales & Marketing</div>
+            <div style={{fontSize:14,color:C.mut}}>Reference docs from JobTread — tap to view or download</div>
           </div>
           {RESOURCES.categories.map(cat => (
             <div key={cat.name} style={{marginBottom:20}}>
@@ -1680,7 +1680,7 @@ export default function App() {
                       {doc.type === "pdf" ? "📄" : "🖼️"}
                     </div>
                     <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontSize:13,fontWeight:700,color:C.dk}}>{doc.name}</div>
+                      <div style={{fontSize:15,fontWeight:700,color:C.dk}}>{doc.name}</div>
                       <div style={{fontSize:10,color:C.mut,textTransform:"uppercase"}}>{doc.type === "pdf" ? "PDF Document" : "Image"}</div>
                     </div>
                     <div style={{fontSize:16,color:C.mut,flexShrink:0}}>↗</div>
