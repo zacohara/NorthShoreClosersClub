@@ -194,7 +194,7 @@ function Confetti() {
 
 function NavBar({ left, center, right, progress }) {
   return (
-    <div style={{background:B.navy,padding:"12px 20px"}}>
+    <div style={{background:B.navy,paddingTop:"max(12px, env(safe-area-inset-top, 12px))",paddingBottom:"12px",paddingLeft:"20px",paddingRight:"20px"}}>
       <div style={{maxWidth:720,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         {left}
         <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -1583,8 +1583,8 @@ export default function App() {
           <div style={{background:C.navy,borderRadius:12,padding:"18px",marginBottom:16,position:"relative",overflow:"hidden"}}>
             <div style={{position:"absolute",inset:0,backgroundImage:`url(${BG})`,backgroundSize:"cover",backgroundPosition:"center",opacity:0.15}}/>
             <div style={{position:"relative"}}>
-              <div style={{color:"#fff",fontSize:17,fontWeight:800,marginBottom:4}}>Blind Spot Revealer</div>
-              <div style={{color:"rgba(255,255,255,0.55)",fontSize:12,lineHeight:1.5}}>Paste your Plaud transcript. AI analyzes your appointment against all 7 Sandler submarine steps.</div>
+              <div style={{color:"#fff",fontSize:20,fontWeight:800,marginBottom:6}}>Blind Spot Revealer</div>
+              <div style={{color:"rgba(255,255,255,0.6)",fontSize:14,lineHeight:1.6}}>Paste your Plaud transcript. AI analyzes your appointment against all 7 Sandler submarine steps.</div>
             </div>
           </div>
 
@@ -1594,14 +1594,14 @@ export default function App() {
               value={bsTranscript}
               onChange={e=>setBsTranscript(e.target.value)}
               placeholder={"Paste your Plaud transcript here...\n\nRep: Hi, thanks for meeting with me today...\nHomeowner: Yeah, so we've got this chimney issue..."}
-              style={{width:"100%",minHeight:160,padding:"12px",borderRadius:8,border:`1px solid ${C.bdr}`,fontSize:13,fontFamily:"inherit",lineHeight:1.6,resize:"vertical",outline:"none",color:C.dk,background:C.inp}}
+              style={{width:"100%",minHeight:180,padding:"14px",borderRadius:10,border:`1px solid ${C.bdr}`,fontSize:16,fontFamily:"inherit",lineHeight:1.7,resize:"vertical",outline:"none",color:C.dk,background:C.inp}}
               onFocus={e=>{e.target.style.borderColor=C.navy;}}
               onBlur={e=>{e.target.style.borderColor=C.bdr;}}
             />
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:8}}>
-              <span style={{fontSize:11,color:C.mut}}>{bsTranscript.length > 0 ? `${bsTranscript.length} chars` : 'Min 50 characters'}</span>
+              <span style={{fontSize:13,color:C.mut}}>{bsTranscript.length > 0 ? `${bsTranscript.length} chars` : 'Min 50 characters'}</span>
               <button onClick={analyzeTranscript} disabled={bsAnalyzing || bsTranscript.trim().length < 50} className="btn-primary"
-                style={{padding:"9px 20px",borderRadius:8,background:bsAnalyzing?C.mut:(bsTranscript.trim().length>=50?C.navy:"#CBD5E1"),color:"#fff",border:"none",fontSize:13,fontWeight:700,cursor:bsAnalyzing||bsTranscript.trim().length<50?"not-allowed":"pointer"}}>
+                style={{padding:"12px 24px",borderRadius:10,background:bsAnalyzing?C.mut:(bsTranscript.trim().length>=50?C.navy:"#CBD5E1"),color:"#fff",border:"none",fontSize:15,fontWeight:700,cursor:bsAnalyzing||bsTranscript.trim().length<50?"not-allowed":"pointer"}}>
                 {bsAnalyzing ? "Analyzing..." : "Analyze Appointment"}
               </button>
             </div>
@@ -1611,8 +1611,8 @@ export default function App() {
           {bsAnalyzing && (
             <div style={{background:C.card,borderRadius:12,padding:"24px",border:`1px solid ${C.bdr}`,textAlign:"center",marginBottom:14,animation:"fadeIn 0.3s ease"}}>
               <div style={{fontSize:24,marginBottom:6,animation:"pulse 1.5s infinite"}}>🧠</div>
-              <div style={{fontSize:14,fontWeight:700,color:C.dk,marginBottom:2}}>Analyzing appointment...</div>
-              <div style={{fontSize:11,color:C.mut}}>Running Sandler analysis on your appointment. 10-20 seconds.</div>
+              <div style={{fontSize:16,fontWeight:700,color:C.dk,marginBottom:4}}>Analyzing appointment...</div>
+              <div style={{fontSize:14,color:C.mut}}>Running Sandler analysis on your appointment. 10-20 seconds.</div>
             </div>
           )}
 
@@ -1631,16 +1631,16 @@ export default function App() {
           {bsHistory.length > 0 && (
             <div style={{marginTop:20}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                <div style={{fontSize:13,fontWeight:700,color:C.dk}}>Past analyses ({bsHistory.length})</div>
-                <div style={{fontSize:11,color:C.mut}}>Only visible to you</div>
+                <div style={{fontSize:16,fontWeight:800,color:C.dk}}>Past analyses ({bsHistory.length})</div>
+                <div style={{fontSize:13,color:C.mut}}>Only visible to you</div>
               </div>
               {bsHistory.map((item, i) => (
                 <div key={item.id} onClick={()=>setBsViewIdx(i)} className="quiz-card"
-                  style={{background:C.card,borderRadius:10,padding:"12px 14px",marginBottom:6,border:`1px solid ${C.bdr}`,cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  style={{background:C.card,borderRadius:12,padding:"14px 16px",marginBottom:8,border:`1px solid ${C.bdr}`,cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                   <div style={{display:"flex",alignItems:"center",gap:10,flex:1,minWidth:0}}>
-                    {item.overall_grade && <span style={{fontSize:12,fontWeight:800,color:gc(item.overall_grade),background:gcBg(item.overall_grade),padding:"2px 8px",borderRadius:4}}>{item.overall_grade}</span>}
-                    <span style={{fontSize:11,color:C.mut,whiteSpace:"nowrap"}}>{new Date(item.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>
-                    <span style={{fontSize:11,color:C.dk,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.transcript.substring(0,80)}</span>
+                    {item.overall_grade && <span style={{fontSize:14,fontWeight:800,color:gc(item.overall_grade),background:gcBg(item.overall_grade),padding:"4px 10px",borderRadius:6}}>{item.overall_grade}</span>}
+                    <span style={{fontSize:13,color:C.mut,whiteSpace:"nowrap"}}>{new Date(item.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>
+                    <span style={{fontSize:13,color:C.dk,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.transcript.substring(0,60)}</span>
                   </div>
                   <span style={{color:C.mut,fontSize:14,marginLeft:8}}>→</span>
                 </div>
