@@ -629,10 +629,9 @@ export default function App() {
         <div style={{maxWidth:960,margin:"0 auto",padding:"16px 16px 24px"}}>
           {/* Primary Action: Blind Spot Revealer */}
           <button type="button" onClick={()=>{setBsTranscript("");setBsResult(null);setBsViewIdx(null);loadAnalyses(user).then(d=>setBsHistory(d));setScreen("blindspot");}}
-            style={{width:"100%",background:`linear-gradient(145deg, ${C.navy} 0%, #0D2B45 100%)`,borderRadius:14,padding:"20px",border:"none",cursor:"pointer",marginBottom:12,textAlign:"left",position:"relative",overflow:"hidden",fontFamily:"inherit"}}>
-            <div style={{position:"absolute",right:-10,top:-10,fontSize:64,opacity:0.08}}>🔍</div>
-            <div style={{color:"#fff",fontSize:16,fontWeight:800,marginBottom:2}}>Blind Spot Revealer</div>
-            <div style={{color:"rgba(255,255,255,0.6)",fontSize:11,fontWeight:500}}>Analyze your sales appointments against Sandler</div>
+            style={{width:"100%",background:`linear-gradient(145deg, ${C.navy} 0%, #0D2B45 100%)`,borderRadius:14,padding:"20px",border:"none",cursor:"pointer",marginBottom:12,textAlign:"left",position:"relative",overflow:"hidden",fontFamily:"inherit",WebkitTapHighlightColor:"transparent",touchAction:"manipulation"}}>
+            <div style={{pointerEvents:"none",color:"#fff",fontSize:16,fontWeight:800,marginBottom:2}}>Blind Spot Revealer</div>
+            <div style={{pointerEvents:"none",color:"rgba(255,255,255,0.6)",fontSize:11,fontWeight:500}}>Analyze your sales appointments against Sandler</div>
           </button>
           <div style={{display:"flex",gap:8,marginBottom:16}}>
             <button onClick={()=>setScreen("resources")} style={{flex:1,background:C.card,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"12px 14px",cursor:"pointer",textAlign:"left"}}>
