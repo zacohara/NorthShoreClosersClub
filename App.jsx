@@ -167,7 +167,7 @@ function Modal({ open, onClose, children }) {
   if (!open) return null;
   return (
     <div style={{position:"fixed",inset:0,zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.5)",animation:"fadeIn 0.2s"}} onClick={onClose}>
-      <div style={{background:C.card,borderRadius:16,padding:"28px 24px",maxWidth:400,width:"90%",boxShadow:"0 20px 60px rgba(0,0,0,0.3)",animation:"popIn 0.25s ease"}} onClick={e=>e.stopPropagation()}>
+      <div style={{background:"#FFF",borderRadius:16,padding:"28px 24px",maxWidth:400,width:"90%",boxShadow:"0 20px 60px rgba(0,0,0,0.3)",animation:"popIn 0.25s ease"}} onClick={e=>e.stopPropagation()}>
         {children}
       </div>
     </div>
@@ -175,7 +175,7 @@ function Modal({ open, onClose, children }) {
 }
 
 function Confetti() {
-  const colors = [C.navy, C.sky, C.gold, C.grn, C.skyL];
+  const colors = [B.navy, B.sky, B.gold, B.grn, B.skyL];
   return (
     <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:50,overflow:"hidden"}}>
       {Array.from({length:30}).map((_,i) => (
@@ -194,7 +194,7 @@ function Confetti() {
 
 function NavBar({ left, center, right, progress }) {
   return (
-    <div style={{background:C.navy,padding:"12px 20px"}}>
+    <div style={{background:B.navy,padding:"12px 20px"}}>
       <div style={{maxWidth:720,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         {left}
         <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -205,7 +205,7 @@ function NavBar({ left, center, right, progress }) {
       </div>
       {progress !== undefined && (
         <div role="progressbar" aria-valuenow={progress} aria-valuemax={100} style={{maxWidth:720,margin:"8px auto 0",height:3,background:"rgba(255,255,255,0.1)",borderRadius:2,overflow:"hidden"}}>
-          <div style={{height:"100%",width:`${progress}%`,background:C.sky,borderRadius:2,transition:"width 0.4s ease"}}/>
+          <div style={{height:"100%",width:`${progress}%`,background:B.sky,borderRadius:2,transition:"width 0.4s ease"}}/>
         </div>
       )}
     </div>
@@ -628,20 +628,21 @@ export default function App() {
 
         <div style={{maxWidth:960,margin:"0 auto",padding:"16px 16px 24px"}}>
           {/* Primary Action: Blind Spot Revealer */}
-          <button type="button" onClick={()=>{setBsTranscript("");setBsResult(null);setBsViewIdx(null);loadAnalyses(user).then(d=>setBsHistory(d));setScreen("blindspot");}}
-            style={{width:"100%",background:`linear-gradient(145deg, ${C.navy} 0%, #0D2B45 100%)`,borderRadius:14,padding:"20px",border:"none",cursor:"pointer",marginBottom:12,textAlign:"left",position:"relative",overflow:"hidden",fontFamily:"inherit",WebkitTapHighlightColor:"transparent",touchAction:"manipulation"}}>
-            <div style={{pointerEvents:"none",color:"#fff",fontSize:16,fontWeight:800,marginBottom:2}}>Blind Spot Revealer</div>
-            <div style={{pointerEvents:"none",color:"rgba(255,255,255,0.6)",fontSize:11,fontWeight:500}}>Analyze your sales appointments against Sandler</div>
-          </button>
+          <div
+            onClick={(e)=>{e.preventDefault();e.stopPropagation();setBsTranscript("");setBsResult(null);setBsViewIdx(null);loadAnalyses(user).then(d=>setBsHistory(d));setScreen("blindspot");}}
+            style={{width:"100%",background:C.navy,borderRadius:14,padding:"20px",marginBottom:12,cursor:"pointer",WebkitUserSelect:"none",userSelect:"none"}}>
+            <p style={{color:"#fff",fontSize:16,fontWeight:800,margin:"0 0 2px",pointerEvents:"none"}}>🔍 Blind Spot Revealer</p>
+            <p style={{color:"rgba(255,255,255,0.6)",fontSize:11,fontWeight:500,margin:0,pointerEvents:"none"}}>Analyze your sales appointments against Sandler</p>
+          </div>
           <div style={{display:"flex",gap:8,marginBottom:16}}>
-            <button onClick={()=>setScreen("resources")} style={{flex:1,background:C.card,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"12px 14px",cursor:"pointer",textAlign:"left"}}>
-              <div style={{fontSize:12,fontWeight:700,color:C.dk}}>📁 Resources</div>
-              <div style={{fontSize:10,color:C.mut}}>Sell sheets & specs</div>
-            </button>
-            <button onClick={()=>{loadAllProgress().then(d=>setAllProg(d));setScreen("leaderboard");}} style={{flex:1,background:C.card,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"12px 14px",cursor:"pointer",textAlign:"left"}}>
-              <div style={{fontSize:12,fontWeight:700,color:C.dk}}>🏆 Leaderboard</div>
-              <div style={{fontSize:10,color:C.mut}}>Team rankings</div>
-            </button>
+            <div onClick={()=>setScreen("resources")} style={{flex:1,background:C.card,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"12px 14px",cursor:"pointer",textAlign:"left"}}>
+              <div style={{fontSize:12,fontWeight:700,color:C.dk,pointerEvents:"none"}}>📁 Resources</div>
+              <div style={{fontSize:10,color:C.mut,pointerEvents:"none"}}>Sell sheets & specs</div>
+            </div>
+            <div onClick={()=>{loadAllProgress().then(d=>setAllProg(d));setScreen("leaderboard");}} style={{flex:1,background:C.card,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"12px 14px",cursor:"pointer",textAlign:"left"}}>
+              <div style={{fontSize:12,fontWeight:700,color:C.dk,pointerEvents:"none"}}>🏆 Leaderboard</div>
+              <div style={{fontSize:10,color:C.mut,pointerEvents:"none"}}>Team rankings</div>
+            </div>
           </div>
           {allPassed && <div style={{marginBottom:16}}>
             <button onClick={()=>setScreen("certificate")} style={{width:"100%",background:C.grn+"10",border:`1px solid ${C.grn}30`,borderRadius:10,padding:"12px 14px",cursor:"pointer",textAlign:"left"}}>
