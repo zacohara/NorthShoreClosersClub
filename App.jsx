@@ -257,6 +257,11 @@ export default function App() {
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [photoManualOpen, setPhotoManualOpen] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
+  const [heatmapData, setHeatmapData] = useState(null);
+  const [heatmapMarket, setHeatmapMarket] = useState("Chicago");
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const markersRef = useRef(null);
   const [cropSrc, setCropSrc] = useState(null);
   const [cropZoom, setCropZoom] = useState(1);
   const [cropPos, setCropPos] = useState({x:0,y:0});
@@ -643,6 +648,11 @@ export default function App() {
               <div style={{fontSize:15,fontWeight:700,color:C.dk,pointerEvents:"none"}}>🏆 Leaderboard</div>
               <div style={{fontSize:13,color:C.mut,pointerEvents:"none"}}>Team rankings</div>
             </div>
+          </div>
+          <div onClick={()=>{if(!heatmapData)fetch('/heatmap.json').then(r=>r.json()).then(d=>setHeatmapData(d));setScreen("heatmap");}}
+            style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"14px 16px",cursor:"pointer",marginBottom:12}}>
+            <div style={{fontSize:15,fontWeight:700,color:C.dk,pointerEvents:"none"}}>🗺️ Heat Map</div>
+            <div style={{fontSize:13,color:C.mut,pointerEvents:"none"}}>2,600+ jobs across 4 markets</div>
           </div>
           {allPassed && <div style={{marginBottom:16}}>
             <button onClick={()=>setScreen("certificate")} style={{width:"100%",background:C.grn+"10",border:`1px solid ${C.grn}30`,borderRadius:10,padding:"12px 14px",cursor:"pointer",textAlign:"left"}}>
@@ -1652,6 +1662,137 @@ export default function App() {
     );
   }
 
+
+
+  // ═══ HEAT MAP ═══
+  if (screen === "heatmap") {
+    const MARKET_CENTERS = {
+      Chicago: [41.88, -87.72, 10],
+      Milwaukee: [43.05, -87.93, 11],
+      Dallas: [32.85, -96.85, 10],
+      Indy: [41.07, -85.15, 11],
+    };
+
+    const renderMap = () => {
+      if (!window.L || !mapRef.current || !heatmapData) return;
+      const L = window.L;
+      const [clat, clng, zoom] = MARKET_CENTERS[heatmapMarket];
+      
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.setView([clat, clng], zoom);
+      } else {
+        mapInstanceRef.current = L.map(mapRef.current, {
+          center: [clat, clng], zoom,
+          zoomControl: false,
+          attributionControl: false,
+        });
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapInstanceRef.current);
+        L.control.zoom({position:'bottomright'}).addTo(mapInstanceRef.current);
+      }
+
+      // Clear existing markers
+      if (markersRef.current) markersRef.current.forEach(m => m.remove());
+      markersRef.current = [];
+
+      const jobs = heatmapData[heatmapMarket] || [];
+      jobs.forEach(j => {
+        const [lat, lng, isComm, name, num, isActive] = j;
+        const color = isComm ? '#6C63FF' : '#27AE60';
+        const icon = L.divIcon({
+          className: '',
+          html: `<div style="width:10px;height:10px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>`,
+          iconSize: [10, 10],
+          iconAnchor: [5, 5],
+        });
+        const marker = L.marker([lat, lng], { icon }).addTo(mapInstanceRef.current);
+        marker.bindPopup(`
+          <div style="font-family:Outfit,sans-serif;min-width:160px;">
+            <div style="font-size:13px;font-weight:800;margin-bottom:2px;">${name}</div>
+            <div style="font-size:11px;color:#666;">#${num}</div>
+            <div style="display:flex;gap:6px;margin-top:4px;">
+              <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:${isComm?'#EDE7F6':'#E8F5E9'};color:${isComm?'#6C63FF':'#27AE60'};font-weight:700;">${isComm?'Commercial':'Residential'}</span>
+              <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:${isActive?'#E8F5E9':'#F5F5F5'};color:${isActive?'#27AE60':'#999'};font-weight:700;">${isActive?'Active':'Closed'}</span>
+            </div>
+          </div>
+        `, {closeButton:false});
+        markersRef.current.push(marker);
+      });
+    };
+
+    // Render map after DOM paint
+    setTimeout(renderMap, 100);
+
+    const marketJobs = heatmapData?.[heatmapMarket] || [];
+    const resCount = marketJobs.filter(j => j[2] === 0).length;
+    const comCount = marketJobs.filter(j => j[2] === 1).length;
+    const activeCount = marketJobs.filter(j => j[5] === 1).length;
+
+    return (
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif",display:"flex",flexDirection:"column"}}>
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+        <style>{CSS}</style>
+        <NavBar
+          left={<button onClick={()=>{if(mapInstanceRef.current){mapInstanceRef.current.remove();mapInstanceRef.current=null;}setScreen("home");}} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>← Back</button>}
+          center="Heat Map"
+          right={<span/>}
+        />
+
+        {/* Market tabs */}
+        <div style={{display:"flex",gap:0,padding:"8px 12px",background:C.card,borderBottom:`1px solid ${C.bdr}`}}>
+          {["Chicago","Milwaukee","Dallas","Indy"].map(m => (
+            <div key={m} onClick={()=>{setHeatmapMarket(m);setTimeout(renderMap,50);}}
+              style={{flex:1,textAlign:"center",padding:"10px 4px",borderRadius:8,cursor:"pointer",
+                background:m===heatmapMarket?B.navy:"transparent",
+                color:m===heatmapMarket?"#fff":C.dk,
+                fontSize:13,fontWeight:m===heatmapMarket?700:500,transition:"all 0.15s"}}>
+              {m}
+            </div>
+          ))}
+        </div>
+
+        {/* Stats row */}
+        <div style={{display:"flex",gap:8,padding:"10px 16px",background:C.card,borderBottom:`1px solid ${C.bdr}`}}>
+          <div style={{flex:1,textAlign:"center"}}>
+            <div style={{fontSize:18,fontWeight:800,color:C.dk}}>{marketJobs.length}</div>
+            <div style={{fontSize:10,color:C.mut}}>Total Jobs</div>
+          </div>
+          <div style={{flex:1,textAlign:"center"}}>
+            <div style={{fontSize:18,fontWeight:800,color:"#27AE60"}}>{resCount}</div>
+            <div style={{fontSize:10,color:C.mut}}>Residential</div>
+          </div>
+          <div style={{flex:1,textAlign:"center"}}>
+            <div style={{fontSize:18,fontWeight:800,color:"#6C63FF"}}>{comCount}</div>
+            <div style={{fontSize:10,color:C.mut}}>Commercial</div>
+          </div>
+          <div style={{flex:1,textAlign:"center"}}>
+            <div style={{fontSize:18,fontWeight:800,color:B.sky}}>{activeCount}</div>
+            <div style={{fontSize:10,color:C.mut}}>Active</div>
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div style={{display:"flex",gap:16,padding:"8px 16px",background:C.card,borderBottom:`1px solid ${C.bdr}`}}>
+          <div style={{display:"flex",alignItems:"center",gap:4}}>
+            <div style={{width:10,height:10,borderRadius:"50%",background:"#27AE60",border:"2px solid #fff",boxShadow:"0 1px 3px rgba(0,0,0,0.2)"}}/>
+            <span style={{fontSize:11,color:C.mut}}>Residential</span>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:4}}>
+            <div style={{width:10,height:10,borderRadius:"50%",background:"#6C63FF",border:"2px solid #fff",boxShadow:"0 1px 3px rgba(0,0,0,0.2)"}}/>
+            <span style={{fontSize:11,color:C.mut}}>Commercial</span>
+          </div>
+        </div>
+
+        {/* Map */}
+        <div style={{flex:1,minHeight:400}}>
+          {!heatmapData ? (
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:400,color:C.mut}}>Loading map data...</div>
+          ) : (
+            <div ref={mapRef} style={{width:"100%",height:"100%",minHeight:400}}/>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   // ═══ RESOURCES ═══
   if (screen === "resources") {
