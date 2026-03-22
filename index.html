@@ -26,7 +26,16 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch(() => {});
+          navigator.serviceWorker.register('/sw.js').then((reg) => {
+            // Force check for new SW on every page load
+            reg.update();
+          }).catch(() => {});
+          // Listen for SW telling us to reload
+          navigator.serviceWorker.addEventListener('message', (e) => {
+            if (e.data?.type === 'SW_UPDATED') {
+              window.location.reload();
+            }
+          });
         });
       }
     </script>
