@@ -7,11 +7,13 @@ const BG = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAoHBwgHBgoIC
 const USERS = ["Devin","Jace","Les","Zac","Luke","Paul","Carlos","BJ"];
 const PASS = 5;
 const ADMIN_PW = "buildinggreatness";
-const C = {
+const B = {
   navy:"#1B4F72",navyL:"#2471A3",sky:"#5DA5BA",skyL:"#D6EAF8",
-  dk:"#2C3E50",grn:"#27AE60",grnBg:"#EAFAF1",red:"#E74C3C",redBg:"#FDEDEC",
-  gold:"#F39C12",goldBg:"#FEF9E7",bg:"#F0F3F6",card:"#FFF",bdr:"#E2E8F0",mut:"#8896A6"
+  grn:"#27AE60",grnBg:"#EAFAF1",red:"#E74C3C",redBg:"#FDEDEC",
+  gold:"#F39C12",goldBg:"#FEF9E7"
 };
+const LIGHT = {bg:"#F0F3F6",card:"#FFF",dk:"#2C3E50",bdr:"#E2E8F0",mut:"#8896A6",inp:"#FAFBFC"};
+const DARK = {bg:"#0F1419",card:"#1A2332",dk:"#E8ECF1",bdr:"#2A3A4E",mut:"#7B8CA0",inp:"#15202B"};
 const DB = {
   Beginner:{bg:"#E8F8F5",fg:"#1ABC9C",bd:"#A3E4D7"},
   Intermediate:{bg:"#FEF9E7",fg:"#D4AC0D",bd:"#F9E79F"},
@@ -120,6 +122,11 @@ function StatPill({ label, value }) {
 
 
 export default function App() {
+  const [darkMode, setDarkMode] = useState(() => {
+    try { return window.matchMedia('(prefers-color-scheme: dark)').matches; } catch(e) { return false; }
+  });
+  const C = {...B, ...(darkMode ? DARK : LIGHT)};
+  useEffect(() => { document.body.style.background = C.bg; document.body.style.colorScheme = darkMode ? 'dark' : 'light'; }, [darkMode]);
   const [loading, setLoading] = useState(true);
   const [screen, setScreen] = useState("login");
   const [user, setUser] = useState(null);
@@ -136,6 +143,8 @@ export default function App() {
   const [adminErr, setAdminErr] = useState(false);
   const [bsTranscript, setBsTranscript] = useState("");
   const [bsAnalyzing, setBsAnalyzing] = useState(false);
+  const [audioTranscribing, setAudioTranscribing] = useState(false);
+  const audioInputRef = useRef(null);
   const [bsResult, setBsResult] = useState(null);
   const [bsHistory, setBsHistory] = useState([]);
   const [bsViewIdx, setBsViewIdx] = useState(null);
@@ -209,6 +218,7 @@ export default function App() {
   const allPassed = passedCount === 15;
   const totalRight = Object.values(myProg).reduce((s,p) => s + (p.score||0), 0);
   const totalAns = Object.values(myProg).reduce((s,p) => s + (p.total||0), 0);
+  const nextQuiz = Q.findIndex((_, i) => !myProg[i]?.passed);
 
   function getShuffled(qi) {
     if (!shuffleRef.current[qi]) {
@@ -335,7 +345,9 @@ export default function App() {
             🔒 Admin Portal
           </button>
         </div>
-        <div style={{textAlign:"center",padding:"16px",color:C.mut,fontSize:11}}>Brick by brick. — North Shore Masonry</div>
+        <div style={{textAlign:"center",padding:"16px",color:C.mut,fontSize:11}}>
+          <button onClick={()=>setDarkMode(d=>!d)} style={{background:"none",border:"none",color:C.mut,fontSize:16,cursor:"pointer",marginBottom:6,display:"block",margin:"0 auto 6px"}}>{darkMode ? "☀️" : "🌙"}</button>
+          Brick by brick. — North Shore Masonry</div>
       </div>
     );
   }
@@ -416,6 +428,7 @@ export default function App() {
               </div>
               <button onClick={() => { loadAllProgress().then(d => setAllProg(d)); loadAllProfiles().then(d=>setProfiles(d)); setUser(null); setScreen("login"); }}
                 style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:12,fontWeight:500}}>Switch</button>
+              <button onClick={()=>setDarkMode(d=>!d)} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:14}}>{darkMode ? "☀️" : "🌙"}</button>
             </div>
             <div style={{display:"flex",gap:10,flexWrap:"wrap",marginTop:8}}>
               <StatPill label="Passed" value={`${passedCount}/15`}/>
@@ -442,7 +455,7 @@ export default function App() {
                 <div style={{flex:1}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
                     <div style={{fontSize:10,fontWeight:700,color:C.navy,letterSpacing:0.5}}>DAILY SANDLER TIP</div>
-                    <span style={{fontSize:9,color:C.mut,background:"#F0F3F6",padding:"2px 6px",borderRadius:3}}>{dailyTip.category}</span>
+                    <span style={{fontSize:9,color:C.mut,background:darkMode?"#1A2332":"#F0F3F6",padding:"2px 6px",borderRadius:3}}>{dailyTip.category}</span>
                   </div>
                   <div style={{fontSize:12,lineHeight:1.6,color:C.dk}}>{dailyTip.tip.length > 280 ? dailyTip.tip.substring(0,280) + '...' : dailyTip.tip}</div>
                 </div>
@@ -492,6 +505,40 @@ export default function App() {
             </div>
           )}
 
+          {/* Progress Path */}
+          <div style={{background:C.card,borderRadius:12,padding:"16px",border:`1px solid ${C.bdr}`,marginBottom:16,overflowX:"auto"}}>
+            <div style={{fontSize:10,fontWeight:700,color:C.mut,letterSpacing:0.5,marginBottom:10}}>YOUR JOURNEY</div>
+            <div style={{display:"flex",alignItems:"center",minWidth:600}}>
+              {Q.map((quiz, i) => {
+                const p = myProg[i];
+                const isActive = i === nextQuiz;
+                const done = p?.passed;
+                const tried = p && !p.passed;
+                return (
+                  <div key={i} style={{display:"flex",alignItems:"center",flex:1}}>
+                    <div onClick={()=>launch(i)} style={{
+                      width:done?36:isActive?40:30, height:done?36:isActive?40:30,
+                      borderRadius:"50%",
+                      background:done?C.grn:tried?C.gold:isActive?C.navy:"transparent",
+                      border:done?`2px solid ${C.grn}`:tried?`2px solid ${C.gold}`:isActive?`2px solid ${C.navy}`:`2px solid ${C.bdr}`,
+                      color:done||tried||isActive?"#fff":C.mut,
+                      display:"flex",alignItems:"center",justifyContent:"center",
+                      fontSize:done?14:isActive?14:11, fontWeight:700, cursor:"pointer",
+                      transition:"all 0.2s",
+                      boxShadow:isActive?"0 0 0 4px "+C.navy+"30":"none",
+                      flexShrink:0
+                    }}>
+                      {done ? "✓" : i+1}
+                    </div>
+                    {i < Q.length - 1 && (
+                      <div style={{flex:1,height:3,background:done?C.grn:C.bdr,borderRadius:2,margin:"0 2px",minWidth:8}}/>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="qgrid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:12}}>
             {Q.map((quiz, i) => {
               const p = myProg[i];
@@ -509,7 +556,7 @@ export default function App() {
                   </div>
                   <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:10}}>
                     {cats.map((c,j)=>(
-                      <span key={j} style={{fontSize:10,color:C.mut,background:"#F8FAFC",borderRadius:4,padding:"2px 6px",border:`1px solid ${C.bdr}`,whiteSpace:"nowrap"}}>
+                      <span key={j} style={{fontSize:10,color:C.mut,background:C.inp,borderRadius:4,padding:"2px 6px",border:`1px solid ${C.bdr}`,whiteSpace:"nowrap"}}>
                         {CI[c.trim()]||"📋"} {c.trim()}
                       </span>
                     ))}
@@ -571,7 +618,7 @@ export default function App() {
         <div style={{maxWidth:720,margin:"0 auto",padding:"20px 16px 40px"}}>
           <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap",alignItems:"center"}}>
             <span style={{fontSize:12,fontWeight:600,color:d.fg,background:d.bg,border:`1px solid ${d.bd}`,borderRadius:6,padding:"3px 10px"}}>{q.difficulty}</span>
-            <span style={{fontSize:12,color:C.mut,background:"#F8FAFC",borderRadius:6,padding:"3px 10px",border:`1px solid ${C.bdr}`}}>{CI[q.category]||"📋"} {q.category}</span>
+            <span style={{fontSize:12,color:C.mut,background:C.inp,borderRadius:6,padding:"3px 10px",border:`1px solid ${C.bdr}`}}>{CI[q.category]||"📋"} {q.category}</span>
             <span style={{fontSize:11,color:C.mut,marginLeft:"auto"}}>Need {PASS}/{quiz.questions.length} to pass</span>
           </div>
 
@@ -750,7 +797,7 @@ export default function App() {
                   {Object.entries(q.options).map(([letter, text]) => {
                     const isCorrect = letter === q.correct;
                     const isPicked = letter === a.picked;
-                    let bg = "#F8FAFC", bd = C.bdr, fg = C.dk;
+                    let bg = C.inp, bd = C.bdr, fg = C.dk;
                     if (isCorrect) { bg = C.grnBg; bd = C.grn; }
                     else if (isPicked && !isCorrect) { bg = C.redBg; bd = C.red; }
 
@@ -770,7 +817,7 @@ export default function App() {
                   })}
                 </div>
 
-                <div style={{background:"#F8FAFC",borderRadius:10,padding:"12px 14px",border:`1px solid ${C.bdr}`,marginBottom:q.tip?8:0}}>
+                <div style={{background:C.inp,borderRadius:10,padding:"12px 14px",border:`1px solid ${C.bdr}`,marginBottom:q.tip?8:0}}>
                   <div style={{fontSize:11,fontWeight:700,color:C.navy,marginBottom:4}}>EXPLANATION</div>
                   <p style={{fontSize:12,lineHeight:1.6,color:C.dk,margin:0}}>{q.explanation}</p>
                 </div>
@@ -887,7 +934,7 @@ export default function App() {
               <div style={{
                 width:36,height:36,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",
                 fontSize:i<3?18:14,fontWeight:800,
-                background: i===0?"#FEF9E7":i===1?"#F5F5F5":i===2?"#FDF2E9":"#F8FAFC",
+                background: i===0?"#FEF9E7":i===1?"#F5F5F5":i===2?"#FDF2E9":C.inp,
                 color: i===0?C.gold:i===1?"#7F8C8D":i===2?"#E67E22":C.mut
               }}>
                 {i===0?"🥇":i===1?"🥈":i===2?"🥉":i+1}
@@ -1029,7 +1076,7 @@ export default function App() {
                     style={{
                       width:32,height:32,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",
                       fontSize:10,fontWeight:700,
-                      background:r.passed?C.grnBg:r.score!=null?C.redBg:"#F8FAFC",
+                      background:r.passed?C.grnBg:r.score!=null?C.redBg:C.inp,
                       color:r.passed?C.grn:r.score!=null?C.red:C.mut,
                       border:`1px solid ${r.passed?C.grn+"40":r.score!=null?C.red+"40":C.bdr}`
                     }}>
@@ -1062,7 +1109,7 @@ export default function App() {
           {adminAnalyses.length > 0 && (() => {
             const parseA = (item) => { try { return typeof item.analysis === 'string' ? JSON.parse(item.analysis) : item.analysis; } catch(e) { return null; } };
             const gcA = (g) => { if (!g) return C.mut; if (g.startsWith('A')) return C.grn; if (g.startsWith('B')) return C.sky; if (g.startsWith('C')) return C.gold; return C.red; };
-            const gcBgA = (g) => { if (!g) return "#F8FAFC"; if (g.startsWith('A')) return C.grnBg; if (g.startsWith('B')) return "#E8F4F8"; if (g.startsWith('C')) return C.goldBg; return C.redBg; };
+            const gcBgA = (g) => { if (!g) return C.inp; if (g.startsWith('A')) return C.grnBg; if (g.startsWith('B')) return "#E8F4F8"; if (g.startsWith('C')) return C.goldBg; return C.redBg; };
             const byUser = {};
             adminAnalyses.forEach(a => { if (!byUser[a.user_name]) byUser[a.user_name] = []; byUser[a.user_name].push(a); });
 
@@ -1182,7 +1229,7 @@ export default function App() {
       return C.red;
     };
     const gcBg = (g) => {
-      if (!g) return "#F8FAFC";
+      if (!g) return C.inp;
       if (g.startsWith('A')) return C.grnBg;
       if (g.startsWith('B')) return "#E8F4F8";
       if (g.startsWith('C')) return C.goldBg;
@@ -1316,7 +1363,7 @@ export default function App() {
               value={bsTranscript}
               onChange={e=>setBsTranscript(e.target.value)}
               placeholder={"Paste your Plaud transcript here...\n\nRep: Hi, thanks for meeting with me today...\nHomeowner: Yeah, so we've got this chimney issue..."}
-              style={{width:"100%",minHeight:160,padding:"12px",borderRadius:8,border:`1px solid ${C.bdr}`,fontSize:13,fontFamily:"inherit",lineHeight:1.6,resize:"vertical",outline:"none",color:C.dk,background:"#FAFBFC"}}
+              style={{width:"100%",minHeight:160,padding:"12px",borderRadius:8,border:`1px solid ${C.bdr}`,fontSize:13,fontFamily:"inherit",lineHeight:1.6,resize:"vertical",outline:"none",color:C.dk,background:C.inp}}
               onFocus={e=>{e.target.style.borderColor=C.navy;}}
               onBlur={e=>{e.target.style.borderColor=C.bdr;}}
             />
