@@ -25,7 +25,7 @@ export default async (req) => {
 
 We sell: residential chimney repair, tuckpointing, steps, retaining walls, foundations ($5K-$50K) and commercial facade restoration, waterproofing, structural repair ($25K-$500K+). We compete on quality and process, not price.
 
-Analyze this sales call. Return ONLY valid JSON — no markdown, no backticks, nothing outside the JSON object.
+Analyze this sales appointment transcript. Return ONLY valid JSON — no markdown, no backticks, nothing outside the JSON object.
 
 {"grade":"C+","summary":"Max 15 words","scorecard":[{"step":"Bonding & rapport","grade":"C+","note":"Max 10 words"},{"step":"Up-front contract","grade":"F","note":"Max 10 words"},{"step":"Pain / pain funnel","grade":"D","note":"Max 10 words"},{"step":"Budget","grade":"D","note":"Max 10 words"},{"step":"Decision","grade":"C-","note":"Max 10 words"},{"step":"Fulfillment","grade":"B-","note":"Max 10 words"},{"step":"Post-sell","grade":"B","note":"Max 10 words"}],"strengths":["Max 15 words each","3-4 bullets"],"blindSpots":[{"label":"2-3 words","detail":"Max 25 words"},{"label":"Label","detail":"Max 25 words"},{"label":"Label","detail":"Max 25 words"}],"fix":{"headline":"Max 15 words","script":"Exact words to say. 2-3 sentences max."}}
 

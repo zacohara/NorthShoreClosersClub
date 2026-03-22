@@ -135,3 +135,63 @@ export async function loadLatestDigest(userName) {
   }
   return data?.[0] || null;
 }
+
+/**
+ * Load a single user profile
+ */
+export async function loadProfile(userName) {
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .select('*')
+    .eq('user_name', userName)
+    .limit(1);
+  if (error) { console.error('Load profile failed:', error); return null; }
+  return data?.[0] || null;
+}
+
+/**
+ * Load all user profiles (for login screen avatars)
+ */
+export async function loadAllProfiles() {
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .select('*');
+  if (error) { console.error('Load all profiles failed:', error); return {}; }
+  const map = {};
+  (data || []).forEach(p => { map[p.user_name] = p; });
+  return map;
+}
+
+/**
+ * Save/update a user profile (upsert)
+ */
+export async function saveProfile(userName, updates) {
+  const { error } = await supabase
+    .from('user_profiles')
+    .upsert(
+      { user_name: userName, ...updates, updated_at: new Date().toISOString() },
+      { onConflict: 'user_name' }
+    );
+  if (error) { console.error('Save profile failed:', error); return false; }
+  return true;
+}
+
+/**
+ * Update streak for a user (call on each login/activity)
+ */
+export async function updateStreak(userName) {
+  const today = new Date().toISOString().split('T')[0];
+  const profile = await loadProfile(userName);
+  if (!profile) {
+    await saveProfile(userName, { streak_current: 1, streak_best: 1, last_active_date: today });
+    return { current: 1, best: 1 };
+  }
+  if (profile.last_active_date === today) {
+    return { current: profile.streak_current || 0, best: profile.streak_best || 0 };
+  }
+  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+  let newStreak = profile.last_active_date === yesterday ? (profile.streak_current || 0) + 1 : 1;
+  let newBest = Math.max(newStreak, profile.streak_best || 0);
+  await saveProfile(userName, { streak_current: newStreak, streak_best: newBest, last_active_date: today });
+  return { current: newStreak, best: newBest };
+}
