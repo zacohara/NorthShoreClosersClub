@@ -155,6 +155,7 @@ export default function App() {
   const [myProfile, setMyProfile] = useState(null);
   const [streak, setStreak] = useState({current:0,best:0});
   const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(true);
   const [cropSrc, setCropSrc] = useState(null);
   const [cropZoom, setCropZoom] = useState(1);
   const [cropPos, setCropPos] = useState({x:0,y:0});
@@ -490,18 +491,20 @@ export default function App() {
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
               <div style={{display:"flex",alignItems:"center",gap:14}}>
                 {myProfile?.avatar ? (
-                  <img src={myProfile.avatar} alt="" onClick={()=>setShowPhotoModal(true)} style={{width:48,height:48,borderRadius:12,objectFit:"cover",cursor:"pointer",border:"2px solid rgba(255,255,255,0.2)"}}/>
+                  <img src={myProfile.avatar} alt="" onClick={()=>setShowPhotoModal(true)} style={{width:44,height:44,borderRadius:"50%",objectFit:"cover",cursor:"pointer",border:"2px solid rgba(255,255,255,0.3)",flexShrink:0}}/>
                 ) : (
-                  <div onClick={()=>setShowPhotoModal(true)} style={{width:48,height:48,borderRadius:12,background:"rgba(255,255,255,0.1)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,fontWeight:800,cursor:"pointer",border:"2px dashed rgba(255,255,255,0.2)"}}>{user?.[0]}</div>
+                  <div onClick={()=>setShowPhotoModal(true)} style={{width:44,height:44,borderRadius:"50%",background:"rgba(255,255,255,0.12)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,fontWeight:800,cursor:"pointer",border:"2px dashed rgba(255,255,255,0.25)",flexShrink:0}}>{user?.[0]}</div>
                 )}
                 <div>
                   <div style={{color:"rgba(255,255,255,0.55)",fontSize:11,fontWeight:700,letterSpacing:2.5,textTransform:"uppercase"}}>Closer's Club</div>
                   <div className="hero-title" style={{color:"#fff",fontSize:24,fontWeight:900,lineHeight:1.1}}>{user}'s Dashboard</div>
                 </div>
               </div>
-              <button onClick={() => { loadAllProgress().then(d => setAllProg(d)); loadAllProfiles().then(d=>setProfiles(d)); setUser(null); setScreen("login"); }}
-                style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:12,fontWeight:500}}>Switch</button>
-              <button onClick={()=>setDarkMode(d=>!d)} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 10px",cursor:"pointer",fontSize:14}}>{darkMode ? "☀️" : "🌙"}</button>
+              <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                <button onClick={()=>setDarkMode(d=>!d)} style={{background:"none",border:"none",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:16,padding:4}}>{darkMode ? "☀️" : "🌙"}</button>
+                <button onClick={() => { loadAllProgress().then(d => setAllProg(d)); loadAllProfiles().then(d=>setProfiles(d)); setUser(null); setScreen("login"); setShowWelcome(true); }}
+                  style={{background:"none",border:"none",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:11,fontWeight:600,padding:4,letterSpacing:0.3}}>Logout</button>
+              </div>
             </div>
             <div style={{display:"flex",gap:10,flexWrap:"wrap",marginTop:8}}>
               <StatPill label="Passed" value={`${passedCount}/15`}/>
@@ -514,23 +517,40 @@ export default function App() {
         </div>
 
         <div style={{maxWidth:960,margin:"0 auto",padding:"16px 16px 24px"}}>
-          <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
-            <button onClick={()=>{loadAllProgress().then(d=>setAllProg(d));setScreen("leaderboard");}} className="btn-outline" style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:8,padding:"8px 16px",cursor:"pointer",fontSize:12,fontWeight:700,color:C.navy}}>🏆 Leaderboard</button>
-            <button onClick={()=>{setBsTranscript("");setBsResult(null);setBsViewIdx(null);loadAnalyses(user).then(d=>setBsHistory(d));setScreen("blindspot");}} className="btn-outline" style={{background:C.card,border:`1px solid ${C.navy}30`,borderRadius:8,padding:"8px 16px",cursor:"pointer",fontSize:12,fontWeight:700,color:C.navy}}>🔍 Blind Spot Revealer</button>
-            {allPassed && <button onClick={()=>setScreen("certificate")} className="btn-outline" style={{background:C.grn+"15",border:`1px solid ${C.grn}40`,borderRadius:8,padding:"8px 16px",cursor:"pointer",fontSize:12,fontWeight:700,color:C.grn}}>📜 View Certificate</button>}
+          {/* Primary Action: Blind Spot Revealer */}
+          <button onClick={()=>{setBsTranscript("");setBsResult(null);setBsViewIdx(null);loadAnalyses(user).then(d=>setBsHistory(d));setScreen("blindspot");}}
+            style={{width:"100%",background:`linear-gradient(135deg, ${C.navy} 0%, ${C.navyL} 100%)`,borderRadius:14,padding:"18px 20px",border:"none",cursor:"pointer",marginBottom:12,textAlign:"left",position:"relative",overflow:"hidden"}}>
+            <div style={{position:"absolute",right:-10,top:-10,fontSize:64,opacity:0.08}}>🔍</div>
+            <div style={{color:"#fff",fontSize:16,fontWeight:800,marginBottom:2}}>Blind Spot Revealer</div>
+            <div style={{color:"rgba(255,255,255,0.6)",fontSize:11,fontWeight:500}}>Analyze your sales appointments against Sandler</div>
+          </button>
+          <div style={{display:"flex",gap:8,marginBottom:16}}>
+            <button onClick={()=>{loadAllProgress().then(d=>setAllProg(d));setScreen("leaderboard");}} style={{flex:1,background:C.card,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"12px 14px",cursor:"pointer",textAlign:"left"}}>
+              <div style={{fontSize:12,fontWeight:700,color:C.dk}}>🏆 Leaderboard</div>
+              <div style={{fontSize:10,color:C.mut}}>See the team rankings</div>
+            </button>
+            {allPassed && <button onClick={()=>setScreen("certificate")} style={{flex:1,background:C.grn+"10",border:`1px solid ${C.grn}30`,borderRadius:10,padding:"12px 14px",cursor:"pointer",textAlign:"left"}}>
+              <div style={{fontSize:12,fontWeight:700,color:C.grn}}>📜 Certificate</div>
+              <div style={{fontSize:10,color:C.mut}}>View your achievement</div>
+            </button>}
           </div>
 
-          {/* Daily Sandler Tip */}
-          {dailyTip && (
-            <div style={{background:C.card,borderRadius:12,padding:"14px 16px",border:`1px solid ${C.bdr}`,marginBottom:12}}>
-              <div style={{display:"flex",alignItems:"flex-start",gap:10}}>
-                <div style={{fontSize:18,lineHeight:1}}>💡</div>
-                <div style={{flex:1}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-                    <div style={{fontSize:10,fontWeight:700,color:C.navy,letterSpacing:0.5}}>DAILY SANDLER TIP</div>
-                    <span style={{fontSize:9,color:C.mut,background:darkMode?"#1A2332":"#F0F3F6",padding:"2px 6px",borderRadius:3}}>{dailyTip.category}</span>
-                  </div>
-                  <div style={{fontSize:12,lineHeight:1.6,color:C.dk}}>{dailyTip.tip.length > 280 ? dailyTip.tip.substring(0,280) + '...' : dailyTip.tip}</div>
+          {/* Welcome popup with daily tip */}
+          {showWelcome && dailyTip && (
+            <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",zIndex:9998,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+              <div style={{background:C.card,borderRadius:20,maxWidth:380,width:"100%",overflow:"hidden",animation:"popIn 0.3s ease"}}>
+                <div style={{background:`linear-gradient(135deg, ${C.navy} 0%, ${C.navyL} 100%)`,padding:"28px 24px 20px",textAlign:"center",position:"relative"}}>
+                  <img src={LOGO_W} alt="" style={{width:40,height:40,marginBottom:10,opacity:0.9}}/>
+                  <div style={{color:"rgba(255,255,255,0.6)",fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase"}}>Today's Insight</div>
+                  <div style={{color:"#fff",fontSize:20,fontWeight:900,marginTop:4}}>Daily Sandler Tip</div>
+                </div>
+                <div style={{padding:"20px 24px 24px"}}>
+                  <div style={{display:"inline-block",fontSize:9,fontWeight:700,color:C.navy,background:C.navy+"12",padding:"3px 10px",borderRadius:20,marginBottom:12,letterSpacing:0.5}}>{dailyTip.category}</div>
+                  <div style={{fontSize:13,lineHeight:1.7,color:C.dk}}>{dailyTip.tip}</div>
+                  <button onClick={()=>setShowWelcome(false)}
+                    style={{width:"100%",marginTop:20,padding:"14px",borderRadius:12,background:`linear-gradient(135deg, ${C.navy} 0%, ${C.navyL} 100%)`,color:"#fff",border:"none",fontSize:15,fontWeight:800,cursor:"pointer",letterSpacing:0.5}}>
+                    Let's grow! 🚀
+                  </button>
                 </div>
               </div>
             </div>
