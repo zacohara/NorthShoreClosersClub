@@ -1696,25 +1696,22 @@ export default function App() {
 
       const jobs = heatmapData[heatmapMarket] || [];
       jobs.forEach(j => {
-        const [lat, lng, isComm, name, num, isActive] = j;
-        const color = isComm ? '#6C63FF' : '#27AE60';
+        const [lat, lng, name, num, addr, status] = j;
         const icon = L.divIcon({
           className: '',
-          html: `<div style="width:10px;height:10px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>`,
+          html: '<div style="width:10px;height:10px;border-radius:50%;background:#1B4F72;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>',
           iconSize: [10, 10],
           iconAnchor: [5, 5],
         });
         const marker = L.marker([lat, lng], { icon }).addTo(mapInstanceRef.current);
         marker.bindPopup(`
-          <div style="font-family:Outfit,sans-serif;min-width:160px;">
-            <div style="font-size:13px;font-weight:800;margin-bottom:2px;">${name}</div>
-            <div style="font-size:11px;color:#666;">#${num}</div>
-            <div style="display:flex;gap:6px;margin-top:4px;">
-              <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:${isComm?'#EDE7F6':'#E8F5E9'};color:${isComm?'#6C63FF':'#27AE60'};font-weight:700;">${isComm?'Commercial':'Residential'}</span>
-              <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:${isActive?'#E8F5E9':'#F5F5F5'};color:${isActive?'#27AE60':'#999'};font-weight:700;">${isActive?'Active':'Closed'}</span>
-            </div>
+          <div style="font-family:Outfit,sans-serif;min-width:180px;max-width:240px;">
+            <div style="font-size:14px;font-weight:800;margin-bottom:3px;color:#1B4F72;">${name}</div>
+            <div style="font-size:12px;color:#555;margin-bottom:3px;">#${num}</div>
+            <div style="font-size:11px;color:#888;margin-bottom:4px;">${addr}</div>
+            ${status ? '<span style="font-size:10px;padding:3px 8px;border-radius:5px;background:#E8F4F8;color:#1B4F72;font-weight:700;">'+status+'</span>' : ''}
           </div>
-        `, {closeButton:false});
+        `, {closeButton:false, maxWidth:260});
         markersRef.current.push(marker);
       });
     };
@@ -1723,9 +1720,6 @@ export default function App() {
     setTimeout(renderMap, 100);
 
     const marketJobs = heatmapData?.[heatmapMarket] || [];
-    const resCount = marketJobs.filter(j => j[2] === 0).length;
-    const comCount = marketJobs.filter(j => j[2] === 1).length;
-    const activeCount = marketJobs.filter(j => j[5] === 1).length;
 
     return (
       <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif",display:"flex",flexDirection:"column"}}>
@@ -1753,32 +1747,8 @@ export default function App() {
         {/* Stats row */}
         <div style={{display:"flex",gap:8,padding:"10px 16px",background:C.card,borderBottom:`1px solid ${C.bdr}`}}>
           <div style={{flex:1,textAlign:"center"}}>
-            <div style={{fontSize:18,fontWeight:800,color:C.dk}}>{marketJobs.length}</div>
-            <div style={{fontSize:10,color:C.mut}}>Total Jobs</div>
-          </div>
-          <div style={{flex:1,textAlign:"center"}}>
-            <div style={{fontSize:18,fontWeight:800,color:"#27AE60"}}>{resCount}</div>
-            <div style={{fontSize:10,color:C.mut}}>Residential</div>
-          </div>
-          <div style={{flex:1,textAlign:"center"}}>
-            <div style={{fontSize:18,fontWeight:800,color:"#6C63FF"}}>{comCount}</div>
-            <div style={{fontSize:10,color:C.mut}}>Commercial</div>
-          </div>
-          <div style={{flex:1,textAlign:"center"}}>
-            <div style={{fontSize:18,fontWeight:800,color:B.sky}}>{activeCount}</div>
-            <div style={{fontSize:10,color:C.mut}}>Active</div>
-          </div>
-        </div>
-
-        {/* Legend */}
-        <div style={{display:"flex",gap:16,padding:"8px 16px",background:C.card,borderBottom:`1px solid ${C.bdr}`}}>
-          <div style={{display:"flex",alignItems:"center",gap:4}}>
-            <div style={{width:10,height:10,borderRadius:"50%",background:"#27AE60",border:"2px solid #fff",boxShadow:"0 1px 3px rgba(0,0,0,0.2)"}}/>
-            <span style={{fontSize:11,color:C.mut}}>Residential</span>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:4}}>
-            <div style={{width:10,height:10,borderRadius:"50%",background:"#6C63FF",border:"2px solid #fff",boxShadow:"0 1px 3px rgba(0,0,0,0.2)"}}/>
-            <span style={{fontSize:11,color:C.mut}}>Commercial</span>
+            <div style={{fontSize:20,fontWeight:800,color:C.dk}}>{marketJobs.length}</div>
+            <div style={{fontSize:11,color:C.mut}}>Approved Jobs</div>
           </div>
         </div>
 
