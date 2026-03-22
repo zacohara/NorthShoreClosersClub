@@ -155,6 +155,7 @@ export default function App() {
   const [myProfile, setMyProfile] = useState(null);
   const [streak, setStreak] = useState({current:0,best:0});
   const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [photoManualOpen, setPhotoManualOpen] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
   const [cropSrc, setCropSrc] = useState(null);
   const [cropZoom, setCropZoom] = useState(1);
@@ -199,8 +200,9 @@ export default function App() {
         }
       }).catch(() => {});
       updateStreak(user).then(s => setStreak(s)).catch(() => {});
+      loadAnalyses(user).then(d => setBsHistory(d)).catch(() => {});
     } else {
-      setDigest(null); setMyProfile(null); setStreak({current:0,best:0});
+      setDigest(null); setMyProfile(null); setStreak({current:0,best:0}); setBsHistory([]);
     }
   }, [user]);
 
@@ -475,9 +477,9 @@ export default function App() {
                     style={{width:"100%",padding:"12px",borderRadius:10,background:C.navy,color:"#fff",border:"none",fontSize:14,fontWeight:700,cursor:"pointer",marginBottom:8}}>
                     Choose Photo
                   </button>
-                  <button onClick={skipPhoto}
+                  <button onClick={()=>{if(photoManualOpen){setShowPhotoModal(false);setPhotoManualOpen(false);}else{skipPhoto();}}}
                     style={{width:"100%",padding:"10px",borderRadius:10,background:"transparent",border:"none",color:C.mut,fontSize:12,cursor:"pointer"}}>
-                    {(myProfile?.pic_prompts_left ?? 3) > 1 ? `Skip (${(myProfile?.pic_prompts_left ?? 3) - 1} left)` : "Don't ask again"}
+                    {photoManualOpen ? "Close" : (myProfile?.pic_prompts_left ?? 3) > 1 ? `Skip (${(myProfile?.pic_prompts_left ?? 3) - 1} left)` : "Don't ask again"}
                   </button>
                 </>
               )}
@@ -491,9 +493,9 @@ export default function App() {
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
               <div style={{display:"flex",alignItems:"center",gap:14}}>
                 {myProfile?.avatar ? (
-                  <img src={myProfile.avatar} alt="" onClick={()=>setShowPhotoModal(true)} style={{width:44,height:44,borderRadius:"50%",objectFit:"cover",cursor:"pointer",border:"2px solid rgba(255,255,255,0.3)",flexShrink:0}}/>
+                  <img src={myProfile.avatar} alt="" onClick={()=>{setPhotoManualOpen(true);setShowPhotoModal(true);}} style={{width:44,height:44,borderRadius:"50%",objectFit:"cover",cursor:"pointer",border:"2px solid rgba(255,255,255,0.3)",flexShrink:0}}/>
                 ) : (
-                  <div onClick={()=>setShowPhotoModal(true)} style={{width:44,height:44,borderRadius:"50%",background:"rgba(255,255,255,0.12)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,fontWeight:800,cursor:"pointer",border:"2px dashed rgba(255,255,255,0.25)",flexShrink:0}}>{user?.[0]}</div>
+                  <div onClick={()=>{setPhotoManualOpen(true);setShowPhotoModal(true);}} style={{width:44,height:44,borderRadius:"50%",background:"rgba(255,255,255,0.12)",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,fontWeight:800,cursor:"pointer",border:"2px dashed rgba(255,255,255,0.25)",flexShrink:0}}>{user?.[0]}</div>
                 )}
                 <div>
                   <div style={{color:"rgba(255,255,255,0.55)",fontSize:11,fontWeight:700,letterSpacing:2.5,textTransform:"uppercase"}}>Closer's Club</div>
@@ -518,8 +520,8 @@ export default function App() {
 
         <div style={{maxWidth:960,margin:"0 auto",padding:"16px 16px 24px"}}>
           {/* Primary Action: Blind Spot Revealer */}
-          <button onClick={()=>{setBsTranscript("");setBsResult(null);setBsViewIdx(null);loadAnalyses(user).then(d=>setBsHistory(d));setScreen("blindspot");}}
-            style={{width:"100%",background:`linear-gradient(135deg, ${C.navy} 0%, ${C.navyL} 100%)`,borderRadius:14,padding:"18px 20px",border:"none",cursor:"pointer",marginBottom:12,textAlign:"left",position:"relative",overflow:"hidden"}}>
+          <button type="button" onClick={()=>{setBsTranscript("");setBsResult(null);setBsViewIdx(null);loadAnalyses(user).then(d=>setBsHistory(d));setScreen("blindspot");}}
+            style={{width:"100%",background:`linear-gradient(145deg, ${C.navy} 0%, #0D2B45 100%)`,borderRadius:14,padding:"20px",border:"none",cursor:"pointer",marginBottom:12,textAlign:"left",position:"relative",overflow:"hidden",fontFamily:"inherit"}}>
             <div style={{position:"absolute",right:-10,top:-10,fontSize:64,opacity:0.08}}>🔍</div>
             <div style={{color:"#fff",fontSize:16,fontWeight:800,marginBottom:2}}>Blind Spot Revealer</div>
             <div style={{color:"rgba(255,255,255,0.6)",fontSize:11,fontWeight:500}}>Analyze your sales appointments against Sandler</div>
@@ -535,20 +537,20 @@ export default function App() {
             </button>}
           </div>
 
-          {/* Welcome popup with daily tip */}
+          {/* Welcome popup — Level Up of the Day */}
           {showWelcome && dailyTip && (
-            <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",zIndex:9998,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-              <div style={{background:C.card,borderRadius:20,maxWidth:380,width:"100%",overflow:"hidden",animation:"popIn 0.3s ease"}}>
-                <div style={{background:`linear-gradient(135deg, ${C.navy} 0%, ${C.navyL} 100%)`,padding:"28px 24px 20px",textAlign:"center",position:"relative"}}>
-                  <img src={LOGO_W} alt="" style={{width:40,height:40,marginBottom:10,opacity:0.9}}/>
-                  <div style={{color:"rgba(255,255,255,0.6)",fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase"}}>Today's Insight</div>
-                  <div style={{color:"#fff",fontSize:20,fontWeight:900,marginTop:4}}>Daily Sandler Tip</div>
+            <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",zIndex:9998,display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={()=>setShowWelcome(false)}>
+              <div style={{background:C.card,borderRadius:24,maxWidth:380,width:"100%",overflow:"hidden",animation:"popIn 0.3s ease",boxShadow:"0 24px 48px rgba(0,0,0,0.3)"}} onClick={e=>e.stopPropagation()}>
+                <div style={{background:`linear-gradient(145deg, ${C.navy} 0%, #0D2B45 100%)`,padding:"32px 24px 24px",textAlign:"center"}}>
+                  <img src={ICON} alt="" style={{width:56,height:56,marginBottom:12}}/>
+                  <div style={{color:"rgba(255,255,255,0.5)",fontSize:10,fontWeight:700,letterSpacing:2.5,textTransform:"uppercase"}}>Closer's Club</div>
+                  <div style={{color:"#fff",fontSize:22,fontWeight:900,marginTop:4,letterSpacing:-0.3}}>Level Up of the Day</div>
                 </div>
-                <div style={{padding:"20px 24px 24px"}}>
-                  <div style={{display:"inline-block",fontSize:9,fontWeight:700,color:C.navy,background:C.navy+"12",padding:"3px 10px",borderRadius:20,marginBottom:12,letterSpacing:0.5}}>{dailyTip.category}</div>
-                  <div style={{fontSize:13,lineHeight:1.7,color:C.dk}}>{dailyTip.tip}</div>
+                <div style={{padding:"24px 24px 28px",textAlign:"center"}}>
+                  <div style={{display:"inline-block",fontSize:9,fontWeight:700,color:C.navy,background:C.navy+"15",padding:"4px 14px",borderRadius:20,marginBottom:16,letterSpacing:0.5,textTransform:"uppercase"}}>{dailyTip.category}</div>
+                  <div style={{fontSize:14,lineHeight:1.75,color:C.dk,textAlign:"left"}}>{dailyTip.tip}</div>
                   <button onClick={()=>setShowWelcome(false)}
-                    style={{width:"100%",marginTop:20,padding:"14px",borderRadius:12,background:`linear-gradient(135deg, ${C.navy} 0%, ${C.navyL} 100%)`,color:"#fff",border:"none",fontSize:15,fontWeight:800,cursor:"pointer",letterSpacing:0.5}}>
+                    style={{width:"100%",marginTop:24,padding:"16px",borderRadius:14,background:`linear-gradient(145deg, ${C.navy} 0%, #0D2B45 100%)`,color:"#fff",border:"none",fontSize:16,fontWeight:800,cursor:"pointer",letterSpacing:0.3}}>
                     Let's grow! 🚀
                   </button>
                 </div>
