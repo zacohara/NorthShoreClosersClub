@@ -1696,22 +1696,19 @@ export default function App() {
 
       const jobs = heatmapData[heatmapMarket] || [];
       jobs.forEach(j => {
-        const [lat, lng, name, num, addr, status] = j;
+        const [lat, lng, scope] = j;
         const icon = L.divIcon({
           className: '',
-          html: '<div style="width:10px;height:10px;border-radius:50%;background:#1B4F72;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>',
-          iconSize: [10, 10],
-          iconAnchor: [5, 5],
+          html: '<div style="width:9px;height:9px;border-radius:50%;background:#1B4F72;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.25);"></div>',
+          iconSize: [9, 9],
+          iconAnchor: [4.5, 4.5],
         });
         const marker = L.marker([lat, lng], { icon }).addTo(mapInstanceRef.current);
         marker.bindPopup(`
-          <div style="font-family:Outfit,sans-serif;min-width:180px;max-width:240px;">
-            <div style="font-size:14px;font-weight:800;margin-bottom:3px;color:#1B4F72;">${name}</div>
-            <div style="font-size:12px;color:#555;margin-bottom:3px;">#${num}</div>
-            <div style="font-size:11px;color:#888;margin-bottom:4px;">${addr}</div>
-            ${status ? '<span style="font-size:10px;padding:3px 8px;border-radius:5px;background:#E8F4F8;color:#1B4F72;font-weight:700;">'+status+'</span>' : ''}
+          <div style="font-family:Outfit,sans-serif;padding:2px 0;">
+            <div style="font-size:14px;font-weight:700;color:#1B4F72;">${scope}</div>
           </div>
-        `, {closeButton:false, maxWidth:260});
+        `, {closeButton:false, maxWidth:220, minWidth:80});
         markersRef.current.push(marker);
       });
     };
