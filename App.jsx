@@ -23,6 +23,104 @@ const DB = {
 const CI = {"Up-Front Contract":"🤝","Decision":"⚖️","Pain / Pain Funnel":"🎯","Budget":"💰","Fulfillment":"✅","Post-Sell":"🛡️","Bonding & Rapport":"💬","Advanced Techniques":"🧠","Negative Reverse Selling":"🔀","Sandler Rules & Principles":"📖","Transactional Analysis / DISC":"🧬"};
 
 
+const RESOURCES = {
+  "categories": [
+    {
+      "name": "Sell Sheets",
+      "icon": "\ud83d\udcc4",
+      "docs": [
+        {
+          "name": "7 Things to Know Before Hiring a Masonry Contractor",
+          "url": "https://cdn.jobtread.com/G28AUBSh0g2YV-qXJ7e1Oc0NwNMNjgO1BKIEA7AkkC8Qnr7pEUNz-yKHhn7Jz73KShAYoAHsNMd5L79owis1fGCWTB6jB5k",
+          "type": "pdf"
+        },
+        {
+          "name": "Price Assurance",
+          "url": "https://cdn.jobtread.com/CyGAeyJiIjoiam9idHJlYWQiLCJrIjoiZmlsZXMvMjJOeFRjZ1Z5SmRBIiwibiI6IlByaWNlIEFzc3VyYW5jZS5wZGYifQM",
+          "type": "pdf"
+        },
+        {
+          "name": "Enerbank Financing",
+          "url": "https://cdn.jobtread.com/iyKAeyJiIjoiam9idHJlYWQiLCJrIjoiZmlsZXMvMjJOeHpCQU5uOXFWIiwibiI6IkVuZXJiYW5rIEZpbmFuY2luZy5wZGYifQM",
+          "type": "pdf"
+        },
+        {
+          "name": "IL Residential Consumer Rights",
+          "url": "https://cdn.jobtread.com/G00AgBSh0tVtqS8fDm_atAnyEp7EgxZBUXTKcaBcCxILLdQ_BRlOf1ArmefBENGnrWtBcGS7WUTPzUl9txAwttT23bJEf0L",
+          "type": "pdf"
+        }
+      ]
+    },
+    {
+      "name": "Fact Sheets",
+      "icon": "\ud83d\udccb",
+      "docs": [
+        {
+          "name": "2025 Fact Sheet",
+          "url": "https://cdn.jobtread.com/CyGAeyJiIjoiam9idHJlYWQiLCJrIjoiZmlsZXMvMjJQNWo5Zkx2OUdVIiwibiI6IjIwMjUgRmFjdCBTaGVldC5wZGYifQM",
+          "type": "pdf"
+        },
+        {
+          "name": "Fact Sheet 2024",
+          "url": "https://cdn.jobtread.com/CyGAeyJiIjoiam9idHJlYWQiLCJrIjoiZmlsZXMvMjJOeDRwNVA5UlJ0IiwibiI6IkZhY3QgU2hlZXQgMjAyNC5wZGYifQM",
+          "type": "pdf"
+        },
+        {
+          "name": "NSTX Fact Sheet",
+          "url": "https://cdn.jobtread.com/CyGAeyJiIjoiam9idHJlYWQiLCJrIjoiZmlsZXMvMjJOeEp4S1dhTmNaIiwibiI6Ik5TVFggRmFjdCBTaGVldC5wZGYifQM",
+          "type": "pdf"
+        }
+      ]
+    },
+    {
+      "name": "Educational Materials",
+      "icon": "\ud83e\uddf1",
+      "docs": [
+        {
+          "name": "Lintel Capping",
+          "url": "https://cdn.jobtread.com/iyCAeyJiIjoiam9idHJlYWQiLCJrIjoiZmlsZXMvMjJQNGpWaGpWU0JEIiwibiI6IkxpbnRlbCBDYXBwaW5nLmpwZyJ9Aw",
+          "type": "image"
+        },
+        {
+          "name": "Advantages of Thin Stone",
+          "url": "https://cdn.jobtread.com/G0sAgMTaOa26WanPZJkUsf_w8YoUk3jAtdh25kSL0Qs4DtnzRURXnQdGgC4-robFgNm2I4pey9n1ShIwa6jJJSa3Pi8TFlI",
+          "type": "image"
+        },
+        {
+          "name": "Full Veneer vs Thin Veneer",
+          "url": "https://cdn.jobtread.com/CyOAeyJiIjoiam9idHJlYWQiLCJrIjoiZmlsZXMvMjJQNGpWdHFTbm5IIiwibiI6IkZ1bGwgVmVuZWVyIHZzIHRoaW4uanBnIn0D",
+          "type": "image"
+        },
+        {
+          "name": "Stone Veneer on Cement Board",
+          "url": "https://cdn.jobtread.com/G08ASMXP26f-spvNFEJVJDJcYTtjpvx9cMhxoHwrUGoBBhtwZnH28N-HCo-x6j1cOhQmPHK6Nibake7uITtIqDLpsTAfWkL",
+          "type": "image"
+        },
+        {
+          "name": "Winter Masonry Maintenance Checklist",
+          "url": "https://cdn.jobtread.com/G1cAgMTaOe03K_WZDLsy2f8X9eoFAwk44ThQbVFiB7CD_p7D8nxKyLk9D4II7bJVBw4NZLs9UQ5a9mCth5DlLmFPvLrN-5p",
+          "type": "image"
+        },
+        {
+          "name": "Shelf Angle Detail (Technical)",
+          "url": "https://cdn.jobtread.com/G3kAUKwK7BbzT0I1lDU3rttSSXiNy9xGqY7RtQUxFNn5jjnQIpYMUwYJ0SWLTl-KHEH1UBTWGsjF8UD5wQY20O6S3Iopp9w",
+          "type": "pdf"
+        },
+        {
+          "name": "Brick Veneer Spec (01.410.1001)",
+          "url": "https://cdn.jobtread.com/Cx-AeyJiIjoiam9idHJlYWQiLCJrIjoiZmlsZXMvMjJQQ1FrZExqQkc1IiwibiI6IjAxLjQxMC4xMDAxLnBkZiJ9Aw.eb81",
+          "type": "pdf"
+        },
+        {
+          "name": "Brick Veneer Spec (01.410.0201)",
+          "url": "https://cdn.jobtread.com/Cx-AeyJiIjoiam9idHJlYWQiLCJrIjoiZmlsZXMvMjJQQ1FrZExqWWd1IiwibiI6IjAxLjQxMC4wMjAxLnBkZiJ9Aw.LQiA",
+          "type": "pdf"
+        }
+      ]
+    }
+  ]
+};
+
 function shuffle(opts) {
   const e = Object.entries(opts);
   for (let i = e.length - 1; i > 0; i--) {
@@ -527,15 +625,21 @@ export default function App() {
             <div style={{color:"rgba(255,255,255,0.6)",fontSize:11,fontWeight:500}}>Analyze your sales appointments against Sandler</div>
           </button>
           <div style={{display:"flex",gap:8,marginBottom:16}}>
+            <button onClick={()=>setScreen("resources")} style={{flex:1,background:C.card,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"12px 14px",cursor:"pointer",textAlign:"left"}}>
+              <div style={{fontSize:12,fontWeight:700,color:C.dk}}>📁 Resources</div>
+              <div style={{fontSize:10,color:C.mut}}>Sell sheets & specs</div>
+            </button>
             <button onClick={()=>{loadAllProgress().then(d=>setAllProg(d));setScreen("leaderboard");}} style={{flex:1,background:C.card,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"12px 14px",cursor:"pointer",textAlign:"left"}}>
               <div style={{fontSize:12,fontWeight:700,color:C.dk}}>🏆 Leaderboard</div>
-              <div style={{fontSize:10,color:C.mut}}>See the team rankings</div>
+              <div style={{fontSize:10,color:C.mut}}>Team rankings</div>
             </button>
-            {allPassed && <button onClick={()=>setScreen("certificate")} style={{flex:1,background:C.grn+"10",border:`1px solid ${C.grn}30`,borderRadius:10,padding:"12px 14px",cursor:"pointer",textAlign:"left"}}>
+          </div>
+          {allPassed && <div style={{marginBottom:16}}>
+            <button onClick={()=>setScreen("certificate")} style={{width:"100%",background:C.grn+"10",border:`1px solid ${C.grn}30`,borderRadius:10,padding:"12px 14px",cursor:"pointer",textAlign:"left"}}>
               <div style={{fontSize:12,fontWeight:700,color:C.grn}}>📜 Certificate</div>
               <div style={{fontSize:10,color:C.mut}}>View your achievement</div>
-            </button>}
-          </div>
+            </button>
+          </div>}
 
           {/* Welcome popup — Level Up of the Day */}
           {showWelcome && dailyTip && (
@@ -1516,6 +1620,47 @@ export default function App() {
     );
   }
 
+
+  // ═══ RESOURCES ═══
+  if (screen === "resources") {
+    return (
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif"}}>
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+        <style>{CSS}</style>
+        <NavBar
+          left={<button onClick={()=>setScreen("home")} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>← Back</button>}
+          center="Resources"
+          right={<span/>}
+        />
+        <div style={{maxWidth:960,margin:"0 auto",padding:"16px 16px 48px"}}>
+          <div style={{textAlign:"center",marginBottom:20}}>
+            <div style={{fontSize:18,fontWeight:800,color:C.dk}}>Sales & Marketing</div>
+            <div style={{fontSize:12,color:C.mut}}>Reference docs from JobTread — tap to view or download</div>
+          </div>
+          {RESOURCES.categories.map(cat => (
+            <div key={cat.name} style={{marginBottom:20}}>
+              <div style={{fontSize:12,fontWeight:700,color:C.mut,letterSpacing:0.5,marginBottom:8,textTransform:"uppercase"}}>{cat.icon} {cat.name}</div>
+              <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                {cat.docs.map((doc, i) => (
+                  <a key={i} href={doc.url} target="_blank" rel="noopener noreferrer"
+                    style={{display:"flex",alignItems:"center",gap:12,background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,padding:"14px 16px",textDecoration:"none",transition:"all 0.15s"}}>
+                    <div style={{width:36,height:36,borderRadius:8,background:doc.type==="pdf"?C.navy+"12":"#F0F3F6",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>
+                      {doc.type === "pdf" ? "📄" : "🖼️"}
+                    </div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:13,fontWeight:700,color:C.dk}}>{doc.name}</div>
+                      <div style={{fontSize:10,color:C.mut,textTransform:"uppercase"}}>{doc.type === "pdf" ? "PDF Document" : "Image"}</div>
+                    </div>
+                    <div style={{fontSize:16,color:C.mut,flexShrink:0}}>↗</div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return null;
 }
