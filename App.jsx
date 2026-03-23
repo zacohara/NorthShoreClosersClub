@@ -1903,13 +1903,13 @@ export default function App() {
 
       for (const p of patterns) {
         if (p.rx.test(d) && !found.find(f => f.name === p.scope)) {
-          found.push({ name: p.scope, ...KB[p.scope] });
+          found.push({ name: p.scope, ...KB[p.scope], size: "med", lift: false, tightAccess: false });
         }
       }
       // If nothing matched but text has content, default to Masonry/Tuckpointing
       if (found.length === 0 && d.trim().length > 10) {
         if (/masonry|brick\s*work|exterior|facade/i.test(d)) {
-          found.push({ name: "Tuckpointing", ...KB["Tuckpointing"] });
+          found.push({ name: "Tuckpointing", ...KB["Tuckpointing"], size: "med", lift: false, tightAccess: false });
         }
       }
       return found;
@@ -1922,17 +1922,25 @@ export default function App() {
 
     const addScope = (scopeName) => {
       if (estScopes.find(s => s.name === scopeName)) return;
-      setEstScopes(prev => [...prev, { name: scopeName, ...KB[scopeName] }]);
+      setEstScopes(prev => [...prev, { name: scopeName, ...KB[scopeName], size: "med", lift: false, tightAccess: false }]);
     };
+
+    const updateScope = (idx, key, val) => {
+      setEstScopes(prev => prev.map((s, i) => i === idx ? { ...s, [key]: val } : s));
+    };
+
+    const SIZE_MULT = { small: { label: "Spot Repair", mult: 0.4 }, med: { label: "1-2 Elevations", mult: 1.0 }, large: { label: "Full Building", mult: 2.2 } };
     const removeScope = (idx) => setEstScopes(prev => prev.filter((_, i) => i !== idx));
 
     const bMult = BUILDING_MULT[estBuilding].mult;
     const bundleDiscount = estScopes.length >= 4 ? 0.90 : estScopes.length >= 2 ? 0.95 : 1.0;
     const bundleLabel = estScopes.length >= 4 ? "10% bundle" : estScopes.length >= 2 ? "5% bundle" : "";
-    const totalPriceLow = Math.round(estScopes.reduce((s, sc) => s + sc.pLow * bMult * bundleDiscount, 0));
-    const totalPriceHigh = Math.round(estScopes.reduce((s, sc) => s + sc.pHigh * bMult * bundleDiscount, 0));
-    const totalCostLow = Math.round(estScopes.reduce((s, sc) => s + sc.cLow * bMult, 0));
-    const totalCostHigh = Math.round(estScopes.reduce((s, sc) => s + sc.cHigh * bMult, 0));
+    const calcAccess = (sc) => (sc.lift ? 2500 : 0) + (sc.tightAccess ? 800 : 0);
+    const calcSizeMult = (sc) => SIZE_MULT[sc.size || "med"].mult;
+    const totalPriceLow = Math.round(estScopes.reduce((s, sc) => s + (sc.pLow * calcSizeMult(sc) * bMult * bundleDiscount) + calcAccess(sc), 0));
+    const totalPriceHigh = Math.round(estScopes.reduce((s, sc) => s + (sc.pHigh * calcSizeMult(sc) * bMult * bundleDiscount) + calcAccess(sc), 0));
+    const totalCostLow = Math.round(estScopes.reduce((s, sc) => s + (sc.cLow * calcSizeMult(sc) * bMult) + (calcAccess(sc) * 0.65), 0));
+    const totalCostHigh = Math.round(estScopes.reduce((s, sc) => s + (sc.cHigh * calcSizeMult(sc) * bMult) + (calcAccess(sc) * 0.65), 0));
     const marginLow = totalPriceHigh > 0 ? Math.round((1 - totalCostHigh / totalPriceHigh) * 100) : 0;
     const marginHigh = totalPriceLow > 0 ? Math.round((1 - totalCostLow / totalPriceLow) * 100) : 0;
     const fmt = (n) => "$" + n.toLocaleString();
@@ -2017,10 +2025,12 @@ export default function App() {
                 Scope Breakdown {bundleLabel && <span style={{color:C.grn,fontSize:10}}>({bundleLabel})</span>}
               </div>
               {estScopes.map((sc, i) => {
-                const pL = Math.round(sc.pLow * bMult * bundleDiscount);
-                const pH = Math.round(sc.pHigh * bMult * bundleDiscount);
-                const cL = Math.round(sc.cLow * bMult);
-                const cH = Math.round(sc.cHigh * bMult);
+                const szM = calcSizeMult(sc);
+                const acc = calcAccess(sc);
+                const pL = Math.round((sc.pLow * szM * bMult * bundleDiscount) + acc);
+                const pH = Math.round((sc.pHigh * szM * bMult * bundleDiscount) + acc);
+                const cL = Math.round((sc.cLow * szM * bMult) + (acc * 0.65));
+                const cH = Math.round((sc.cHigh * szM * bMult) + (acc * 0.65));
                 const mL = pH > 0 ? Math.round((1 - cH/pH)*100) : 0;
                 const mH = pL > 0 ? Math.round((1 - cL/pL)*100) : 0;
                 return (
@@ -2029,6 +2039,33 @@ export default function App() {
                       <div style={{fontSize:15,fontWeight:800,color:C.dk}}>{sc.name}</div>
                       <div onClick={()=>removeScope(i)} style={{fontSize:12,color:C.red,cursor:"pointer",fontWeight:600}}>Remove</div>
                     </div>
+                    {/* Size selector */}
+                    <div style={{display:"flex",gap:4,marginBottom:8}}>
+                      {Object.entries(SIZE_MULT).map(([key, val]) => (
+                        <div key={key} onClick={()=>updateScope(i,"size",key)}
+                          style={{flex:1,padding:"6px 4px",borderRadius:8,textAlign:"center",cursor:"pointer",fontSize:11,fontWeight:sc.size===key?700:500,
+                            background:sc.size===key?C.navy+"15":"transparent",color:sc.size===key?C.navy:C.mut,
+                            border:`1px solid ${sc.size===key?C.navy+"40":C.bdr}`}}>
+                          {val.label}
+                        </div>
+                      ))}
+                    </div>
+                    {/* Access toggles */}
+                    <div style={{display:"flex",gap:6,marginBottom:10}}>
+                      <div onClick={()=>updateScope(i,"lift",!sc.lift)}
+                        style={{padding:"5px 10px",borderRadius:6,cursor:"pointer",fontSize:11,fontWeight:600,
+                          background:sc.lift?"#E74C3C15":"transparent",color:sc.lift?"#E74C3C":C.mut,
+                          border:`1px solid ${sc.lift?"#E74C3C40":C.bdr}`}}>
+                        {sc.lift?"✓ ":""}Lift/Scaffold (+$2,500)
+                      </div>
+                      <div onClick={()=>updateScope(i,"tightAccess",!sc.tightAccess)}
+                        style={{padding:"5px 10px",borderRadius:6,cursor:"pointer",fontSize:11,fontWeight:600,
+                          background:sc.tightAccess?"#E67E2215":"transparent",color:sc.tightAccess?"#E67E22":C.mut,
+                          border:`1px solid ${sc.tightAccess?"#E67E2240":C.bdr}`}}>
+                        {sc.tightAccess?"✓ ":""}Tight Access (+$800)
+                      </div>
+                    </div>
+                    {/* Pricing */}
                     <div style={{display:"flex",gap:12}}>
                       <div style={{flex:1}}>
                         <div style={{fontSize:10,color:C.mut,fontWeight:600,marginBottom:2}}>CLIENT PRICE</div>
@@ -2043,7 +2080,7 @@ export default function App() {
                         <div style={{fontSize:15,fontWeight:800,color:mL>=35?C.grn:mL>=25?C.gold:C.red}}>{mL}—{mH}%</div>
                       </div>
                     </div>
-                    <div style={{fontSize:10,color:C.mut,marginTop:4}}>{sc.n} comparable estimates</div>
+                    <div style={{fontSize:10,color:C.mut,marginTop:4}}>{sc.n} comparable estimates · {SIZE_MULT[sc.size||"med"].label}{sc.lift?" · Lift":""}{sc.tightAccess?" · Tight access":""}</div>
                   </div>
                 );
               })}
