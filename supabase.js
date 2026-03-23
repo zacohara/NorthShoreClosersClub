@@ -195,3 +195,49 @@ export async function updateStreak(userName) {
   await saveProfile(userName, { streak_current: newStreak, streak_best: newBest, last_active_date: today });
   return { current: newStreak, best: newBest };
 }
+
+// Password management
+export async function getPassword(userName) {
+  try {
+    const { data, error } = await supabase.from('user_profiles').select('password').eq('user_name', userName).single();
+    if (error || !data) return null;
+    return data.password || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+export async function setPassword(userName, password) {
+  const encoder = new TextEncoder();
+  const rawData = encoder.encode(password + "ns_closer_salt");
+  const hashBuffer = await crypto.subtle.digest("SHA-256", rawData);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+  try {
+    const { error } = await supabase.from('user_profiles').upsert({
+      user_name: userName,
+      password: hash,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_name' });
+    return !error;
+  } catch (e) {
+    return false;
+  }
+}
+
+export async function checkPassword(userName, password) {
+  try {
+    const encoder = new TextEncoder();
+    const rawData = encoder.encode(password + "ns_closer_salt");
+    const hashBuffer = await crypto.subtle.digest("SHA-256", rawData);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+    const stored = await getPassword(userName);
+    if (!stored) return false;
+    return stored === hash;
+  } catch (e) {
+    return false;
+  }
+}
