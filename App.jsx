@@ -1524,66 +1524,119 @@ export default function App() {
 
     const AnalysisCard = ({ a, date }) => {
       if (!a) return null;
+
+      // Grade to numeric for radar chart (A+=100, A=95, A-=90, B+=85... F=20)
+      const g2n = (g) => {
+        if (!g) return 30;
+        const map = {"A+":100,"A":95,"A-":90,"B+":85,"B":80,"B-":75,"C+":70,"C":65,"C-":60,"D+":55,"D":50,"D-":45,"F":20};
+        return map[g] || 30;
+      };
+
+      // Build radar points from scorecard
+      const steps = a.scorecard || [];
+      const radarSize = 280;
+      const cx = radarSize / 2;
+      const cy = radarSize / 2;
+      const maxR = 110;
+
+      const getPoint = (idx, val, total) => {
+        const angle = (Math.PI * 2 * idx / total) - Math.PI / 2;
+        const r = (val / 100) * maxR;
+        return [cx + r * Math.cos(angle), cy + r * Math.sin(angle)];
+      };
+
+      const radarPoints = steps.map((s, i) => getPoint(i, g2n(s.grade), steps.length));
+      const radarPath = radarPoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ') + ' Z';
+
+      // Grid rings
+      const rings = [25, 50, 75, 100];
+
       return (
         <div style={{animation:"slideUp 0.3s ease"}}>
-          {/* Grade + summary header */}
-          <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:16}}>
-            <div style={{width:56,height:56,borderRadius:12,background:gcBg(a.grade),display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:800,color:gc(a.grade),border:`2px solid ${gc(a.grade)}30`}}>{a.grade}</div>
-            <div>
-              <div style={{fontSize:16,fontWeight:700,color:C.dk}}>Sandler analysis</div>
-              <div style={{fontSize:12,color:C.mut}}>{user} · {date}{a.summary ? ` · ${a.summary}` : ''}</div>
-            </div>
+          {/* 1. OVERALL GRADE — big and unmissable */}
+          <div style={{textAlign:"center",marginBottom:20}}>
+            <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:72,height:72,borderRadius:16,background:gcBg(a.grade),fontSize:28,fontWeight:900,color:gc(a.grade),border:`3px solid ${gc(a.grade)}30`,marginBottom:8}}>{a.grade}</div>
+            {a.summary && <div style={{fontSize:15,fontWeight:700,color:C.dk,lineHeight:1.5,maxWidth:320,margin:"0 auto"}}>{a.summary}</div>}
+            <div style={{fontSize:12,color:C.mut,marginTop:4}}>{date}</div>
           </div>
 
-          {/* Scorecard table */}
-          {a.scorecard?.length > 0 && (
-            <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,overflow:"hidden",marginBottom:12}}>
-              <div style={{padding:"10px 16px",borderBottom:`1px solid ${C.bdr}`}}>
-                <div style={{fontSize:12,fontWeight:700,color:C.mut}}>Sandler step scorecard</div>
+          {/* 2. FIX THIS NEXT — the money card, position #2 */}
+          {a.fix && (
+            <div style={{background:C.navy,borderRadius:16,padding:"20px",marginBottom:16,position:"relative",overflow:"hidden"}}>
+              <div style={{position:"absolute",right:-10,top:-10,fontSize:80,opacity:0.05,pointerEvents:"none"}}>\ud83d\udd25</div>
+              <div style={{fontSize:11,fontWeight:800,color:"#E74C3C",letterSpacing:1,marginBottom:6}}>\ud83d\udd25 FIX THIS NEXT</div>
+              <div style={{fontSize:16,color:"#fff",fontWeight:700,marginBottom:12,lineHeight:1.5}}>{a.fix.headline}</div>
+              <div style={{background:"rgba(255,255,255,0.08)",borderRadius:10,padding:"14px 16px"}}>
+                <div style={{fontSize:10,color:"rgba(255,255,255,0.4)",fontWeight:700,letterSpacing:0.5,marginBottom:6}}>SCRIPT TO PRACTICE</div>
+                <div style={{fontSize:14,color:"rgba(255,255,255,0.9)",lineHeight:1.7,fontStyle:"italic"}}>{a.fix.script}</div>
               </div>
-              {a.scorecard.map((s, i) => (
-                <div key={i} style={{display:"flex",alignItems:"center",padding:"7px 16px",borderBottom: i < a.scorecard.length-1 ? `1px solid ${C.bdr}` : "none"}}>
-                  <div style={{flex:"1 1 140px",fontSize:13,color:C.dk}}>{s.step}</div>
-                  <div style={{width:44,textAlign:"center"}}><span style={{background:gcBg(s.grade),color:gc(s.grade),fontWeight:700,padding:"2px 8px",borderRadius:4,fontSize:11}}>{s.grade}</span></div>
-                  <div style={{flex:"1 1 200px",fontSize:11,color:C.mut,paddingLeft:12}}>{s.note}</div>
+            </div>
+          )}
+
+          {/* 3. RADAR CHART */}
+          {steps.length > 0 && (
+            <div style={{background:C.card,borderRadius:16,border:`1px solid ${C.bdr}`,padding:"16px",marginBottom:16}}>
+              <div style={{fontSize:11,fontWeight:700,color:C.mut,letterSpacing:0.5,marginBottom:12,textTransform:"uppercase"}}>Sandler Step Profile</div>
+              <div style={{display:"flex",justifyContent:"center"}}>
+                <svg viewBox={`0 0 ${radarSize} ${radarSize}`} width="100%" style={{maxWidth:radarSize}}>
+                  {/* Grid rings */}
+                  {rings.map(r => {
+                    const pts = steps.map((_, i) => getPoint(i, r, steps.length));
+                    const path = pts.map((p, i) => `${i===0?'M':'L'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ') + ' Z';
+                    return <path key={r} d={path} fill="none" stroke={darkMode?"rgba(255,255,255,0.08)":"rgba(0,0,0,0.06)"} strokeWidth="1"/>;
+                  })}
+                  {/* Axis lines */}
+                  {steps.map((_, i) => {
+                    const [px, py] = getPoint(i, 100, steps.length);
+                    return <line key={i} x1={cx} y1={cy} x2={px} y2={py} stroke={darkMode?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.04)"} strokeWidth="1"/>;
+                  })}
+                  {/* Data shape */}
+                  <path d={radarPath} fill={`${B.navy}20`} stroke={B.navy} strokeWidth="2.5" strokeLinejoin="round"/>
+                  {/* Data points */}
+                  {radarPoints.map((p, i) => (
+                    <circle key={i} cx={p[0]} cy={p[1]} r="4.5" fill={gc(steps[i].grade)} stroke="#fff" strokeWidth="2"/>
+                  ))}
+                  {/* Labels */}
+                  {steps.map((s, i) => {
+                    const [lx, ly] = getPoint(i, 125, steps.length);
+                    return <text key={i} x={lx} y={ly} textAnchor="middle" dominantBaseline="middle" fontSize="10" fontWeight="700" fill={darkMode?"#8899AA":"#6B7C8D"}>{s.step?.split('/')[0]?.split(' ')[0]}</text>;
+                  })}
+                </svg>
+              </div>
+              {/* Grade pills row */}
+              <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center",marginTop:12}}>
+                {steps.map((s, i) => (
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:4,background:gcBg(s.grade)+"80",borderRadius:6,padding:"3px 8px"}}>
+                    <span style={{fontSize:10,color:C.dk,fontWeight:600}}>{s.step?.split('/')[0]?.trim()}</span>
+                    <span style={{fontSize:10,fontWeight:800,color:gc(s.grade)}}>{s.grade}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 4. BLIND SPOTS — red wash, stacked */}
+          {a.blindSpots?.length > 0 && (
+            <div style={{background:darkMode?"#2A1515":`${C.red}08`,borderRadius:16,border:`1px solid ${C.red}20`,padding:"16px 18px",marginBottom:12}}>
+              <div style={{fontSize:11,fontWeight:800,color:C.red,letterSpacing:0.5,marginBottom:10}}>\u26a0\ufe0f BLIND SPOTS</div>
+              {a.blindSpots.map((b, i) => (
+                <div key={i} style={{marginBottom:i < a.blindSpots.length-1 ? 12 : 0}}>
+                  <div style={{fontSize:14,fontWeight:800,color:C.red,marginBottom:2}}>{b.label}</div>
+                  <div style={{fontSize:13,lineHeight:1.6,color:C.dk}}>{b.detail}</div>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Strengths + Blind Spots side by side */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
-            {a.strengths?.length > 0 && (
-              <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,padding:"14px 16px"}}>
-                <div style={{fontSize:11,fontWeight:700,color:C.mut,marginBottom:8}}>What worked</div>
-                {a.strengths.map((s, i) => (
-                  <div key={i} style={{fontSize:12,lineHeight:1.5,color:C.dk,paddingLeft:12,position:"relative",marginBottom:4}}>
-                    <span style={{position:"absolute",left:0,color:C.grn}}>·</span>{s}
-                  </div>
-                ))}
-              </div>
-            )}
-            {a.blindSpots?.length > 0 && (
-              <div style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,padding:"14px 16px"}}>
-                <div style={{fontSize:11,fontWeight:700,color:C.mut,marginBottom:8}}>Blind spots</div>
-                {a.blindSpots.map((b, i) => (
-                  <div key={i} style={{fontSize:12,lineHeight:1.5,color:C.dk,marginBottom:6}}>
-                    <span style={{fontWeight:700,color:C.red}}>{b.label}</span> — {b.detail}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Fix card */}
-          {a.fix && (
-            <div style={{background:C.navy,borderRadius:12,padding:"16px 18px"}}>
-              <div style={{fontSize:11,fontWeight:700,color:C.sky,marginBottom:6,letterSpacing:0.5}}>FIX BEFORE YOUR NEXT CALL</div>
-              <div style={{fontSize:14,color:"#fff",fontWeight:600,marginBottom:10,lineHeight:1.5}}>{a.fix.headline}</div>
-              <div style={{background:"rgba(255,255,255,0.08)",borderRadius:8,padding:"12px 14px"}}>
-                <div style={{fontSize:11,color:"rgba(255,255,255,0.45)",fontWeight:600,marginBottom:4}}>Script to practice</div>
-                <div style={{fontSize:13,color:"rgba(255,255,255,0.85)",lineHeight:1.6,fontStyle:"italic"}}>{a.fix.script}</div>
-              </div>
+          {/* 5. STRENGTHS — green wash, stacked */}
+          {a.strengths?.length > 0 && (
+            <div style={{background:darkMode?"#152A17":`${C.grn}08`,borderRadius:16,border:`1px solid ${C.grn}20`,padding:"16px 18px",marginBottom:12}}>
+              <div style={{fontSize:11,fontWeight:800,color:C.grn,letterSpacing:0.5,marginBottom:10}}>\u2705 WHAT WORKED</div>
+              {a.strengths.map((s, i) => (
+                <div key={i} style={{fontSize:13,lineHeight:1.6,color:C.dk,marginBottom:4,paddingLeft:16,position:"relative"}}>
+                  <span style={{position:"absolute",left:0,color:C.grn,fontWeight:800}}>\u2022</span>{s}
+                </div>
+              ))}
             </div>
           )}
 
@@ -1592,6 +1645,7 @@ export default function App() {
         </div>
       );
     };
+
 
     // Viewing a past analysis
     if (bsViewIdx !== null && bsHistory[bsViewIdx]) {
