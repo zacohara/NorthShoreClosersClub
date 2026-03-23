@@ -204,6 +204,7 @@ export default function App() {
   const [heatmapData, setHeatmapData] = useState(null);
   const [estScopes, setEstScopes] = useState([]);
   const [estInput, setEstInput] = useState("");
+  const [objSearch, setObjSearch] = useState("");
   const [estMode, setEstMode] = useState("nlp");
   const [estBuilding, setEstBuilding] = useState("residential");
   const [estLoading, setEstLoading] = useState(false);
@@ -667,6 +668,13 @@ export default function App() {
               <div style={{fontSize:17,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Heat Map</div>
               <div style={{fontSize:12,color:"rgba(255,255,255,0.65)",marginTop:3,pointerEvents:"none"}}>580+ approved jobs</div>
             </div>
+          </div>
+
+          {/* Quick Tools */}
+          <div onClick={()=>setScreen("objections")}
+            style={{background:C.card,border:"1px solid "+C.bdr,borderRadius:10,padding:"12px 14px",cursor:"pointer",marginBottom:16}}>
+            <div style={{fontSize:14,fontWeight:700,color:C.dk}}>{"\ud83d\udde3\ufe0f"} Objection Playbook</div>
+            <div style={{fontSize:12,color:C.mut}}>16 rebuttals with Sandler scripts</div>
           </div>
 
           {/* Welcome popup — Level Up of the Day */}
@@ -2132,6 +2140,83 @@ export default function App() {
     );
   }
 
+
+
+  // === OBJECTION PLAYBOOK ===
+  if (screen === "objections") {
+    const OBJECTIONS = [
+      {cat:"Price",obj:"That seems really expensive.",response:"I understand. Help me understand what you were expecting to invest? That way I can see if there\u0027s a way to scope this that fits your budget.",script:"Before I adjust anything, can you share what range you had in mind? I want to make sure we\u0027re solving the right problem at the right investment level."},
+      {cat:"Price",obj:"I need to get other bids first.",response:"Totally fair. Out of curiosity, what specifically are you hoping the other bids will tell you that I haven\u0027t covered?",script:"I respect that. Most homeowners who get 3 bids end up confused by different scopes. What if I walk you through exactly what\u0027s included so you can compare apples to apples?"},
+      {cat:"Price",obj:"Can you give me a discount?",response:"I appreciate you asking. Our pricing is based on the actual cost of materials and skilled labor. Can you help me understand what would make this feel like the right investment for you?",script:"I wish I could. We price jobs at fair market value so we can guarantee the quality and warranty. What if we phased the work so the first phase fits your budget now?"},
+      {cat:"Price",obj:"My neighbor got it done for way less.",response:"That\u0027s possible \u2014 pricing varies a lot depending on scope, materials, and the contractor\u0027s approach. Can I ask what they had done specifically?",script:"I hear that sometimes. Every wall tells a different story. Would you be open to showing me their work so I can explain what might be different about your situation?"},
+      {cat:"Decision",obj:"I need to talk to my spouse first.",response:"Absolutely. When you talk to them tonight, what do you think their biggest concern will be?",script:"Of course. If they were here right now, what questions do you think they\u0027d ask? I want to make sure you have everything you need to explain it."},
+      {cat:"Decision",obj:"I\u0027m not ready to commit today.",response:"No pressure at all. Help me understand \u2014 is it the timing, the price, or something about the scope that\u0027s giving you pause?",script:"Totally understand. What would need to happen for this to feel like a yes? I want to know so I\u0027m not guessing when I follow up."},
+      {cat:"Decision",obj:"Let me think about it.",response:"Of course. When you\u0027re thinking about it later, what specifically are you going to be weighing?",script:"Take all the time you need. I\u0027m curious though \u2014 what\u0027s the one thing you\u0027d want to feel more confident about before moving forward?"},
+      {cat:"Timing",obj:"We want to wait until spring.",response:"I get it. A lot of homeowners think that way. The risk is that water damage over winter can turn a $5K job into $15K by spring. What\u0027s driving the wait?",script:"Understandable. Just so you know, we book 8-12 weeks out in spring and prices typically go up 10-15%. If we lock in now, you get today\u0027s price and first-in-line scheduling."},
+      {cat:"Timing",obj:"We\u0027re not in a rush.",response:"That makes sense. Can I ask \u2014 how long has this issue been there? And has it gotten worse over time?",script:"No rush at all. The only thing I want to flag is that masonry issues compound \u2014 what\u0027s cosmetic today can become structural in a season. Can I show you what I mean on your wall?"},
+      {cat:"Timing",obj:"We just bought the house, we have a lot going on.",response:"Congrats on the new home! That\u0027s a lot to manage. Is this something the inspection flagged?",script:"Completely understand. If the inspection flagged this, your home warranty clock is ticking. Want me to prioritize what\u0027s urgent vs what can wait so you have a plan?"},
+      {cat:"Trust",obj:"How do I know you\u0027ll do quality work?",response:"Great question. We\u0027ve done 580+ jobs across Chicago, Milwaukee, and Dallas. Want me to show you some on the map that are near you?",script:"I\u0027m glad you asked. We\u0027ve been doing this for 47 years. I can show you photos of similar work, or if you\u0027d like, I can connect you with a recent customer in your area."},
+      {cat:"Trust",obj:"I\u0027ve had bad experiences with contractors.",response:"I\u0027m sorry to hear that. What happened? I want to understand so I can show you how we do things differently.",script:"That\u0027s frustrating and unfortunately common. Here\u0027s what makes us different: we put everything in writing, we carry full insurance, and if anything isn\u0027t right, we come back and fix it. Period."},
+      {cat:"Trust",obj:"Are you licensed and insured?",response:"Absolutely. Fully licensed, bonded, and insured. I can send you our certificates today.",script:"Yes \u2014 fully licensed, bonded, and insured in every market we operate in. I\u0027ll email you our certificates right now so you have them on file."},
+      {cat:"Scope",obj:"I only want to fix the one area.",response:"We can definitely do that. The only reason I mentioned the other areas is that mobilization is a big part of the cost. Fixing everything at once saves you money vs two separate trips.",script:"Absolutely, we can scope it just for that area. I will say \u2014 since we\u0027re already bringing the lift and crew out, adding the other spots would only be X more vs a full separate mobilization later."},
+      {cat:"Scope",obj:"Is this really necessary?",response:"That\u0027s a fair question. Let me show you exactly what I\u0027m seeing and why it matters.",script:"I totally get the skepticism. Let me show you the moisture readings and point out where water is getting in. Once you see it, you\u0027ll understand why I\u0027m recommending this before winter."},
+      {cat:"Scope",obj:"Can I just do a patch job?",response:"You can, and sometimes that\u0027s the right call. Let me show you the difference between a patch and a proper repair so you can decide what makes sense.",script:"We do patch jobs all the time. The tradeoff is longevity \u2014 a patch lasts 2-3 years, a full repair lasts 15-20. Want me to price both so you can compare?"},
+    ];
+
+    const filtered = objSearch.trim()
+      ? OBJECTIONS.filter(o => (o.obj + o.cat + o.response + o.script).toLowerCase().includes(objSearch.toLowerCase()))
+      : OBJECTIONS;
+
+    const cats = [...new Set(OBJECTIONS.map(o => o.cat))];
+
+    return (
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif"}}>
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+        <style>{CSS}</style>
+        <NavBar
+          left={<button onClick={()=>{setObjSearch("");setScreen("home");}} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>{"\u2190 Back"}</button>}
+          center="Objection Playbook"
+          right={<span/>}
+        />
+        <div style={{maxWidth:700,margin:"0 auto",padding:"16px 16px 48px"}}>
+          <input value={objSearch} onChange={e=>setObjSearch(e.target.value)}
+            placeholder="Search objections..."
+            style={{width:"100%",padding:"14px 16px",borderRadius:12,border:`1px solid ${C.bdr}`,fontSize:16,fontFamily:"inherit",outline:"none",color:C.dk,background:C.inp,marginBottom:16,boxSizing:"border-box"}}
+          />
+          <div style={{fontSize:11,color:C.mut,marginBottom:12}}>{filtered.length} objections {objSearch ? 'matching "'+objSearch+'"' : ""}</div>
+          {cats.map(cat => {
+            const catObjs = filtered.filter(o => o.cat === cat);
+            if (catObjs.length === 0) return null;
+            const catColors = {Price:"#E74C3C",Decision:"#3498DB",Timing:"#E67E22",Trust:"#27AE60",Scope:"#8E44AD"};
+            const cc = catColors[cat] || C.navy;
+            return (
+              <div key={cat} style={{marginBottom:20}}>
+                <div style={{fontSize:12,fontWeight:800,color:cc,letterSpacing:0.5,textTransform:"uppercase",marginBottom:8}}>{cat}</div>
+                {catObjs.map((o, i) => (
+                  <details key={i} style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,marginBottom:8,overflow:"hidden"}}>
+                    <summary style={{padding:"14px 16px",cursor:"pointer",fontSize:14,fontWeight:700,color:C.dk,listStyle:"none",display:"flex",alignItems:"center",gap:8}}>
+                      <span style={{color:cc,fontSize:12}}>{"\u25b6"}</span>
+                      <span>{'"'+o.obj+'"'}</span>
+                    </summary>
+                    <div style={{padding:"0 16px 16px"}}>
+                      <div style={{background:C.navy+"08",borderRadius:8,padding:"12px 14px",marginBottom:10}}>
+                        <div style={{fontSize:10,fontWeight:700,color:C.mut,letterSpacing:0.5,marginBottom:4}}>REFRAME</div>
+                        <div style={{fontSize:14,lineHeight:1.6,color:C.dk}}>{o.response}</div>
+                      </div>
+                      <div style={{background:C.navy,borderRadius:8,padding:"12px 14px"}}>
+                        <div style={{fontSize:10,fontWeight:700,color:C.sky,letterSpacing:0.5,marginBottom:4}}>SCRIPT TO USE</div>
+                        <div style={{fontSize:14,lineHeight:1.6,color:"rgba(255,255,255,0.9)",fontStyle:"italic"}}>{o.script}</div>
+                      </div>
+                    </div>
+                  </details>
+                ))}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
 
   // ═══ RESOURCES ═══
   if (screen === "resources") {
