@@ -259,6 +259,8 @@ export default function App() {
   const [showWelcome, setShowWelcome] = useState(true);
   const [heatmapData, setHeatmapData] = useState(null);
   const [estScopes, setEstScopes] = useState([]);
+  const [estInput, setEstInput] = useState("");
+  const [estMode, setEstMode] = useState("nlp");
   const [estBuilding, setEstBuilding] = useState("residential");
   const [estLoading, setEstLoading] = useState(false);
   const [heatmapMarket, setHeatmapMarket] = useState("Chicago");
@@ -1800,6 +1802,7 @@ export default function App() {
   }
 
 
+
   // ═══ ESTIMATOR ═══
   if (screen === "estimator") {
     const KB = {
@@ -1828,28 +1831,70 @@ export default function App() {
       "commercial": {label:"Commercial",mult:1.45},
     };
 
+    // NLP scope extraction
+    const parseScopes = (text) => {
+      const d = text.toLowerCase();
+      const found = [];
+      const patterns = [
+        { rx: /tuckpoint|tuck\s*point|repoint|mortar\s*joint|grind\s*and\s*point/i, scope: "Tuckpointing" },
+        { rx: /lintel|steel\s*beam|i-beam|angle\s*iron/i, scope: "Lintel Replacement" },
+        { rx: /chimney.*(rebuild|reconstruct|tear\s*down)|rebuild.*chimney/i, scope: "Chimney Rebuild" },
+        { rx: /chimney.*(repair|cap|crown|flue|tuck)|repair.*chimney|chimney\s*work/i, scope: "Chimney Repair" },
+        { rx: /parapet|coping|cap\s*stone/i, scope: "Parapet / Coping" },
+        { rx: /concrete|flatwork|sidewalk|driveway|slab|curb/i, scope: "Concrete" },
+        { rx: /retaining\s*wall|block\s*wall|cmu\s*wall|garden\s*wall/i, scope: "Retaining Wall" },
+        { rx: /porch|steps|stair|stoop|front\s*entry/i, scope: "Porch / Steps" },
+        { rx: /brick.*(repair|replace|fix|crack|spall)|spalling|replace.*brick|loose\s*brick/i, scope: "Brick Repair" },
+        { rx: /stone|limestone|bluestone|flagstone|greystone/i, scope: "Stone / Limestone" },
+        { rx: /caulk|sealant|expansion\s*joint/i, scope: "Caulking" },
+        { rx: /foundation|structural|load\s*bearing|bulg/i, scope: "Foundation" },
+        { rx: /waterproof|water\s*proof|seal.*wall|damp\s*proof|efflor/i, scope: "Waterproofing" },
+        { rx: /window.*(open|cut|block|install)|glass\s*block/i, scope: "Window Opening" },
+        { rx: /stain.*brick|brick.*stain|paint.*brick|brick.*paint/i, scope: "Brick Staining" },
+      ];
+      // Auto-detect building type
+      let detectedBuilding = estBuilding;
+      if (/3[\s-]*flat|3[\s-]*story|three\s*story|victorian/i.test(d)) detectedBuilding = "3flat";
+      else if (/2[\s-]*flat|two[\s-]*flat|duplex/i.test(d)) detectedBuilding = "2flat";
+      else if (/4[\s-]*story|mid[\s-]*rise|high[\s-]*rise|5[\s-]*story|6[\s-]*story|condo\s*build|apartment/i.test(d)) detectedBuilding = "midrise";
+      else if (/commercial|warehouse|office|retail|church|school/i.test(d)) detectedBuilding = "commercial";
+
+      if (detectedBuilding !== estBuilding) setEstBuilding(detectedBuilding);
+
+      for (const p of patterns) {
+        if (p.rx.test(d) && !found.find(f => f.name === p.scope)) {
+          found.push({ name: p.scope, ...KB[p.scope] });
+        }
+      }
+      // If nothing matched but text has content, default to Masonry/Tuckpointing
+      if (found.length === 0 && d.trim().length > 10) {
+        if (/masonry|brick\s*work|exterior|facade/i.test(d)) {
+          found.push({ name: "Tuckpointing", ...KB["Tuckpointing"] });
+        }
+      }
+      return found;
+    };
+
+    const runEstimate = () => {
+      const scopes = parseScopes(estInput);
+      setEstScopes(scopes);
+    };
+
     const addScope = (scopeName) => {
       if (estScopes.find(s => s.name === scopeName)) return;
-      const kb = KB[scopeName];
-      setEstScopes(prev => [...prev, {name: scopeName, ...kb}]);
+      setEstScopes(prev => [...prev, { name: scopeName, ...KB[scopeName] }]);
     };
-
-    const removeScope = (idx) => {
-      setEstScopes(prev => prev.filter((_, i) => i !== idx));
-    };
+    const removeScope = (idx) => setEstScopes(prev => prev.filter((_, i) => i !== idx));
 
     const bMult = BUILDING_MULT[estBuilding].mult;
-    // Bundle discount: 5% off labor for 2+ scopes, 10% for 4+
     const bundleDiscount = estScopes.length >= 4 ? 0.90 : estScopes.length >= 2 ? 0.95 : 1.0;
     const bundleLabel = estScopes.length >= 4 ? "10% bundle" : estScopes.length >= 2 ? "5% bundle" : "";
-
     const totalPriceLow = Math.round(estScopes.reduce((s, sc) => s + sc.pLow * bMult * bundleDiscount, 0));
     const totalPriceHigh = Math.round(estScopes.reduce((s, sc) => s + sc.pHigh * bMult * bundleDiscount, 0));
     const totalCostLow = Math.round(estScopes.reduce((s, sc) => s + sc.cLow * bMult, 0));
     const totalCostHigh = Math.round(estScopes.reduce((s, sc) => s + sc.cHigh * bMult, 0));
     const marginLow = totalPriceHigh > 0 ? Math.round((1 - totalCostHigh / totalPriceHigh) * 100) : 0;
     const marginHigh = totalPriceLow > 0 ? Math.round((1 - totalCostLow / totalPriceLow) * 100) : 0;
-
     const fmt = (n) => "$" + n.toLocaleString();
 
     return (
@@ -1857,18 +1902,40 @@ export default function App() {
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
-          left={<button onClick={()=>{setEstScopes([]);setScreen("home");}} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>← Back</button>}
+          left={<button onClick={()=>{setEstScopes([]);setEstInput("");setScreen("home");}} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>← Back</button>}
           center="Estimator"
           right={<span/>}
         />
         <div style={{maxWidth:700,margin:"0 auto",padding:"16px 16px 48px"}}>
 
+          {/* Natural Language Input */}
+          <div style={{background:C.card,borderRadius:16,padding:"18px",border:`1px solid ${C.bdr}`,marginBottom:16}}>
+            <div style={{fontSize:14,fontWeight:800,color:C.dk,marginBottom:8}}>Describe the job</div>
+            <textarea
+              value={estInput}
+              onChange={e=>setEstInput(e.target.value)}
+              placeholder={"e.g. 3-flat needs tuckpointing on rear and south elevations, chimney cap repair, and some loose bricks replaced on the front..."}
+              style={{width:"100%",minHeight:120,padding:"14px",borderRadius:10,border:`1px solid ${C.bdr}`,fontSize:16,fontFamily:"inherit",lineHeight:1.6,resize:"vertical",outline:"none",color:C.dk,background:C.inp}}
+              onFocus={e=>{e.target.style.borderColor=C.navy;}}
+              onBlur={e=>{e.target.style.borderColor=C.bdr;}}
+            />
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10}}>
+              <div onClick={()=>setEstMode(estMode==="nlp"?"manual":"nlp")} style={{fontSize:12,color:C.navy,fontWeight:600,cursor:"pointer"}}>
+                {estMode==="nlp" ? "Or build manually \u2193" : "Back to describe \u2191"}
+              </div>
+              <div onClick={()=>{if(estInput.trim().length>5)runEstimate();}}
+                style={{padding:"10px 24px",borderRadius:10,background:estInput.trim().length>5?C.navy:"#CBD5E1",color:"#fff",fontSize:15,fontWeight:700,cursor:estInput.trim().length>5?"pointer":"not-allowed"}}>
+                Estimate
+              </div>
+            </div>
+          </div>
+
           {/* Building Type Selector */}
           <div style={{marginBottom:16}}>
-            <div style={{fontSize:12,fontWeight:700,color:C.mut,letterSpacing:0.5,marginBottom:8,textTransform:"uppercase"}}>Building Type</div>
+            <div style={{fontSize:11,fontWeight:700,color:C.mut,letterSpacing:0.5,marginBottom:8,textTransform:"uppercase"}}>Building Type</div>
             <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
               {Object.entries(BUILDING_MULT).map(([key, val]) => (
-                <div key={key} onClick={()=>setEstBuilding(key)}
+                <div key={key} onClick={()=>{setEstBuilding(key);if(estScopes.length>0){const s=[...estScopes];setEstScopes(s);}}}
                   style={{padding:"8px 14px",borderRadius:10,cursor:"pointer",fontSize:13,fontWeight:key===estBuilding?700:500,
                     background:key===estBuilding?C.navy:"transparent",
                     color:key===estBuilding?"#fff":C.dk,
@@ -1880,31 +1947,33 @@ export default function App() {
             </div>
           </div>
 
-          {/* Scope Picker */}
-          <div style={{marginBottom:16}}>
-            <div style={{fontSize:12,fontWeight:700,color:C.mut,letterSpacing:0.5,marginBottom:8,textTransform:"uppercase"}}>Add Scopes</div>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-              {Object.keys(KB).map(scope => {
-                const added = estScopes.find(s => s.name === scope);
-                return (
-                  <div key={scope} onClick={()=>added?null:addScope(scope)}
-                    style={{padding:"8px 12px",borderRadius:8,cursor:added?"default":"pointer",fontSize:13,fontWeight:600,
-                      background:added?C.navy+"15":"transparent",
-                      color:added?C.navy:C.dk,
-                      border:`1px solid ${added?C.navy+"40":C.bdr}`,
-                      opacity:added?0.6:1}}>
-                    {added?"✓ ":""}{scope}
-                    <span style={{fontSize:9,color:C.mut,marginLeft:4}}>n={KB[scope].n}</span>
-                  </div>
-                );
-              })}
+          {/* Manual Scope Builder (secondary) */}
+          {estMode==="manual" && (
+            <div style={{marginBottom:16}}>
+              <div style={{fontSize:11,fontWeight:700,color:C.mut,letterSpacing:0.5,marginBottom:8,textTransform:"uppercase"}}>Add Scopes Manually</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                {Object.keys(KB).map(scope => {
+                  const added = estScopes.find(s => s.name === scope);
+                  return (
+                    <div key={scope} onClick={()=>added?null:addScope(scope)}
+                      style={{padding:"8px 12px",borderRadius:8,cursor:added?"default":"pointer",fontSize:13,fontWeight:600,
+                        background:added?C.navy+"15":"transparent",
+                        color:added?C.navy:C.dk,
+                        border:`1px solid ${added?C.navy+"40":C.bdr}`,
+                        opacity:added?0.6:1}}>
+                      {added?"\u2713 ":""}{scope}
+                      <span style={{fontSize:9,color:C.mut,marginLeft:4}}>n={KB[scope].n}</span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Selected Scopes Breakdown */}
+          {/* Scope Breakdown */}
           {estScopes.length > 0 && (
             <div style={{marginBottom:16}}>
-              <div style={{fontSize:12,fontWeight:700,color:C.mut,letterSpacing:0.5,marginBottom:8,textTransform:"uppercase"}}>
+              <div style={{fontSize:11,fontWeight:700,color:C.mut,letterSpacing:0.5,marginBottom:8,textTransform:"uppercase"}}>
                 Scope Breakdown {bundleLabel && <span style={{color:C.grn,fontSize:10}}>({bundleLabel})</span>}
               </div>
               {estScopes.map((sc, i) => {
@@ -1934,7 +2003,7 @@ export default function App() {
                         <div style={{fontSize:15,fontWeight:800,color:mL>=35?C.grn:mL>=25?C.gold:C.red}}>{mL}—{mH}%</div>
                       </div>
                     </div>
-                    <div style={{fontSize:10,color:C.mut,marginTop:4}}>{sc.n} comparable estimates in database</div>
+                    <div style={{fontSize:10,color:C.mut,marginTop:4}}>{sc.n} comparable estimates</div>
                   </div>
                 );
               })}
@@ -1956,35 +2025,36 @@ export default function App() {
               </div>
               <div style={{display:"flex",gap:16,marginTop:12}}>
                 <div>
-                  <div style={{fontSize:9,color:"rgba(255,255,255,0.4)"}}>Sub Cost Range</div>
+                  <div style={{fontSize:9,color:"rgba(255,255,255,0.4)"}}>Sub Cost</div>
                   <div style={{fontSize:14,fontWeight:700,color:"rgba(255,255,255,0.7)"}}>{fmt(totalCostLow)} — {fmt(totalCostHigh)}</div>
                 </div>
                 <div>
-                  <div style={{fontSize:9,color:"rgba(255,255,255,0.4)"}}>Building Type</div>
+                  <div style={{fontSize:9,color:"rgba(255,255,255,0.4)"}}>Building</div>
                   <div style={{fontSize:14,fontWeight:700,color:"rgba(255,255,255,0.7)"}}>{BUILDING_MULT[estBuilding].label}</div>
                 </div>
                 {bundleLabel && <div>
-                  <div style={{fontSize:9,color:"rgba(255,255,255,0.4)"}}>Bundle Savings</div>
+                  <div style={{fontSize:9,color:"rgba(255,255,255,0.4)"}}>Savings</div>
                   <div style={{fontSize:14,fontWeight:700,color:"#2ECC71"}}>{bundleLabel}</div>
                 </div>}
               </div>
               <div style={{marginTop:12,padding:"8px 12px",background:"rgba(255,255,255,0.06)",borderRadius:8}}>
-                <div style={{fontSize:11,color:"rgba(255,255,255,0.5)",lineHeight:1.5}}>Based on {estScopes.reduce((s,sc)=>s+sc.n,0)} approved estimates from NSM history. Adjust based on site conditions, access, and complexity.</div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,0.5)",lineHeight:1.5}}>Based on {estScopes.reduce((s,sc)=>s+sc.n,0)} approved estimates. Adjust for site conditions and access.</div>
               </div>
             </div>
           )}
 
-          {estScopes.length === 0 && (
-            <div style={{textAlign:"center",padding:"40px 20px",color:C.mut}}>
-              <div style={{fontSize:32,marginBottom:8}}>💰</div>
-              <div style={{fontSize:16,fontWeight:700,color:C.dk,marginBottom:4}}>Quick Scope Estimator</div>
-              <div style={{fontSize:14,lineHeight:1.6}}>Select a building type above, then tap scopes to build your estimate. Pricing is based on 845+ approved NSM estimates.</div>
+          {estScopes.length === 0 && estMode === "nlp" && (
+            <div style={{textAlign:"center",padding:"30px 20px",color:C.mut}}>
+              <div style={{fontSize:32,marginBottom:8}}>🤖</div>
+              <div style={{fontSize:16,fontWeight:700,color:C.dk,marginBottom:4}}>Describe the job above</div>
+              <div style={{fontSize:14,lineHeight:1.6}}>Type what you see on-site and tap Estimate. The AI will break it into scopes with pricing from 845+ approved NSM estimates.</div>
             </div>
           )}
         </div>
       </div>
     );
   }
+
 
   // ═══ RESOURCES ═══
   if (screen === "resources") {
