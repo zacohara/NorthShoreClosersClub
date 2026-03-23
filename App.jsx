@@ -635,46 +635,51 @@ export default function App() {
         </div>
 
         <div style={{maxWidth:960,margin:"0 auto",padding:"16px 16px 24px"}}>
-          {/* 4 Quadrant Command Center */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+          {/* 6-Square Command Center */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
             <div onClick={()=>{loadAllProgress().then(d=>setAllProg(d));setScreen("leaderboard");}}
-              style={{background:"linear-gradient(145deg, #D4AF37 0%, #B8941F 100%)",borderRadius:16,padding:"20px 16px",cursor:"pointer",minHeight:120}}>
-              <div style={{fontSize:28,marginBottom:6,pointerEvents:"none"}}>🏆</div>
-              <div style={{fontSize:16,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Leaderboard</div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,0.7)",marginTop:2,pointerEvents:"none"}}>Team rankings</div>
+              style={{background:"linear-gradient(145deg, #D4AF37 0%, #9B7B2B 100%)",borderRadius:18,padding:"22px 18px",cursor:"pointer",minHeight:130,position:"relative",overflow:"hidden"}}>
+              <div style={{position:"absolute",right:-6,bottom:-6,fontSize:60,opacity:0.12,pointerEvents:"none"}}>🏆</div>
+              <div style={{fontSize:38,marginBottom:8,pointerEvents:"none"}}>🏆</div>
+              <div style={{fontSize:17,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Leaderboard</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,0.65)",marginTop:3,pointerEvents:"none"}}>Team rankings</div>
             </div>
             <div onClick={()=>{setBsTranscript("");setBsResult(null);setBsViewIdx(null);loadAnalyses(user).then(d=>setBsHistory(d));setScreen("blindspot");}}
-              style={{background:`linear-gradient(145deg, ${C.navy} 0%, #0D2B45 100%)`,borderRadius:16,padding:"20px 16px",cursor:"pointer",minHeight:120}}>
-              <div style={{fontSize:28,marginBottom:6,pointerEvents:"none"}}>🔍</div>
-              <div style={{fontSize:16,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Blind Spot</div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,0.7)",marginTop:2,pointerEvents:"none"}}>{bsHistory.length} analyses</div>
+              style={{background:`linear-gradient(145deg, ${C.navy} 0%, #0D2B45 100%)`,borderRadius:18,padding:"22px 18px",cursor:"pointer",minHeight:130,position:"relative",overflow:"hidden"}}>
+              <div style={{position:"absolute",right:-6,bottom:-6,fontSize:60,opacity:0.12,pointerEvents:"none"}}>📈</div>
+              <div style={{fontSize:38,marginBottom:8,pointerEvents:"none"}}>📈</div>
+              <div style={{fontSize:17,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Blind Spot</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,0.65)",marginTop:3,pointerEvents:"none"}}>{bsHistory.length} analyses</div>
             </div>
             <div onClick={()=>setScreen("training")}
-              style={{background:"linear-gradient(145deg, #27AE60 0%, #1E8449 100%)",borderRadius:16,padding:"20px 16px",cursor:"pointer",minHeight:120}}>
-              <div style={{fontSize:28,marginBottom:6,pointerEvents:"none"}}>🧠</div>
-              <div style={{fontSize:16,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Brain Training</div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,0.7)",marginTop:2,pointerEvents:"none"}}>{passedCount}/15 drills</div>
+              style={{background:"linear-gradient(145deg, #27AE60 0%, #1B7A43 100%)",borderRadius:18,padding:"22px 18px",cursor:"pointer",minHeight:130,position:"relative",overflow:"hidden"}}>
+              <div style={{position:"absolute",right:-6,bottom:-6,fontSize:60,opacity:0.12,pointerEvents:"none"}}>🧠</div>
+              <div style={{fontSize:38,marginBottom:8,pointerEvents:"none"}}>🧠</div>
+              <div style={{fontSize:17,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Brain Training</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,0.65)",marginTop:3,pointerEvents:"none"}}>{passedCount}/15 drills</div>
             </div>
             <div onClick={()=>setScreen("estimator")}
-              style={{background:"linear-gradient(145deg, #5DA5BA 0%, #3D8A9E 100%)",borderRadius:16,padding:"20px 16px",cursor:"pointer",minHeight:120}}>
-              <div style={{fontSize:28,marginBottom:6,pointerEvents:"none"}}>💰</div>
-              <div style={{fontSize:16,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Estimator</div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,0.7)",marginTop:2,pointerEvents:"none"}}>Quick scope pricing</div>
+              style={{background:"linear-gradient(145deg, #5DA5BA 0%, #3D7A8E 100%)",borderRadius:18,padding:"22px 18px",cursor:"pointer",minHeight:130,position:"relative",overflow:"hidden"}}>
+              <div style={{position:"absolute",right:-6,bottom:-6,fontSize:60,opacity:0.12,pointerEvents:"none"}}>🤖</div>
+              <div style={{fontSize:38,marginBottom:8,pointerEvents:"none"}}>🤖</div>
+              <div style={{fontSize:17,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Estimator</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,0.65)",marginTop:3,pointerEvents:"none"}}>Quick scope pricing</div>
             </div>
-          </div>
-          <div style={{display:"flex",gap:8,marginBottom:16}}>
-            <div onClick={()=>setScreen("resources")} style={{flex:1,background:C.card,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"12px 14px",cursor:"pointer"}}>
-              <div style={{fontSize:14,fontWeight:700,color:C.dk,pointerEvents:"none"}}>📁 Resources</div>
+            <div onClick={()=>setScreen("resources")}
+              style={{background:"linear-gradient(145deg, #8E6BB5 0%, #6B4E8A 100%)",borderRadius:18,padding:"22px 18px",cursor:"pointer",minHeight:130,position:"relative",overflow:"hidden"}}>
+              <div style={{position:"absolute",right:-6,bottom:-6,fontSize:60,opacity:0.12,pointerEvents:"none"}}>📁</div>
+              <div style={{fontSize:38,marginBottom:8,pointerEvents:"none"}}>📁</div>
+              <div style={{fontSize:17,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Resources</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,0.65)",marginTop:3,pointerEvents:"none"}}>Sell sheets & specs</div>
             </div>
             <div onClick={()=>{if(!heatmapData)fetch('/heatmap.json').then(r=>r.json()).then(d=>setHeatmapData(d));setScreen("heatmap");}}
-              style={{flex:1,background:C.card,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"12px 14px",cursor:"pointer"}}>
-              <div style={{fontSize:14,fontWeight:700,color:C.dk,pointerEvents:"none"}}>🗺️ Heat Map</div>
+              style={{background:"linear-gradient(145deg, #E67E22 0%, #BF6516 100%)",borderRadius:18,padding:"22px 18px",cursor:"pointer",minHeight:130,position:"relative",overflow:"hidden"}}>
+              <div style={{position:"absolute",right:-6,bottom:-6,fontSize:60,opacity:0.12,pointerEvents:"none"}}>🗺️</div>
+              <div style={{fontSize:38,marginBottom:8,pointerEvents:"none"}}>🗺️</div>
+              <div style={{fontSize:17,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Heat Map</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,0.65)",marginTop:3,pointerEvents:"none"}}>580+ approved jobs</div>
             </div>
-            {allPassed && <div onClick={()=>setScreen("certificate")} style={{flex:1,background:C.grn+"10",border:`1px solid ${C.grn}25`,borderRadius:10,padding:"12px 14px",cursor:"pointer"}}>
-              <div style={{fontSize:14,fontWeight:700,color:C.grn,pointerEvents:"none"}}>📜 Certified</div>
-            </div>}
           </div>
-
 
           {/* Welcome popup — Level Up of the Day */}
           {showWelcome && dailyTip && (
