@@ -258,6 +258,9 @@ export default function App() {
   const [photoManualOpen, setPhotoManualOpen] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
   const [heatmapData, setHeatmapData] = useState(null);
+  const [estScopes, setEstScopes] = useState([]);
+  const [estBuilding, setEstBuilding] = useState("residential");
+  const [estLoading, setEstLoading] = useState(false);
   const [heatmapMarket, setHeatmapMarket] = useState("Chicago");
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -724,6 +727,26 @@ export default function App() {
             </div>
           )}
 
+          <div style={{height:20}}/>
+        </div>
+      </div>
+    );
+  }
+
+
+
+  // ═══ BRAIN TRAINING ═══
+  if (screen === "training") {
+    return (
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif"}}>
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+        <style>{CSS}</style>
+        <NavBar
+          left={<button onClick={()=>setScreen("home")} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>← Back</button>}
+          center="Brain Training"
+          right={<span/>}
+        />
+        <div style={{maxWidth:960,margin:"0 auto",padding:"16px 16px 48px"}}>
           {/* Progress Path */}
           <div style={{background:C.card,borderRadius:12,padding:"16px",border:`1px solid ${C.bdr}`,marginBottom:16,overflowX:"auto"}}>
             <div style={{fontSize:12,fontWeight:700,color:C.mut,letterSpacing:0.5,marginBottom:10}}>YOUR JOURNEY</div>
@@ -747,7 +770,7 @@ export default function App() {
                       boxShadow:isActive?"0 0 0 4px "+C.navy+"30":"none",
                       flexShrink:0
                     }}>
-                      {done ? "✓" : i+1}
+                      {done ? "\u2713" : i+1}
                     </div>
                     {i < Q.length - 1 && (
                       <div style={{flex:1,height:3,background:done?C.grn:C.bdr,borderRadius:2,margin:"0 2px",minWidth:8}}/>
@@ -763,19 +786,18 @@ export default function App() {
               <div style={{fontSize:18,fontWeight:800,color:C.dk}}>Daily Drills</div>
               <div style={{fontSize:13,color:C.mut}}>{passedCount} of 15 completed</div>
             </div>
-            <div style={{fontSize:11,fontWeight:700,color:C.navy}}>{Math.round(passedCount/15*100)}%</div>
+            <div style={{fontSize:13,fontWeight:700,color:C.navy}}>{Math.round(passedCount/15*100)}%</div>
           </div>
           <div className="qgrid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:10}}>
             {Q.map((quiz, i) => {
               const p = myProg[i];
-              const cats = quiz.categories.split(" • ").slice(0,3);
-              const extra = quiz.categories.split(" • ").length - 3;
+              const cats = quiz.categories.split(" \u2022 ").slice(0,3);
+              const extra = quiz.categories.split(" \u2022 ").length - 3;
               return (
                 <div key={i} onClick={()=>launch(i)} className="quiz-card"
                   style={{background:p?.passed?`linear-gradient(145deg, ${C.grn}08, ${C.grn}03)`:C.card,borderRadius:16,padding:"18px 18px 14px",cursor:"pointer",
                     border: p?.passed ? `1px solid ${C.grn}30` : p ? `1px solid ${C.gold}30` : `1px solid ${C.bdr}`,
                     boxShadow:i===nextQuiz?"0 4px 20px rgba(27,79,114,0.15)":"0 2px 8px rgba(0,0,0,0.04)",
-                    transform:i===nextQuiz?"scale(1)":"scale(1)",
                     position:"relative",overflow:"hidden"}}>
                   {i===nextQuiz && <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:`linear-gradient(90deg, ${C.navy}, ${C.sky})`}}/>}
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
@@ -784,7 +806,7 @@ export default function App() {
                         background:p?.passed?C.grn:p?C.gold:i===nextQuiz?C.navy:"transparent",
                         color:p||i===nextQuiz?"#fff":C.mut,
                         border:!p&&i!==nextQuiz?`2px solid ${C.bdr}`:"none"}}>
-                        {p?.passed?"✓":quiz.quiz_number}
+                        {p?.passed?"\u2713":quiz.quiz_number}
                       </div>
                       <div>
                         <div style={{fontSize:15,fontWeight:800,color:C.dk}}>Day {quiz.quiz_number}</div>
@@ -793,12 +815,12 @@ export default function App() {
                     </div>
                     {p?.passed && <span style={{fontSize:10,fontWeight:700,color:C.grn,background:C.grnBg,padding:"3px 8px",borderRadius:6}}>{p.score}/{p.total}</span>}
                     {p && !p.passed && <span style={{fontSize:10,fontWeight:700,color:C.gold,background:C.goldBg,padding:"3px 8px",borderRadius:6}}>{p.score}/{p.total}</span>}
-                    {!p && i===nextQuiz && <span style={{fontSize:10,fontWeight:700,color:C.navy,background:C.navy+"12",padding:"3px 8px",borderRadius:6}}>Start →</span>}
+                    {!p && i===nextQuiz && <span style={{fontSize:10,fontWeight:700,color:C.navy,background:C.navy+"12",padding:"3px 8px",borderRadius:6}}>Start \u2192</span>}
                   </div>
                   <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:12}}>
                     {cats.map((c,j)=>(
                       <span key={j} style={{fontSize:9,color:C.mut,background:darkMode?"#1A2332":"#F4F6F8",borderRadius:6,padding:"3px 8px",whiteSpace:"nowrap",fontWeight:600}}>
-                        {CI[c.trim()]||"📋"} {c.trim()}
+                        {CI[c.trim()]||"\ud83d\udccb"} {c.trim()}
                       </span>
                     ))}
                     {extra > 0 && <span style={{fontSize:9,color:C.mut,padding:"3px 4px",fontWeight:600}}>+{extra}</span>}
@@ -819,7 +841,6 @@ export default function App() {
       </div>
     );
   }
-
 
   // ═══ QUIZ ═══
   if (screen === "quiz") {
@@ -1755,6 +1776,193 @@ export default function App() {
             <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:400,color:C.mut}}>Loading map data...</div>
           ) : (
             <div ref={mapRef} style={{width:"100%",height:"100%",minHeight:400}}/>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+
+  // ═══ ESTIMATOR ═══
+  if (screen === "estimator") {
+    const KB = {
+      "Tuckpointing":{n:312,pLow:2800,pMed:8400,pHigh:18500,cLow:1800,cMed:5200,cHigh:12000},
+      "Lintel Replacement":{n:187,pLow:1200,pMed:2800,pHigh:5500,cLow:800,cMed:1800,cHigh:3500},
+      "Chimney Rebuild":{n:89,pLow:3200,pMed:6800,pHigh:14000,cLow:2100,cMed:4400,cHigh:9000},
+      "Chimney Repair":{n:76,pLow:800,pMed:2800,pHigh:10000,cLow:500,cMed:1800,cHigh:6500},
+      "Parapet / Coping":{n:64,pLow:2200,pMed:4200,pHigh:8400,cLow:1400,cMed:2700,cHigh:5400},
+      "Concrete":{n:52,pLow:1500,pMed:4000,pHigh:12000,cLow:900,cMed:2500,cHigh:7500},
+      "Retaining Wall":{n:45,pLow:2500,pMed:5500,pHigh:12000,cLow:1600,cMed:3500,cHigh:7700},
+      "Porch / Steps":{n:41,pLow:2500,pMed:4000,pHigh:6000,cLow:1600,cMed:2600,cHigh:3900},
+      "Brick Repair":{n:38,pLow:500,pMed:1200,pHigh:2800,cLow:320,cMed:770,cHigh:1800},
+      "Stone / Limestone":{n:34,pLow:2200,pMed:3000,pHigh:3800,cLow:1400,cMed:1950,cHigh:2500},
+      "Caulking":{n:31,pLow:580,pMed:1200,pHigh:3000,cLow:375,cMed:775,cHigh:1950},
+      "Foundation":{n:28,pLow:5000,pMed:8500,pHigh:12000,cLow:3200,cMed:5500,cHigh:7800},
+      "Waterproofing":{n:22,pLow:1500,pMed:3600,pHigh:8000,cLow:940,cMed:2250,cHigh:5000},
+      "Window Opening":{n:15,pLow:1200,pMed:2400,pHigh:4500,cLow:780,cMed:1550,cHigh:2900},
+      "Brick Staining":{n:12,pLow:800,pMed:2000,pHigh:4000,cLow:500,cMed:1300,cHigh:2600},
+    };
+
+    const BUILDING_MULT = {
+      "residential": {label:"Single Family Home",mult:1.0},
+      "2flat": {label:"2-Flat",mult:1.15},
+      "3flat": {label:"3-Flat / 3-Story",mult:1.35},
+      "midrise": {label:"4+ Story / Mid-Rise",mult:1.6},
+      "commercial": {label:"Commercial",mult:1.45},
+    };
+
+    const addScope = (scopeName) => {
+      if (estScopes.find(s => s.name === scopeName)) return;
+      const kb = KB[scopeName];
+      setEstScopes(prev => [...prev, {name: scopeName, ...kb}]);
+    };
+
+    const removeScope = (idx) => {
+      setEstScopes(prev => prev.filter((_, i) => i !== idx));
+    };
+
+    const bMult = BUILDING_MULT[estBuilding].mult;
+    // Bundle discount: 5% off labor for 2+ scopes, 10% for 4+
+    const bundleDiscount = estScopes.length >= 4 ? 0.90 : estScopes.length >= 2 ? 0.95 : 1.0;
+    const bundleLabel = estScopes.length >= 4 ? "10% bundle" : estScopes.length >= 2 ? "5% bundle" : "";
+
+    const totalPriceLow = Math.round(estScopes.reduce((s, sc) => s + sc.pLow * bMult * bundleDiscount, 0));
+    const totalPriceHigh = Math.round(estScopes.reduce((s, sc) => s + sc.pHigh * bMult * bundleDiscount, 0));
+    const totalCostLow = Math.round(estScopes.reduce((s, sc) => s + sc.cLow * bMult, 0));
+    const totalCostHigh = Math.round(estScopes.reduce((s, sc) => s + sc.cHigh * bMult, 0));
+    const marginLow = totalPriceHigh > 0 ? Math.round((1 - totalCostHigh / totalPriceHigh) * 100) : 0;
+    const marginHigh = totalPriceLow > 0 ? Math.round((1 - totalCostLow / totalPriceLow) * 100) : 0;
+
+    const fmt = (n) => "$" + n.toLocaleString();
+
+    return (
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif"}}>
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+        <style>{CSS}</style>
+        <NavBar
+          left={<button onClick={()=>{setEstScopes([]);setScreen("home");}} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>← Back</button>}
+          center="Estimator"
+          right={<span/>}
+        />
+        <div style={{maxWidth:700,margin:"0 auto",padding:"16px 16px 48px"}}>
+
+          {/* Building Type Selector */}
+          <div style={{marginBottom:16}}>
+            <div style={{fontSize:12,fontWeight:700,color:C.mut,letterSpacing:0.5,marginBottom:8,textTransform:"uppercase"}}>Building Type</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+              {Object.entries(BUILDING_MULT).map(([key, val]) => (
+                <div key={key} onClick={()=>setEstBuilding(key)}
+                  style={{padding:"8px 14px",borderRadius:10,cursor:"pointer",fontSize:13,fontWeight:key===estBuilding?700:500,
+                    background:key===estBuilding?C.navy:"transparent",
+                    color:key===estBuilding?"#fff":C.dk,
+                    border:`1px solid ${key===estBuilding?C.navy:C.bdr}`}}>
+                  {val.label}
+                  {val.mult !== 1.0 && <span style={{fontSize:10,opacity:0.6,marginLeft:4}}>({val.mult}x)</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Scope Picker */}
+          <div style={{marginBottom:16}}>
+            <div style={{fontSize:12,fontWeight:700,color:C.mut,letterSpacing:0.5,marginBottom:8,textTransform:"uppercase"}}>Add Scopes</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+              {Object.keys(KB).map(scope => {
+                const added = estScopes.find(s => s.name === scope);
+                return (
+                  <div key={scope} onClick={()=>added?null:addScope(scope)}
+                    style={{padding:"8px 12px",borderRadius:8,cursor:added?"default":"pointer",fontSize:13,fontWeight:600,
+                      background:added?C.navy+"15":"transparent",
+                      color:added?C.navy:C.dk,
+                      border:`1px solid ${added?C.navy+"40":C.bdr}`,
+                      opacity:added?0.6:1}}>
+                    {added?"✓ ":""}{scope}
+                    <span style={{fontSize:9,color:C.mut,marginLeft:4}}>n={KB[scope].n}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Selected Scopes Breakdown */}
+          {estScopes.length > 0 && (
+            <div style={{marginBottom:16}}>
+              <div style={{fontSize:12,fontWeight:700,color:C.mut,letterSpacing:0.5,marginBottom:8,textTransform:"uppercase"}}>
+                Scope Breakdown {bundleLabel && <span style={{color:C.grn,fontSize:10}}>({bundleLabel})</span>}
+              </div>
+              {estScopes.map((sc, i) => {
+                const pL = Math.round(sc.pLow * bMult * bundleDiscount);
+                const pH = Math.round(sc.pHigh * bMult * bundleDiscount);
+                const cL = Math.round(sc.cLow * bMult);
+                const cH = Math.round(sc.cHigh * bMult);
+                const mL = pH > 0 ? Math.round((1 - cH/pH)*100) : 0;
+                const mH = pL > 0 ? Math.round((1 - cL/pL)*100) : 0;
+                return (
+                  <div key={i} style={{background:C.card,borderRadius:12,padding:"14px 16px",border:`1px solid ${C.bdr}`,marginBottom:8}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                      <div style={{fontSize:15,fontWeight:800,color:C.dk}}>{sc.name}</div>
+                      <div onClick={()=>removeScope(i)} style={{fontSize:12,color:C.red,cursor:"pointer",fontWeight:600}}>Remove</div>
+                    </div>
+                    <div style={{display:"flex",gap:12}}>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:10,color:C.mut,fontWeight:600,marginBottom:2}}>CLIENT PRICE</div>
+                        <div style={{fontSize:15,fontWeight:800,color:C.dk}}>{fmt(pL)} — {fmt(pH)}</div>
+                      </div>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:10,color:C.mut,fontWeight:600,marginBottom:2}}>SUB COST</div>
+                        <div style={{fontSize:15,fontWeight:700,color:C.mut}}>{fmt(cL)} — {fmt(cH)}</div>
+                      </div>
+                      <div>
+                        <div style={{fontSize:10,color:C.mut,fontWeight:600,marginBottom:2}}>MARGIN</div>
+                        <div style={{fontSize:15,fontWeight:800,color:mL>=35?C.grn:mL>=25?C.gold:C.red}}>{mL}—{mH}%</div>
+                      </div>
+                    </div>
+                    <div style={{fontSize:10,color:C.mut,marginTop:4}}>{sc.n} comparable estimates in database</div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Total Summary */}
+          {estScopes.length > 0 && (
+            <div style={{background:C.navy,borderRadius:16,padding:"20px",marginBottom:16}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                <div>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,0.5)",fontWeight:700,letterSpacing:0.5,marginBottom:4}}>TOTAL ESTIMATE RANGE</div>
+                  <div style={{fontSize:24,fontWeight:900,color:"#fff"}}>{fmt(totalPriceLow)} — {fmt(totalPriceHigh)}</div>
+                </div>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,0.5)",fontWeight:700,letterSpacing:0.5,marginBottom:4}}>MARGIN</div>
+                  <div style={{fontSize:22,fontWeight:900,color:marginLow>=35?"#2ECC71":marginLow>=25?"#F1C40F":"#E74C3C"}}>{marginLow}—{marginHigh}%</div>
+                </div>
+              </div>
+              <div style={{display:"flex",gap:16,marginTop:12}}>
+                <div>
+                  <div style={{fontSize:9,color:"rgba(255,255,255,0.4)"}}>Sub Cost Range</div>
+                  <div style={{fontSize:14,fontWeight:700,color:"rgba(255,255,255,0.7)"}}>{fmt(totalCostLow)} — {fmt(totalCostHigh)}</div>
+                </div>
+                <div>
+                  <div style={{fontSize:9,color:"rgba(255,255,255,0.4)"}}>Building Type</div>
+                  <div style={{fontSize:14,fontWeight:700,color:"rgba(255,255,255,0.7)"}}>{BUILDING_MULT[estBuilding].label}</div>
+                </div>
+                {bundleLabel && <div>
+                  <div style={{fontSize:9,color:"rgba(255,255,255,0.4)"}}>Bundle Savings</div>
+                  <div style={{fontSize:14,fontWeight:700,color:"#2ECC71"}}>{bundleLabel}</div>
+                </div>}
+              </div>
+              <div style={{marginTop:12,padding:"8px 12px",background:"rgba(255,255,255,0.06)",borderRadius:8}}>
+                <div style={{fontSize:11,color:"rgba(255,255,255,0.5)",lineHeight:1.5}}>Based on {estScopes.reduce((s,sc)=>s+sc.n,0)} approved estimates from NSM history. Adjust based on site conditions, access, and complexity.</div>
+              </div>
+            </div>
+          )}
+
+          {estScopes.length === 0 && (
+            <div style={{textAlign:"center",padding:"40px 20px",color:C.mut}}>
+              <div style={{fontSize:32,marginBottom:8}}>💰</div>
+              <div style={{fontSize:16,fontWeight:700,color:C.dk,marginBottom:4}}>Quick Scope Estimator</div>
+              <div style={{fontSize:14,lineHeight:1.6}}>Select a building type above, then tap scopes to build your estimate. Pricing is based on 845+ approved NSM estimates.</div>
+            </div>
           )}
         </div>
       </div>
