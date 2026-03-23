@@ -635,34 +635,46 @@ export default function App() {
         </div>
 
         <div style={{maxWidth:960,margin:"0 auto",padding:"16px 16px 24px"}}>
-          {/* Primary Action: Blind Spot Revealer */}
-          <div
-            onClick={(e)=>{e.preventDefault();e.stopPropagation();setBsTranscript("");setBsResult(null);setBsViewIdx(null);loadAnalyses(user).then(d=>setBsHistory(d));setScreen("blindspot");}}
-            style={{width:"100%",background:C.navy,borderRadius:14,padding:"20px",marginBottom:12,cursor:"pointer",WebkitUserSelect:"none",userSelect:"none"}}>
-            <p style={{color:"#fff",fontSize:18,fontWeight:800,margin:"0 0 4px",pointerEvents:"none"}}>🔍 Blind Spot Revealer</p>
-            <p style={{color:"rgba(255,255,255,0.6)",fontSize:14,fontWeight:500,margin:0,pointerEvents:"none"}}>Analyze your sales appointments against Sandler</p>
+          {/* 4 Quadrant Command Center */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+            <div onClick={()=>{loadAllProgress().then(d=>setAllProg(d));setScreen("leaderboard");}}
+              style={{background:"linear-gradient(145deg, #D4AF37 0%, #B8941F 100%)",borderRadius:16,padding:"20px 16px",cursor:"pointer",minHeight:120}}>
+              <div style={{fontSize:28,marginBottom:6,pointerEvents:"none"}}>🏆</div>
+              <div style={{fontSize:16,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Leaderboard</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,0.7)",marginTop:2,pointerEvents:"none"}}>Team rankings</div>
+            </div>
+            <div onClick={()=>{setBsTranscript("");setBsResult(null);setBsViewIdx(null);loadAnalyses(user).then(d=>setBsHistory(d));setScreen("blindspot");}}
+              style={{background:`linear-gradient(145deg, ${C.navy} 0%, #0D2B45 100%)`,borderRadius:16,padding:"20px 16px",cursor:"pointer",minHeight:120}}>
+              <div style={{fontSize:28,marginBottom:6,pointerEvents:"none"}}>🔍</div>
+              <div style={{fontSize:16,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Blind Spot</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,0.7)",marginTop:2,pointerEvents:"none"}}>{bsHistory.length} analyses</div>
+            </div>
+            <div onClick={()=>setScreen("training")}
+              style={{background:"linear-gradient(145deg, #27AE60 0%, #1E8449 100%)",borderRadius:16,padding:"20px 16px",cursor:"pointer",minHeight:120}}>
+              <div style={{fontSize:28,marginBottom:6,pointerEvents:"none"}}>🧠</div>
+              <div style={{fontSize:16,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Brain Training</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,0.7)",marginTop:2,pointerEvents:"none"}}>{passedCount}/15 drills</div>
+            </div>
+            <div onClick={()=>setScreen("estimator")}
+              style={{background:"linear-gradient(145deg, #5DA5BA 0%, #3D8A9E 100%)",borderRadius:16,padding:"20px 16px",cursor:"pointer",minHeight:120}}>
+              <div style={{fontSize:28,marginBottom:6,pointerEvents:"none"}}>💰</div>
+              <div style={{fontSize:16,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Estimator</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,0.7)",marginTop:2,pointerEvents:"none"}}>Quick scope pricing</div>
+            </div>
           </div>
           <div style={{display:"flex",gap:8,marginBottom:16}}>
-            <div onClick={()=>setScreen("resources")} style={{flex:1,background:C.card,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"12px 14px",cursor:"pointer",textAlign:"left"}}>
-              <div style={{fontSize:15,fontWeight:700,color:C.dk,pointerEvents:"none"}}>📁 Resources</div>
-              <div style={{fontSize:13,color:C.mut,pointerEvents:"none"}}>Sell sheets & specs</div>
+            <div onClick={()=>setScreen("resources")} style={{flex:1,background:C.card,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"12px 14px",cursor:"pointer"}}>
+              <div style={{fontSize:14,fontWeight:700,color:C.dk,pointerEvents:"none"}}>📁 Resources</div>
             </div>
-            <div onClick={()=>{loadAllProgress().then(d=>setAllProg(d));setScreen("leaderboard");}} style={{flex:1,background:C.card,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"12px 14px",cursor:"pointer",textAlign:"left"}}>
-              <div style={{fontSize:15,fontWeight:700,color:C.dk,pointerEvents:"none"}}>🏆 Leaderboard</div>
-              <div style={{fontSize:13,color:C.mut,pointerEvents:"none"}}>Team rankings</div>
+            <div onClick={()=>{if(!heatmapData)fetch('/heatmap.json').then(r=>r.json()).then(d=>setHeatmapData(d));setScreen("heatmap");}}
+              style={{flex:1,background:C.card,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"12px 14px",cursor:"pointer"}}>
+              <div style={{fontSize:14,fontWeight:700,color:C.dk,pointerEvents:"none"}}>🗺️ Heat Map</div>
             </div>
+            {allPassed && <div onClick={()=>setScreen("certificate")} style={{flex:1,background:C.grn+"10",border:`1px solid ${C.grn}25`,borderRadius:10,padding:"12px 14px",cursor:"pointer"}}>
+              <div style={{fontSize:14,fontWeight:700,color:C.grn,pointerEvents:"none"}}>📜 Certified</div>
+            </div>}
           </div>
-          <div onClick={()=>{if(!heatmapData)fetch('/heatmap.json').then(r=>r.json()).then(d=>setHeatmapData(d));setScreen("heatmap");}}
-            style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:10,padding:"14px 16px",cursor:"pointer",marginBottom:12}}>
-            <div style={{fontSize:15,fontWeight:700,color:C.dk,pointerEvents:"none"}}>🗺️ Heat Map</div>
-            <div style={{fontSize:13,color:C.mut,pointerEvents:"none"}}>185 approved orders across 4 markets</div>
-          </div>
-          {allPassed && <div style={{marginBottom:16}}>
-            <button onClick={()=>setScreen("certificate")} style={{width:"100%",background:C.grn+"10",border:`1px solid ${C.grn}30`,borderRadius:10,padding:"12px 14px",cursor:"pointer",textAlign:"left"}}>
-              <div style={{fontSize:12,fontWeight:700,color:C.grn}}>📜 Certificate</div>
-              <div style={{fontSize:10,color:C.mut}}>View your achievement</div>
-            </button>
-          </div>}
+
 
           {/* Welcome popup — Level Up of the Day */}
           {showWelcome && dailyTip && (
