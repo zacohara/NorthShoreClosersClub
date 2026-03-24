@@ -1940,7 +1940,10 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
     };
 
     const runLocalEstimate = () => {
-      const d = estInput.toLowerCase();
+      let d = estInput.toLowerCase();
+      // Convert word numbers to digits
+      const wordNums = {"one":1,"two":2,"three":3,"four":4,"five":5,"six":6,"seven":7,"eight":8,"nine":9,"ten":10,"twelve":12,"fifteen":15,"twenty":20,"thirty":30,"forty":40,"fifty":50};
+      for (const [w,n] of Object.entries(wordNums)) { d = d.replace(new RegExp("\\b"+w+"\\b","gi"), String(n)); }
       // Per-unit pricing (NOT full range — eliminates wide spreads)
       const KB = {
         "Tuckpointing":{n:312,unitLo:6,unitHi:14,cUnitLo:3.5,cUnitHi:8.5,unit:"sqft",defQty:300,minJob:2800},
@@ -1961,7 +1964,7 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
         {rx:/tuckpoint|repoint|mortar\s*joint|grind\s*and\s*point/i, scope:"Tuckpointing", qtyRx:/([\d,]+)\s*(?:sq|sf|sqft|square)/i},
         {rx:/lintel|steel\s*beam|i-beam|angle\s*iron/i, scope:"Lintel/Steel", qtyRx:/(\d+)\s*(?:lintel|beam|steel)/i},
         {rx:/chimney.*(rebuild|reconstruct|tear|rebuilt|replace entirely)/i, scope:"Chimney Rebuild"},
-        {rx:/chimney.*(repair|cap|crown|flue|tuck|work|fix)/i, scope:"Chimney Repair"},
+        {rx:/chimney.*(repair|cap|crown|flue|tuck|work|fix)|(?:crown|flue).*chimney|\\bchim\\b.*(?:cap|repair|fix|work)/i, scope:"Chimney Repair"},
         {rx:/parapet|coping|cap\s*stone/i, scope:"Parapet/Coping", qtyRx:/(\d+)\s*(?:lf|linear|ft|feet)/i},
         {rx:/concrete|flatwork|sidewalk|driveway|slab/i, scope:"Concrete", qtyRx:/(\d+)\s*(?:sq|sf|sqft|square)/i},
         {rx:/retaining|block\s*wall|cmu/i, scope:"Retaining Wall", qtyRx:/(\d+)\s*(?:lf|linear|ft|feet)/i},
