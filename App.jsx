@@ -14,8 +14,8 @@ const B = {
   grn:"#27AE60",grnBg:"#EAFAF1",red:"#E74C3C",redBg:"#FDEDEC",
   gold:"#F39C12",goldBg:"#FEF9E7"
 };
-const LIGHT = {bg:"#F0F3F6",card:"#FFF",dk:"#2C3E50",bdr:"#E2E8F0",mut:"#8896A6",inp:"#FAFBFC"};
-const DARK = {bg:"#0F1419",card:"#1A2332",dk:"#E8ECF1",bdr:"#2A3A4E",mut:"#7B8CA0",inp:"#15202B"};
+const LIGHT = {bg:"#0B1929",card:"rgba(255,255,255,0.04)",dk:"#fff",bdr:"rgba(255,255,255,0.08)",mut:"rgba(255,255,255,0.4)",inp:"rgba(255,255,255,0.06)"};
+const DARK = {bg:"#0B1929",card:"rgba(255,255,255,0.04)",dk:"#fff",bdr:"rgba(255,255,255,0.08)",mut:"rgba(255,255,255,0.4)",inp:"rgba(255,255,255,0.06)"};
 const DB = {
   Beginner:{bg:"#E8F8F5",fg:"#1ABC9C",bd:"#A3E4D7"},
   Intermediate:{bg:"#FEF9E7",fg:"#D4AC0D",bd:"#F9E79F"},
@@ -107,7 +107,7 @@ function Modal({ open, onClose, children }) {
   if (!open) return null;
   return (
     <div style={{position:"fixed",inset:0,zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.5)",animation:"fadeIn 0.2s"}} onClick={onClose}>
-      <div style={{background:"#FFF",borderRadius:16,padding:"28px 24px",maxWidth:400,width:"90%",boxShadow:"0 20px 60px rgba(0,0,0,0.3)",animation:"popIn 0.25s ease"}} onClick={e=>e.stopPropagation()}>
+      <div style={{background:"#132F44",borderRadius:16,padding:"28px 24px",maxWidth:400,width:"90%",boxShadow:"0 20px 60px rgba(0,0,0,0.5)",border:"1px solid rgba(255,255,255,0.06)",animation:"popIn 0.25s ease"}} onClick={e=>e.stopPropagation()}>
         {children}
       </div>
     </div>
@@ -876,7 +876,7 @@ export default function App() {
   // ═══ BRAIN TRAINING ═══
   if (screen === "training") {
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:"#0B1929",fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
@@ -991,7 +991,7 @@ export default function App() {
     const pct = ((qIdx + (locked ? 1 : 0)) / quiz.questions.length) * 100;
 
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:"#0B1929",fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <Modal open={modal==="exit"} onClose={()=>setModal(null)}>
@@ -1110,7 +1110,7 @@ export default function App() {
     const nextIdx = quizIdx < 14 ? quizIdx + 1 : null;
 
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:"#0B1929",fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <Confetti />
@@ -1169,7 +1169,7 @@ export default function App() {
     const sc = trail.filter(a=>a.picked===a.correct).length;
 
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:"#0B1929",fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <div style={{background:C.navy,textAlign:"center",padding:"28px 24px"}}>
@@ -1204,7 +1204,7 @@ export default function App() {
                     return (
                       <div key={letter} style={{display:"flex",gap:10,alignItems:"flex-start",background:bg,borderRadius:8,padding:"10px 12px",border:`1.5px solid ${bd}`,opacity:!isCorrect&&!isPicked?0.5:1}}>
                         <div style={{minWidth:26,height:26,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,
-                          background:isCorrect?C.grn:isPicked?C.red:"#E2E8F0",color:isCorrect||isPicked?"#fff":C.dk}}>
+                          background:isCorrect?C.grn:isPicked?C.red:"rgba(255,255,255,0.06)",color:isCorrect||isPicked?"#fff":C.dk}}>
                           {isCorrect?"✓":isPicked?"✗":letter}
                         </div>
                         <div>
@@ -1251,7 +1251,7 @@ export default function App() {
     const d = new Date();
     const dateStr = d.toLocaleDateString("en-US", {month:"long",day:"numeric",year:"numeric"});
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:"#0B1929",fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
@@ -1315,7 +1315,7 @@ export default function App() {
     }).sort((a,b) => b.passed - a.passed || b.acc - a.acc);
 
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:"#0B1929",fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
@@ -1349,7 +1349,7 @@ export default function App() {
               <div style={{display:"flex",gap:2}}>
                 {Array.from({length:15}).map((_,qi)=>{
                   const up = allProg[b.name] || {};
-                  return <div key={qi} style={{width:4,height:16,borderRadius:2,background:up[qi]?.passed?C.grn:up[qi]?C.gold:"#E2E8F0"}}/>;
+                  return <div key={qi} style={{width:4,height:16,borderRadius:2,background:up[qi]?.passed?C.grn:up[qi]?C.gold:"rgba(255,255,255,0.1)"}}/>;
                 })}
               </div>
             </div>
@@ -1364,7 +1364,7 @@ export default function App() {
   if (screen === "admin") {
     if (!adminAuth) {
       return (
-        <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif",display:"flex",flexDirection:"column"}}>
+        <div style={{minHeight:"100vh",background:"#0B1929",fontFamily:"'DM Sans','Outfit',sans-serif",display:"flex",flexDirection:"column"}}>
           <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
           <style>{CSS}</style>
           <NavBar
@@ -1426,7 +1426,7 @@ export default function App() {
     const teamAns = teamStats.reduce((s,t)=>s+t.ta,0);
 
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:"#0B1929",fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
@@ -1509,7 +1509,7 @@ export default function App() {
           {adminAnalyses.length > 0 && (() => {
             const parseA = (item) => { try { return typeof item.analysis === 'string' ? JSON.parse(item.analysis) : item.analysis; } catch(e) { return null; } };
             const gcA = (g) => { if (!g) return C.mut; if (g.startsWith('A')) return C.grn; if (g.startsWith('B')) return C.sky; if (g.startsWith('C')) return C.gold; return C.red; };
-            const gcBgA = (g) => { if (!g) return C.inp; if (g.startsWith('A')) return C.grnBg; if (g.startsWith('B')) return "#E8F4F8"; if (g.startsWith('C')) return C.goldBg; return C.redBg; };
+            const gcBgA = (g) => { if (!g) return "rgba(255,255,255,0.04)"; if (g.startsWith('A')) return "rgba(46,204,113,0.1)"; if (g.startsWith('B')) return "rgba(93,165,186,0.1)"; if (g.startsWith('C')) return "rgba(241,196,15,0.1)"; return "rgba(231,76,60,0.1)"; };
             const byUser = {};
             adminAnalyses.forEach(a => { if (!byUser[a.user_name]) byUser[a.user_name] = []; byUser[a.user_name].push(a); });
 
@@ -1622,18 +1622,18 @@ export default function App() {
     };
 
     const gc = (g) => {
-      if (!g) return C.mut;
-      if (g.startsWith('A')) return C.grn;
-      if (g.startsWith('B')) return C.sky;
-      if (g.startsWith('C')) return C.gold;
-      return C.red;
+      if (!g) return "rgba(255,255,255,0.4)";
+      if (g.startsWith('A')) return "#2ECC71";
+      if (g.startsWith('B')) return "#5DA5BA";
+      if (g.startsWith('C')) return "#F1C40F";
+      return "#E74C3C";
     };
     const gcBg = (g) => {
-      if (!g) return C.inp;
-      if (g.startsWith('A')) return C.grnBg;
-      if (g.startsWith('B')) return "#E8F4F8";
-      if (g.startsWith('C')) return C.goldBg;
-      return C.redBg;
+      if (!g) return "rgba(255,255,255,0.04)";
+      if (g.startsWith('A')) return "rgba(46,204,113,0.1)";
+      if (g.startsWith('B')) return "rgba(93,165,186,0.1)";
+      if (g.startsWith('C')) return "rgba(241,196,15,0.1)";
+      return "rgba(231,76,60,0.1)";
     };
 
     const parseStored = (item) => {
@@ -1643,128 +1643,128 @@ export default function App() {
 
     const AnalysisCard = ({ a, date }) => {
       if (!a) return null;
+      const [showExpanded, setShowExpanded] = useState(false);
 
-      // Grade to numeric for radar chart (A+=100, A=95, A-=90, B+=85... F=20)
-      const g2n = (g) => {
-        if (!g) return 30;
-        const map = {"A+":100,"A":95,"A-":90,"B+":85,"B":80,"B-":75,"C+":70,"C":65,"C-":60,"D+":55,"D":50,"D-":45,"F":20};
-        return map[g] || 30;
+      const gc = (g) => {
+        if (!g) return "rgba(255,255,255,0.4)";
+        if (g.startsWith('A')) return "#2ECC71";
+        if (g.startsWith('B')) return "#5DA5BA";
+        if (g.startsWith('C')) return "#F1C40F";
+        return "#E74C3C";
       };
 
-      // Build radar points from scorecard
-      const steps = a.scorecard || [];
-      const radarSize = 280;
-      const cx = radarSize / 2;
-      const cy = radarSize / 2;
-      const maxR = 110;
-
-      const getPoint = (idx, val, total) => {
-        const angle = (Math.PI * 2 * idx / total) - Math.PI / 2;
-        const r = (val / 100) * maxR;
-        return [cx + r * Math.cos(angle), cy + r * Math.sin(angle)];
-      };
-
-      const radarPoints = steps.map((s, i) => getPoint(i, g2n(s.grade), steps.length));
-      const radarPath = radarPoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ') + ' Z';
-
-      // Grid rings
-      const rings = [25, 50, 75, 100];
+      // Support both old format (strengths/blindSpots) and new format (wentWell/wentPoorly)
+      const wellItems = a.wentWell || (a.strengths || []).slice(0,2).map(s => ({label:"Strength",detail:typeof s==="string"?s:s.detail||"",quote:null}));
+      const poorItems = a.wentPoorly || (a.blindSpots || []).slice(0,2).map(b => ({label:b.label||"Issue",detail:b.detail||"",quote:null}));
+      const action = a.actionItem || a.fix?.headline || null;
+      const expanded = a.expanded || null;
+      const scorecard = expanded?.scorecard || a.scorecard || [];
+      const missed = expanded?.missedOpportunities || [];
+      const script = expanded?.scriptToPractice || a.fix?.script || null;
 
       return (
         <div style={{animation:"slideUp 0.3s ease"}}>
-          {/* 1. OVERALL GRADE — big and unmissable */}
-          <div style={{textAlign:"center",marginBottom:20}}>
-            <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:72,height:72,borderRadius:16,background:gcBg(a.grade),fontSize:28,fontWeight:900,color:gc(a.grade),border:`3px solid ${gc(a.grade)}30`,marginBottom:8}}>{a.grade}</div>
-            {a.summary && <div style={{fontSize:15,fontWeight:700,color:C.dk,lineHeight:1.5,maxWidth:320,margin:"0 auto"}}>{a.summary}</div>}
-            <div style={{fontSize:12,color:C.mut,marginTop:4}}>{date}</div>
+          {/* GRADE + SUMMARY */}
+          <div style={{textAlign:"center",marginBottom:24}}>
+            <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:72,height:72,borderRadius:18,background:"rgba(255,255,255,0.04)",fontSize:32,fontWeight:900,color:gc(a.grade),border:`2px solid ${gc(a.grade)}40`,marginBottom:10,boxShadow:`0 0 24px ${gc(a.grade)}15`}}>{a.grade}</div>
+            {a.summary && <div style={{fontSize:16,fontWeight:700,color:"#fff",lineHeight:1.5,maxWidth:320,margin:"0 auto"}}>{a.summary}</div>}
+            <div style={{fontSize:12,color:"rgba(255,255,255,0.35)",marginTop:6}}>{date}</div>
           </div>
 
-          {/* 2. FIX THIS NEXT — the money card, position #2 */}
-          {a.fix && (
-            <div style={{background:C.navy,borderRadius:16,padding:"20px",marginBottom:16,position:"relative",overflow:"hidden"}}>
-              <div style={{position:"absolute",right:-10,top:-10,fontSize:80,opacity:0.05,pointerEvents:"none"}}>🔥</div>
-              <div style={{fontSize:11,fontWeight:800,color:"#E74C3C",letterSpacing:1,marginBottom:6}}>🔥 FIX THIS NEXT</div>
-              <div style={{fontSize:16,color:"#fff",fontWeight:700,marginBottom:12,lineHeight:1.5}}>{a.fix.headline}</div>
-              <div style={{background:"rgba(255,255,255,0.08)",borderRadius:10,padding:"14px 16px"}}>
-                <div style={{fontSize:10,color:"rgba(255,255,255,0.4)",fontWeight:700,letterSpacing:0.5,marginBottom:6}}>SCRIPT TO PRACTICE</div>
-                <div style={{fontSize:14,color:"rgba(255,255,255,0.9)",lineHeight:1.7,fontStyle:"italic"}}>{a.fix.script}</div>
-              </div>
+          {/* WHAT WENT WELL (green, 2 items) */}
+          {wellItems.length > 0 && (
+            <div style={{background:"rgba(46,204,113,0.06)",borderRadius:16,border:"1px solid rgba(46,204,113,0.15)",padding:"18px 20px",marginBottom:12}}>
+              <div style={{fontSize:11,fontWeight:800,color:"#2ECC71",letterSpacing:1,marginBottom:12}}>✅ WHAT WENT WELL</div>
+              {wellItems.map((w, i) => (
+                <div key={i} style={{marginBottom:i<wellItems.length-1?14:0}}>
+                  <div style={{fontSize:15,fontWeight:800,color:"#2ECC71",marginBottom:3}}>{typeof w==="string"?w:w.label}</div>
+                  {w.detail && <div style={{fontSize:13,lineHeight:1.6,color:"rgba(255,255,255,0.7)"}}>{w.detail}</div>}
+                  {w.quote && <div style={{fontSize:12,color:"rgba(46,204,113,0.6)",fontStyle:"italic",marginTop:4,paddingLeft:12,borderLeft:"2px solid rgba(46,204,113,0.2)"}}>"{w.quote}"</div>}
+                </div>
+              ))}
             </div>
           )}
 
-          {/* 3. RADAR CHART */}
-          {steps.length > 0 && (
-            <div style={{background:C.card,borderRadius:16,border:`1px solid ${C.bdr}`,padding:"16px",marginBottom:16}}>
-              <div style={{fontSize:11,fontWeight:700,color:C.mut,letterSpacing:0.5,marginBottom:12,textTransform:"uppercase"}}>Sandler Step Profile</div>
-              <div style={{display:"flex",justifyContent:"center"}}>
-                <svg viewBox={`0 0 ${radarSize} ${radarSize}`} width="100%" style={{maxWidth:radarSize}}>
-                  {/* Grid rings */}
-                  {rings.map(r => {
-                    const pts = steps.map((_, i) => getPoint(i, r, steps.length));
-                    const path = pts.map((p, i) => `${i===0?'M':'L'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ') + ' Z';
-                    return <path key={r} d={path} fill="none" stroke={darkMode?"rgba(255,255,255,0.08)":"rgba(0,0,0,0.06)"} strokeWidth="1"/>;
-                  })}
-                  {/* Axis lines */}
-                  {steps.map((_, i) => {
-                    const [px, py] = getPoint(i, 100, steps.length);
-                    return <line key={i} x1={cx} y1={cy} x2={px} y2={py} stroke={darkMode?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.04)"} strokeWidth="1"/>;
-                  })}
-                  {/* Data shape */}
-                  <path d={radarPath} fill={`${B.navy}20`} stroke={B.navy} strokeWidth="2.5" strokeLinejoin="round"/>
-                  {/* Data points */}
-                  {radarPoints.map((p, i) => (
-                    <circle key={i} cx={p[0]} cy={p[1]} r="4.5" fill={gc(steps[i].grade)} stroke="#fff" strokeWidth="2"/>
+          {/* WHAT WENT POORLY (red, 2 items) */}
+          {poorItems.length > 0 && (
+            <div style={{background:"rgba(231,76,60,0.06)",borderRadius:16,border:"1px solid rgba(231,76,60,0.15)",padding:"18px 20px",marginBottom:12}}>
+              <div style={{fontSize:11,fontWeight:800,color:"#E74C3C",letterSpacing:1,marginBottom:12}}>⚠️ WHAT NEEDS WORK</div>
+              {poorItems.map((p, i) => (
+                <div key={i} style={{marginBottom:i<poorItems.length-1?14:0}}>
+                  <div style={{fontSize:15,fontWeight:800,color:"#E74C3C",marginBottom:3}}>{typeof p==="string"?p:p.label}</div>
+                  {p.detail && <div style={{fontSize:13,lineHeight:1.6,color:"rgba(255,255,255,0.7)"}}>{p.detail}</div>}
+                  {p.quote && <div style={{fontSize:12,color:"rgba(231,76,60,0.6)",fontStyle:"italic",marginTop:4,paddingLeft:12,borderLeft:"2px solid rgba(231,76,60,0.2)"}}>"{p.quote}"</div>}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ACTION ITEM (navy, 1 item) */}
+          {action && (
+            <div style={{background:"linear-gradient(145deg, #132F44 0%, #0B1F30 100%)",borderRadius:16,border:"1px solid rgba(93,165,186,0.15)",padding:"20px",marginBottom:16}}>
+              <div style={{fontSize:11,fontWeight:800,color:"#5DA5BA",letterSpacing:1,marginBottom:8}}>🎯 NEXT APPOINTMENT</div>
+              <div style={{fontSize:16,color:"#fff",fontWeight:700,lineHeight:1.6}}>{action}</div>
+            </div>
+          )}
+
+          {/* EXPAND ANALYSIS BUTTON */}
+          {(scorecard.length > 0 || script) && !showExpanded && (
+            <button onClick={()=>setShowExpanded(true)}
+              style={{width:"100%",padding:"14px",borderRadius:12,background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",color:"rgba(255,255,255,0.5)",fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:16}}>
+              Expand Full Analysis \u25bc
+            </button>
+          )}
+
+          {/* EXPANDED VIEW */}
+          {showExpanded && (
+            <div style={{animation:"slideUp 0.3s ease"}}>
+              <button onClick={()=>setShowExpanded(false)}
+                style={{width:"100%",padding:"10px",borderRadius:12,background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",color:"rgba(255,255,255,0.4)",fontSize:13,fontWeight:600,cursor:"pointer",marginBottom:16}}>
+                Collapse \u25b2
+              </button>
+
+              {/* SANDLER STEP BREAKDOWN */}
+              {scorecard.length > 0 && (
+                <div style={{marginBottom:16}}>
+                  <div style={{fontSize:11,fontWeight:800,color:"rgba(255,255,255,0.35)",letterSpacing:1,marginBottom:12}}>SANDLER STEP BREAKDOWN</div>
+                  {scorecard.map((s, i) => (
+                    <div key={i} style={{background:"rgba(255,255,255,0.03)",borderRadius:12,border:"1px solid rgba(255,255,255,0.06)",padding:"14px 16px",marginBottom:8}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                        <div style={{fontSize:14,fontWeight:700,color:"#fff"}}>{s.step}</div>
+                        <div style={{fontSize:14,fontWeight:900,color:gc(s.grade),background:`${gc(s.grade)}15`,padding:"2px 10px",borderRadius:6}}>{s.grade}</div>
+                      </div>
+                      <div style={{fontSize:13,lineHeight:1.7,color:"rgba(255,255,255,0.55)"}}>{s.detail || s.note || ""}</div>
+                    </div>
                   ))}
-                  {/* Labels */}
-                  {steps.map((s, i) => {
-                    const [lx, ly] = getPoint(i, 125, steps.length);
-                    return <text key={i} x={lx} y={ly} textAnchor="middle" dominantBaseline="middle" fontSize="10" fontWeight="700" fill={darkMode?"#8899AA":"#6B7C8D"}>{s.step?.split('/')[0]?.split(' ')[0]}</text>;
-                  })}
-                </svg>
-              </div>
-              {/* Grade pills row */}
-              <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center",marginTop:12}}>
-                {steps.map((s, i) => (
-                  <div key={i} style={{display:"flex",alignItems:"center",gap:4,background:gcBg(s.grade)+"80",borderRadius:6,padding:"3px 8px"}}>
-                    <span style={{fontSize:10,color:C.dk,fontWeight:600}}>{s.step?.split('/')[0]?.trim()}</span>
-                    <span style={{fontSize:10,fontWeight:800,color:gc(s.grade)}}>{s.grade}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 4. BLIND SPOTS — red wash, stacked */}
-          {a.blindSpots?.length > 0 && (
-            <div style={{background:darkMode?"#2A1515":`${C.red}08`,borderRadius:16,border:`1px solid ${C.red}20`,padding:"16px 18px",marginBottom:12}}>
-              <div style={{fontSize:11,fontWeight:800,color:C.red,letterSpacing:0.5,marginBottom:10}}>⚠️ BLIND SPOTS</div>
-              {a.blindSpots.map((b, i) => (
-                <div key={i} style={{marginBottom:i < a.blindSpots.length-1 ? 12 : 0}}>
-                  <div style={{fontSize:14,fontWeight:800,color:C.red,marginBottom:2}}>{b.label}</div>
-                  <div style={{fontSize:13,lineHeight:1.6,color:C.dk}}>{b.detail}</div>
                 </div>
-              ))}
-            </div>
-          )}
+              )}
 
-          {/* 5. STRENGTHS — green wash, stacked */}
-          {a.strengths?.length > 0 && (
-            <div style={{background:darkMode?"#152A17":`${C.grn}08`,borderRadius:16,border:`1px solid ${C.grn}20`,padding:"16px 18px",marginBottom:12}}>
-              <div style={{fontSize:11,fontWeight:800,color:C.grn,letterSpacing:0.5,marginBottom:10}}>✅ WHAT WORKED</div>
-              {a.strengths.map((s, i) => (
-                <div key={i} style={{fontSize:13,lineHeight:1.6,color:C.dk,marginBottom:4,paddingLeft:16,position:"relative"}}>
-                  <span style={{position:"absolute",left:0,color:C.grn,fontWeight:800}}>•</span>{s}
+              {/* MISSED OPPORTUNITIES */}
+              {missed.length > 0 && (
+                <div style={{background:"rgba(241,196,15,0.05)",borderRadius:16,border:"1px solid rgba(241,196,15,0.1)",padding:"16px 18px",marginBottom:16}}>
+                  <div style={{fontSize:11,fontWeight:800,color:"#F1C40F",letterSpacing:1,marginBottom:10}}>MISSED OPPORTUNITIES</div>
+                  {missed.map((m, i) => (
+                    <div key={i} style={{fontSize:13,lineHeight:1.6,color:"rgba(255,255,255,0.6)",marginBottom:6,paddingLeft:14,position:"relative"}}>
+                      <span style={{position:"absolute",left:0,color:"#F1C40F",fontWeight:800}}>•</span>{m}
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
+
+              {/* SCRIPT TO PRACTICE */}
+              {script && (
+                <div style={{background:"linear-gradient(145deg, #132F44 0%, #0B1F30 100%)",borderRadius:16,border:"1px solid rgba(93,165,186,0.15)",padding:"20px",marginBottom:16}}>
+                  <div style={{fontSize:11,fontWeight:800,color:"#5DA5BA",letterSpacing:1,marginBottom:8}}>SCRIPT TO PRACTICE</div>
+                  <div style={{fontSize:15,color:"rgba(255,255,255,0.85)",lineHeight:1.8,fontStyle:"italic"}}>{script}</div>
+                </div>
+              )}
             </div>
           )}
 
-          {/* Fallback for raw text */}
-          {a.raw && <div style={{background:C.card,borderRadius:12,padding:"16px",border:`1px solid ${C.bdr}`,fontSize:13,lineHeight:1.7,color:C.dk,whiteSpace:"pre-wrap",marginTop:12}}>{a.raw}</div>}
+          {a.raw && <div style={{background:"rgba(255,255,255,0.03)",borderRadius:12,padding:"16px",border:"1px solid rgba(255,255,255,0.06)",fontSize:13,lineHeight:1.7,color:"rgba(255,255,255,0.6)",whiteSpace:"pre-wrap",marginTop:12}}>{a.raw}</div>}
         </div>
       );
     };
-
 
     // Viewing a past analysis
     if (bsViewIdx !== null && bsHistory[bsViewIdx]) {
@@ -1772,7 +1772,7 @@ export default function App() {
       const parsed = parseStored(item);
       const dateStr = new Date(item.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
       return (
-        <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
+        <div style={{minHeight:"100vh",background:"#0B1929",fontFamily:"'DM Sans','Outfit',sans-serif"}}>
           <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
           <style>{CSS}</style>
           <NavBar
@@ -1792,7 +1792,7 @@ export default function App() {
     }
 
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:"#0B1929",fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
@@ -1932,7 +1932,7 @@ export default function App() {
     const marketJobs = heatmapData?.[heatmapMarket] || [];
 
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif",display:"flex",flexDirection:"column"}}>
+      <div style={{minHeight:"100vh",background:"#0B1929",fontFamily:"'DM Sans','Outfit',sans-serif",display:"flex",flexDirection:"column"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
@@ -2164,7 +2164,7 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
     const confColor = (c) => c==="high"?"#27AE60":c==="medium"?"#F39C12":"#E74C3C";
 
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:"#0B1929",fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
@@ -2324,7 +2324,7 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
     const overdue = todayTasks.filter(t => t.endDate && t.endDate < todayStr);
 
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:"#0B1929",fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
@@ -2444,7 +2444,7 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
     const cats = [...new Set(OBJECTIONS.map(o => o.cat))];
 
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:"#0B1929",fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
@@ -2495,7 +2495,7 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
   // ═══ RESOURCES ═══
   if (screen === "resources") {
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:"#0B1929",fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
@@ -2515,7 +2515,7 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
                 {cat.docs.map((doc, i) => (
                   <a key={i} href={doc.url} target="_blank" rel="noopener noreferrer"
                     style={{display:"flex",alignItems:"center",gap:12,background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,padding:"14px 16px",textDecoration:"none",transition:"all 0.15s"}}>
-                    <div style={{width:36,height:36,borderRadius:8,background:doc.type==="pdf"?C.navy+"12":"#F0F3F6",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>
+                    <div style={{width:36,height:36,borderRadius:8,background:doc.type==="pdf"?C.navy+"12":"rgba(255,255,255,0.06)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>
                       {doc.type === "pdf" ? "📄" : "🖼️"}
                     </div>
                     <div style={{flex:1,minWidth:0}}>

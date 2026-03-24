@@ -25,11 +25,11 @@ export default async (req) => {
 
 We sell: residential chimney repair, tuckpointing, steps, retaining walls, foundations ($5K-$50K) and commercial facade restoration, waterproofing, structural repair ($25K-$500K+). We compete on quality and process, not price.
 
-Analyze this sales appointment transcript. Return ONLY valid JSON — no markdown, no backticks, nothing outside the JSON object.
+Analyze this sales appointment transcript. Return ONLY valid JSON.
 
-{"grade":"C+","summary":"Max 15 words","scorecard":[{"step":"Bonding & rapport","grade":"C+","note":"Max 10 words"},{"step":"Up-front contract","grade":"F","note":"Max 10 words"},{"step":"Pain / pain funnel","grade":"D","note":"Max 10 words"},{"step":"Budget","grade":"D","note":"Max 10 words"},{"step":"Decision","grade":"C-","note":"Max 10 words"},{"step":"Fulfillment","grade":"B-","note":"Max 10 words"},{"step":"Post-sell","grade":"B","note":"Max 10 words"}],"strengths":["Max 15 words each","3-4 bullets"],"blindSpots":[{"label":"2-3 words","detail":"Max 25 words"},{"label":"Label","detail":"Max 25 words"},{"label":"Label","detail":"Max 25 words"}],"fix":{"headline":"Max 15 words","script":"Exact words to say. 2-3 sentences max."}}
+{"grade":"C+","summary":"One sentence max 15 words direct assessment","wentWell":[{"label":"2-4 words","detail":"What they did right max 20 words","quote":"Exact words from transcript or null"},{"label":"2-4 words","detail":"Max 20 words","quote":"Exact words or null"}],"wentPoorly":[{"label":"2-4 words","detail":"What went wrong max 20 words","quote":"Exact words showing the problem or null"},{"label":"2-4 words","detail":"Max 20 words","quote":"Exact words or null"}],"actionItem":"One specific thing to do at the NEXT appointment. Max 20 words. Concrete.","expanded":{"scorecard":[{"step":"Bonding & Rapport","grade":"B+","detail":"2-3 sentences with specific examples from transcript"},{"step":"Up-Front Contract","grade":"F","detail":"2-3 sentences"},{"step":"Pain / Pain Funnel","grade":"D","detail":"2-3 sentences"},{"step":"Budget","grade":"D+","detail":"2-3 sentences"},{"step":"Decision","grade":"C","detail":"2-3 sentences"},{"step":"Fulfillment","grade":"B-","detail":"2-3 sentences"},{"step":"Post-Sell","grade":"C","detail":"2-3 sentences"}],"missedOpportunities":["Specific moment they should have said X but didn't","Another missed moment"],"scriptToPractice":"Exact words to say next time. 2-3 sentences."}}
 
-Grades: A/A-/B+/B/B-/C+/C/C-/D/F. Be direct. No soft language. Return ONLY the JSON.`;
+RULES: wentWell and wentPoorly EXACTLY 2 items each. Include actual quotes from transcript. Grades: A/A-/B+/B/B-/C+/C/C-/D+/D/D-/F. Be direct. No soft language. Return ONLY JSON.`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -40,7 +40,7 @@ Grades: A/A-/B+/B/B-/C+/C/C-/D/F. Be direct. No soft language. Return ONLY the J
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 1500,
+        max_tokens: 3000,
         system: systemPrompt,
         messages: [{ role: 'user', content: `Transcript from ${userName}:\n\n${transcript}` }],
       }),
@@ -60,7 +60,7 @@ Grades: A/A-/B+/B/B-/C+/C/C-/D/F. Be direct. No soft language. Return ONLY the J
     try {
       analysis = JSON.parse(rawText.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim());
     } catch (e) {
-      return new Response(JSON.stringify({ analysis: { grade: '?', summary: 'Analysis complete', scorecard: [], strengths: [], blindSpots: [], fix: { headline: 'See details', script: rawText }, raw: rawText } }), {
+      return new Response(JSON.stringify({ analysis: { grade: '?', summary: 'Analysis complete', wentWell: [], wentPoorly: [], actionItem: 'Review transcript manually', expanded: null, raw: rawText } }), {
         status: 200, headers: { 'Content-Type': 'application/json' },
       });
     }
