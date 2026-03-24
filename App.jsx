@@ -205,6 +205,8 @@ export default function App() {
   const [estScopes, setEstScopes] = useState([]);
   const [estInput, setEstInput] = useState("");
   const [objSearch, setObjSearch] = useState("");
+  const [showQR, setShowQR] = useState(false);
+  const [todayTasks, setTodayTasks] = useState([]);
   const [estMode, setEstMode] = useState("nlp");
   const [estBuilding, setEstBuilding] = useState("residential");
   const [estLoading, setEstLoading] = useState(false);
@@ -628,12 +630,18 @@ export default function App() {
         <div style={{maxWidth:960,margin:"0 auto",padding:"16px 16px 24px"}}>
           {/* 6-Square Command Center */}
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
-            <div onClick={()=>{loadAllProgress().then(d=>setAllProg(d));setScreen("leaderboard");}}
-              style={{background:"linear-gradient(145deg, #D4AF37 0%, #9B7B2B 100%)",borderRadius:18,padding:"22px 18px",cursor:"pointer",minHeight:130,position:"relative",overflow:"hidden"}}>
-              <div style={{position:"absolute",right:-6,bottom:-6,fontSize:60,opacity:0.12,pointerEvents:"none"}}>🏆</div>
-              <div style={{fontSize:38,marginBottom:8,pointerEvents:"none"}}>🏆</div>
-              <div style={{fontSize:17,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Leaderboard</div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,0.65)",marginTop:3,pointerEvents:"none"}}>Team rankings</div>
+            <div onClick={()=>setScreen("training")}
+              style={{background:"linear-gradient(145deg, #27AE60 0%, #1B7A43 100%)",borderRadius:18,padding:"22px 18px",cursor:"pointer",minHeight:130,position:"relative",overflow:"hidden"}}>
+              <div style={{position:"absolute",right:-6,bottom:-6,fontSize:60,opacity:0.12,pointerEvents:"none"}}>🧠</div>
+              {/* Leaderboard badge merged into Brain Training */}
+              <div onClick={(e)=>{e.stopPropagation();loadAllProgress().then(d=>setAllProg(d));setScreen("leaderboard");}}
+                style={{position:"absolute",top:12,left:12,display:"flex",alignItems:"center",gap:4,background:"rgba(0,0,0,0.25)",backdropFilter:"blur(4px)",borderRadius:8,padding:"4px 10px",cursor:"pointer",zIndex:2}}>
+                <span style={{fontSize:14}}>🏆</span>
+                <span style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.85)"}}>Leaderboard</span>
+              </div>
+              <div style={{fontSize:38,marginBottom:8,marginTop:18,pointerEvents:"none"}}>🧠</div>
+              <div style={{fontSize:17,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Brain Training</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,0.65)",marginTop:3,pointerEvents:"none"}}>{passedCount}/15 drills</div>
             </div>
             <div onClick={()=>{setBsTranscript("");setBsResult(null);setBsViewIdx(null);loadAnalyses(user).then(d=>setBsHistory(d));setScreen("blindspot");}}
               style={{background:`linear-gradient(145deg, ${C.navy} 0%, #0D2B45 100%)`,borderRadius:18,padding:"22px 18px",cursor:"pointer",minHeight:130,position:"relative",overflow:"hidden"}}>
@@ -642,26 +650,12 @@ export default function App() {
               <div style={{fontSize:17,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Blind Spot</div>
               <div style={{fontSize:12,color:"rgba(255,255,255,0.65)",marginTop:3,pointerEvents:"none"}}>{bsHistory.length} analyses</div>
             </div>
-            <div onClick={()=>setScreen("training")}
-              style={{background:"linear-gradient(145deg, #27AE60 0%, #1B7A43 100%)",borderRadius:18,padding:"22px 18px",cursor:"pointer",minHeight:130,position:"relative",overflow:"hidden"}}>
-              <div style={{position:"absolute",right:-6,bottom:-6,fontSize:60,opacity:0.12,pointerEvents:"none"}}>🧠</div>
-              <div style={{fontSize:38,marginBottom:8,pointerEvents:"none"}}>🧠</div>
-              <div style={{fontSize:17,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Brain Training</div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,0.65)",marginTop:3,pointerEvents:"none"}}>{passedCount}/15 drills</div>
-            </div>
             <div onClick={()=>setScreen("estimator")}
               style={{background:"linear-gradient(145deg, #5DA5BA 0%, #3D7A8E 100%)",borderRadius:18,padding:"22px 18px",cursor:"pointer",minHeight:130,position:"relative",overflow:"hidden"}}>
               <div style={{position:"absolute",right:-6,bottom:-6,fontSize:60,opacity:0.12,pointerEvents:"none"}}>🤖</div>
               <div style={{fontSize:38,marginBottom:8,pointerEvents:"none"}}>🤖</div>
               <div style={{fontSize:17,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Estimator</div>
               <div style={{fontSize:12,color:"rgba(255,255,255,0.65)",marginTop:3,pointerEvents:"none"}}>Quick scope pricing</div>
-            </div>
-            <div onClick={()=>setScreen("resources")}
-              style={{background:"linear-gradient(145deg, #8E6BB5 0%, #6B4E8A 100%)",borderRadius:18,padding:"22px 18px",cursor:"pointer",minHeight:130,position:"relative",overflow:"hidden"}}>
-              <div style={{position:"absolute",right:-6,bottom:-6,fontSize:60,opacity:0.12,pointerEvents:"none"}}>📁</div>
-              <div style={{fontSize:38,marginBottom:8,pointerEvents:"none"}}>📁</div>
-              <div style={{fontSize:17,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Resources</div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,0.65)",marginTop:3,pointerEvents:"none"}}>Sell sheets & specs</div>
             </div>
             <div onClick={()=>{if(!heatmapData)fetch('/heatmap.json').then(r=>r.json()).then(d=>setHeatmapData(d));setScreen("heatmap");}}
               style={{background:"linear-gradient(145deg, #E67E22 0%, #BF6516 100%)",borderRadius:18,padding:"22px 18px",cursor:"pointer",minHeight:130,position:"relative",overflow:"hidden"}}>
@@ -670,14 +664,60 @@ export default function App() {
               <div style={{fontSize:17,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Heat Map</div>
               <div style={{fontSize:12,color:"rgba(255,255,255,0.65)",marginTop:3,pointerEvents:"none"}}>580+ approved jobs</div>
             </div>
+            <div onClick={()=>setScreen("resources")}
+              style={{background:"linear-gradient(145deg, #8E6BB5 0%, #6B4E8A 100%)",borderRadius:18,padding:"22px 18px",cursor:"pointer",minHeight:130,position:"relative",overflow:"hidden"}}>
+              <div style={{position:"absolute",right:-6,bottom:-6,fontSize:60,opacity:0.12,pointerEvents:"none"}}>📁</div>
+              <div style={{fontSize:38,marginBottom:8,pointerEvents:"none"}}>📁</div>
+              <div style={{fontSize:17,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Resources</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,0.65)",marginTop:3,pointerEvents:"none"}}>Sell sheets & specs</div>
+            </div>
+            <div onClick={()=>setScreen("today")}
+              style={{background:"linear-gradient(145deg, #2C3E50 0%, #1A252F 100%)",borderRadius:18,padding:"22px 18px",cursor:"pointer",minHeight:130,position:"relative",overflow:"hidden"}}>
+              <div style={{position:"absolute",right:-6,bottom:-6,fontSize:60,opacity:0.12,pointerEvents:"none"}}>📋</div>
+              <div style={{fontSize:38,marginBottom:8,pointerEvents:"none"}}>📋</div>
+              <div style={{fontSize:17,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Today</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,0.65)",marginTop:3,pointerEvents:"none"}}>Tasks & to-do's</div>
+            </div>
           </div>
 
-          {/* Quick Tools */}
-          <div onClick={()=>setScreen("objections")}
-            style={{background:C.card,border:"1px solid "+C.bdr,borderRadius:10,padding:"12px 14px",cursor:"pointer",marginBottom:16}}>
-            <div style={{fontSize:14,fontWeight:700,color:C.dk}}>{"\ud83d\udde3\ufe0f"} Objection Playbook</div>
-            <div style={{fontSize:12,color:C.mut}}>16 rebuttals with Sandler scripts</div>
+          {/* Quick Tools Row */}
+          <div style={{display:"flex",gap:8,marginBottom:16}}>
+            <div onClick={()=>setScreen("objections")}
+              style={{flex:1,background:C.card,border:"1px solid "+C.bdr,borderRadius:10,padding:"12px 14px",cursor:"pointer"}}>
+              <div style={{fontSize:14,fontWeight:700,color:C.dk}}>{"\ud83d\udde3\ufe0f"} Objection Playbook</div>
+              <div style={{fontSize:12,color:C.mut}}>16 rebuttals with scripts</div>
+            </div>
+            <div onClick={()=>setShowQR(true)}
+              style={{minWidth:120,background:"linear-gradient(145deg, #F1C40F 0%, #D4AC0D 100%)",borderRadius:10,padding:"12px 14px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center"}}>
+              <div style={{fontSize:20,marginBottom:2}}>⭐</div>
+              <div style={{fontSize:13,fontWeight:700,color:"#2C3E50"}}>Get a Review</div>
+            </div>
           </div>
+
+
+          {/* QR Code Review Modal */}
+          {showQR && (
+            <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={()=>setShowQR(false)}>
+              <div style={{background:"#fff",borderRadius:24,maxWidth:380,width:"100%",padding:"32px 24px",textAlign:"center",animation:"popIn 0.3s ease"}} onClick={e=>e.stopPropagation()}>
+                <div style={{fontSize:40,marginBottom:8}}>⭐</div>
+                <div style={{fontSize:22,fontWeight:900,color:"#1B4F72",marginBottom:4}}>Leave Us a Review!</div>
+                <div style={{fontSize:14,color:"#666",marginBottom:20,lineHeight:1.5}}>Show this QR code to the homeowner.<br/>It goes straight to our Google page.</div>
+                <div style={{background:"#F8F9FA",borderRadius:16,padding:20,marginBottom:20,display:"inline-block"}}>
+                  <img src={"https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https://search.google.com/local/writereview?placeid=ChIJG8-PDCelD4gRxQfXPgqHcw8&color=1B4F72&bgcolor=F8F9FA&format=svg"} alt="QR Code" style={{width:220,height:220,display:"block"}}/>
+                </div>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:16}}>
+                  <img src={ICON} alt="" style={{width:28,height:28}}/>
+                  <div style={{textAlign:"left"}}>
+                    <div style={{fontSize:14,fontWeight:800,color:"#1B4F72"}}>North Shore Masonry</div>
+                    <div style={{fontSize:12,color:"#888"}}>4.9 stars on Google ({275}+ reviews)</div>
+                  </div>
+                </div>
+                <button onClick={()=>setShowQR(false)} style={{width:"100%",padding:"14px",borderRadius:12,background:"#1B4F72",color:"#fff",border:"none",fontSize:16,fontWeight:700,cursor:"pointer"}}>
+                  Done
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Welcome popup — Level Up of the Day */}
           {showWelcome && dailyTip && (
@@ -2163,6 +2203,136 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
   }
 
 
+
+
+  // === TODAY (Tasks & To-Do's from JobTread) ===
+  if (screen === "today") {
+    const JT_USER_MAP = {
+      "Zac": "22Nxa2M8vDzG",
+      "Les": "22Nwt8wGjTEx",
+      "Luke": "22P92SdAQUQE",
+      "Jace": "22PTSGV5U7Rj",
+      "Paul": "22PGVz57tzke",
+      "Carlos": "22NxzADWDVVA",
+      "Devin": "22NztygQhunB",
+      "BJ": "22PHDEMpwFKR",
+      "Cortney": "22NxBXSxWBRq",
+    };
+    const membershipId = JT_USER_MAP[user] || null;
+
+    const fetchTasks = async () => {
+      if (!membershipId) return;
+      try {
+        const resp = await fetch("/.netlify/functions/tasks", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({ membershipId })
+        });
+        const data = await resp.json();
+        if (data.tasks) setTodayTasks(data.tasks);
+      } catch(e) { console.error("Task fetch error:", e); }
+    };
+
+    useEffect(() => { fetchTasks(); }, []);
+
+    const now = new Date();
+    const todayStr = now.toISOString().split("T")[0];
+    const todos = todayTasks.filter(t => t.isToDo);
+    const scheduled = todayTasks.filter(t => !t.isToDo);
+    const overdue = todayTasks.filter(t => t.endDate && t.endDate < todayStr);
+
+    return (
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif"}}>
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+        <style>{CSS}</style>
+        <NavBar
+          left={<button onClick={()=>setScreen("home")} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>\u2190 Back</button>}
+          center="Today"
+          right={<button onClick={fetchTasks} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>Refresh</button>}
+        />
+        <div style={{maxWidth:700,margin:"0 auto",padding:"16px 16px 48px"}}>
+
+          {/* Summary Cards */}
+          <div style={{display:"flex",gap:8,marginBottom:20}}>
+            <div style={{flex:1,background:C.card,borderRadius:12,padding:"14px",textAlign:"center",border:`1px solid ${C.bdr}`}}>
+              <div style={{fontSize:28,fontWeight:900,color:C.dk}}>{scheduled.length}</div>
+              <div style={{fontSize:11,color:C.mut,fontWeight:600}}>FIELD WORK</div>
+            </div>
+            <div style={{flex:1,background:C.card,borderRadius:12,padding:"14px",textAlign:"center",border:`1px solid ${C.bdr}`}}>
+              <div style={{fontSize:28,fontWeight:900,color:C.dk}}>{todos.length}</div>
+              <div style={{fontSize:11,color:C.mut,fontWeight:600}}>DESK WORK</div>
+            </div>
+            {overdue.length > 0 && (
+              <div style={{flex:1,background:"#E74C3C10",borderRadius:12,padding:"14px",textAlign:"center",border:"1px solid #E74C3C25"}}>
+                <div style={{fontSize:28,fontWeight:900,color:"#E74C3C"}}>{overdue.length}</div>
+                <div style={{fontSize:11,color:"#E74C3C",fontWeight:600}}>OVERDUE</div>
+              </div>
+            )}
+          </div>
+
+          {!membershipId && (
+            <div style={{textAlign:"center",padding:40,color:C.mut}}>
+              <div style={{fontSize:32,marginBottom:8}}>\ud83d\udd17</div>
+              <div style={{fontSize:16,fontWeight:700,color:C.dk}}>Not linked to JobTread</div>
+              <div style={{fontSize:14,marginTop:4}}>Ask Zac to connect your account.</div>
+            </div>
+          )}
+
+          {membershipId && todayTasks.length === 0 && (
+            <div style={{textAlign:"center",padding:40,color:C.mut}}>
+              <div style={{fontSize:32,marginBottom:8}}>\u2705</div>
+              <div style={{fontSize:16,fontWeight:700,color:C.dk}}>All caught up!</div>
+              <div style={{fontSize:14,marginTop:4}}>No open tasks or to-do's right now.</div>
+              <button onClick={fetchTasks} style={{marginTop:16,padding:"10px 24px",borderRadius:10,background:C.navy,color:"#fff",border:"none",fontSize:14,fontWeight:600,cursor:"pointer"}}>Check Again</button>
+            </div>
+          )}
+
+          {/* Field Work (Scheduled Tasks) */}
+          {scheduled.length > 0 && (
+            <>
+              <div style={{fontSize:11,fontWeight:700,color:C.navy,letterSpacing:0.5,textTransform:"uppercase",marginBottom:8}}>\ud83d\udce5 Field Work — Estimates & Site Visits</div>
+              {scheduled.map((t,i) => {
+                const isOverdue = t.endDate && t.endDate < todayStr;
+                const isToday = t.endDate === todayStr;
+                return (
+                  <div key={i} style={{background:C.card,borderRadius:12,padding:"14px 16px",border:`1px solid ${isOverdue?"#E74C3C25":isToday?"#F39C1225":C.bdr}`,marginBottom:8}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                      <div style={{fontSize:15,fontWeight:700,color:C.dk}}>{t.name}</div>
+                      {isOverdue && <span style={{fontSize:9,fontWeight:700,color:"#E74C3C",background:"#E74C3C15",padding:"2px 8px",borderRadius:4}}>OVERDUE</span>}
+                      {isToday && <span style={{fontSize:9,fontWeight:700,color:"#F39C12",background:"#F39C1215",padding:"2px 8px",borderRadius:4}}>TODAY</span>}
+                    </div>
+                    {t.jobName && <div style={{fontSize:12,color:C.mut,marginTop:3}}>Job: {t.jobName}{t.jobNumber ? ` #${t.jobNumber}` : ""}</div>}
+                    {t.endDate && <div style={{fontSize:11,color:C.mut,marginTop:2}}>Due: {t.endDate}</div>}
+                  </div>
+                );
+              })}
+            </>
+          )}
+
+          {/* Desk Work (To-Do's) */}
+          {todos.length > 0 && (
+            <>
+              <div style={{fontSize:11,fontWeight:700,color:"#8E44AD",letterSpacing:0.5,textTransform:"uppercase",marginBottom:8,marginTop:scheduled.length>0?16:0}}>\ud83d\udcbb Desk Work — To-Do's</div>
+              {todos.map((t,i) => {
+                const isOverdue = t.endDate && t.endDate < todayStr;
+                return (
+                  <div key={i} style={{background:C.card,borderRadius:12,padding:"14px 16px",border:`1px solid ${isOverdue?"#E74C3C25":C.bdr}`,marginBottom:8,display:"flex",alignItems:"center",gap:12}}>
+                    <div style={{width:24,height:24,borderRadius:6,border:`2px solid ${C.bdr}`,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:C.mut,fontSize:14}}>
+                    </div>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:14,fontWeight:700,color:C.dk}}>{t.name}</div>
+                      {t.jobName && <div style={{fontSize:12,color:C.mut,marginTop:2}}>Job: {t.jobName}</div>}
+                    </div>
+                    {isOverdue && <span style={{fontSize:9,fontWeight:700,color:"#E74C3C",background:"#E74C3C15",padding:"2px 6px",borderRadius:4}}>OVERDUE</span>}
+                  </div>
+                );
+              })}
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   // === OBJECTION PLAYBOOK ===
   if (screen === "objections") {
