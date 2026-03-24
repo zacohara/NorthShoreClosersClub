@@ -671,7 +671,12 @@ export default function App() {
               <div style={{fontSize:17,fontWeight:800,color:"#fff",pointerEvents:"none"}}>Resources</div>
               <div style={{fontSize:12,color:"rgba(255,255,255,0.65)",marginTop:3,pointerEvents:"none"}}>Sell sheets & specs</div>
             </div>
-            <div onClick={()=>setScreen("today")}
+            <div onClick={async()=>{
+              setScreen("today");
+              const JT_MAP={"Zac":"22Nxa2M8vDzG","Les":"22Nwt8wGjTEx","Luke":"22P92SdAQUQE","Jace":"22PTSGV5U7Rj","Paul":"22PGVz57tzke","Carlos":"22NxzADWDVVA","Devin":"22NztygQhunB","BJ":"22PHDEMpwFKR","Cortney":"22NxBXSxWBRq"};
+              const mid=JT_MAP[user];
+              if(mid){try{const r=await fetch("/.netlify/functions/tasks",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({membershipId:mid})});const d=await r.json();if(d.tasks)setTodayTasks(d.tasks);}catch(e){console.error(e);}}
+            }}
               style={{background:"linear-gradient(145deg, #2C3E50 0%, #1A252F 100%)",borderRadius:18,padding:"22px 18px",cursor:"pointer",minHeight:130,position:"relative",overflow:"hidden"}}>
               <div style={{position:"absolute",right:-6,bottom:-6,fontSize:60,opacity:0.12,pointerEvents:"none"}}>📋</div>
               <div style={{fontSize:38,marginBottom:8,pointerEvents:"none"}}>📋</div>
@@ -2233,7 +2238,6 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
       } catch(e) { console.error("Task fetch error:", e); }
     };
 
-    useEffect(() => { fetchTasks(); }, []);
 
     const now = new Date();
     const todayStr = now.toISOString().split("T")[0];
