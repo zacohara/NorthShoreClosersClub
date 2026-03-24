@@ -348,7 +348,7 @@ export default function App() {
 
   if (loading) {
     return (
-      <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:C.bg,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <div style={{textAlign:"center"}}>
@@ -630,8 +630,8 @@ export default function App() {
         {/* Frosted Stat Pills */}
         <div style={{display:"flex",gap:8,padding:"0 16px",marginTop:-22,position:"relative",zIndex:2}}>
           {[
-            {icon:"\u2713",label:"Passed",val:`${passedCount}/15`,color:"#5DA5BA"},
-            {icon:"\u25ce",label:"Accuracy",val:totalAns>0?`${Math.round(totalRight/totalAns*100)}%`:"\u2014",color:"#F1C40F"},
+            {icon:"✓",label:"Passed",val:`${passedCount}/15`,color:"#5DA5BA"},
+            {icon:"◎",label:"Accuracy",val:totalAns>0?`${Math.round(totalRight/totalAns*100)}%`:"\u2014",color:"#F1C40F"},
             ...(streak.current>0?[{icon:"\ud83d\udd25",label:"Streak",val:`${streak.current}d`,color:"#E67E22",extra:"\ud83d\udd25"}]:[]),
           ].map((p,i)=>(
             <div key={i} style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:5,
@@ -683,7 +683,7 @@ export default function App() {
               <div style={{position:"absolute",bottom:0,left:0,right:0,height:1,background:"linear-gradient(90deg, transparent, #3498DB30, transparent)",pointerEvents:"none"}}/>
               <div style={{fontSize:38,marginBottom:12,position:"relative",filter:"drop-shadow(0 2px 6px rgba(0,0,0,0.3))"}}>🤖</div>
               <div style={{fontSize:19,fontWeight:800,color:"#fff",position:"relative",textShadow:"0 1px 6px rgba(0,0,0,0.4)",letterSpacing:-0.2}}>Estimator</div>
-              <div style={{fontSize:13,color:"rgba(255,255,255,0.55)",fontWeight:500,marginTop:3,position:"relative"}}>"Quick scope pricing"</div>
+              <div style={{fontSize:13,color:"rgba(255,255,255,0.55)",fontWeight:500,marginTop:3,position:"relative"}}>Quick scope pricing</div>
             </div>
             <div onClick={()=>{if(!heatmapData)fetch('/heatmap.json').then(r=>r.json()).then(d=>setHeatmapData(d));setScreen("heatmap");}} className="card-hover"
               style={{background:"linear-gradient(135deg, #D4792A 0%, #7E4515 100%)",borderRadius:18,padding:"22px 18px",cursor:"pointer",minHeight:145,position:"relative",overflow:"hidden",display:"flex",flexDirection:"column",justifyContent:"flex-end",boxShadow:"0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.08)"}}>
@@ -693,7 +693,7 @@ export default function App() {
               <div style={{position:"absolute",bottom:0,left:0,right:0,height:1,background:"linear-gradient(90deg, transparent, #F39C1230, transparent)",pointerEvents:"none"}}/>
               <div style={{fontSize:38,marginBottom:12,position:"relative",filter:"drop-shadow(0 2px 6px rgba(0,0,0,0.3))"}}>🗺️</div>
               <div style={{fontSize:19,fontWeight:800,color:"#fff",position:"relative",textShadow:"0 1px 6px rgba(0,0,0,0.4)",letterSpacing:-0.2}}>Heat Map</div>
-              <div style={{fontSize:13,color:"rgba(255,255,255,0.55)",fontWeight:500,marginTop:3,position:"relative"}}>"580+ approved jobs"</div>
+              <div style={{fontSize:13,color:"rgba(255,255,255,0.55)",fontWeight:500,marginTop:3,position:"relative"}}>580+ approved jobs</div>
             </div>
             <div onClick={()=>setScreen("resources")} className="card-hover"
               style={{background:"linear-gradient(135deg, #8E44AD 0%, #4A235A 100%)",borderRadius:18,padding:"22px 18px",cursor:"pointer",minHeight:145,position:"relative",overflow:"hidden",display:"flex",flexDirection:"column",justifyContent:"flex-end",boxShadow:"0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.08)"}}>
@@ -703,7 +703,7 @@ export default function App() {
               <div style={{position:"absolute",bottom:0,left:0,right:0,height:1,background:"linear-gradient(90deg, transparent, #A569BD30, transparent)",pointerEvents:"none"}}/>
               <div style={{fontSize:38,marginBottom:12,position:"relative",filter:"drop-shadow(0 2px 6px rgba(0,0,0,0.3))"}}>📁</div>
               <div style={{fontSize:19,fontWeight:800,color:"#fff",position:"relative",textShadow:"0 1px 6px rgba(0,0,0,0.4)",letterSpacing:-0.2}}>Resources</div>
-              <div style={{fontSize:13,color:"rgba(255,255,255,0.55)",fontWeight:500,marginTop:3,position:"relative"}}>"Sell sheets & specs"</div>
+              <div style={{fontSize:13,color:"rgba(255,255,255,0.55)",fontWeight:500,marginTop:3,position:"relative"}}>Sell sheets & specs</div>
             </div>
             <div onClick={async()=>{
               setScreen("today");
@@ -718,7 +718,7 @@ export default function App() {
               <div style={{position:"absolute",bottom:0,left:0,right:0,height:1,background:"linear-gradient(90deg, transparent, #5DA5BA30, transparent)",pointerEvents:"none"}}/>
               <div style={{fontSize:38,marginBottom:12,position:"relative",filter:"drop-shadow(0 2px 6px rgba(0,0,0,0.3))"}}>📋</div>
               <div style={{fontSize:19,fontWeight:800,color:"#fff",position:"relative",textShadow:"0 1px 6px rgba(0,0,0,0.4)",letterSpacing:-0.2}}>Today</div>
-              <div style={{fontSize:13,color:"rgba(255,255,255,0.55)",fontWeight:500,marginTop:3,position:"relative"}}>"Tasks & to-do's"</div>
+              <div style={{fontSize:13,color:"rgba(255,255,255,0.55)",fontWeight:500,marginTop:3,position:"relative"}}>Tasks & to-do's</div>
             </div>
           </div>
 
@@ -876,7 +876,7 @@ export default function App() {
   // ═══ BRAIN TRAINING ═══
   if (screen === "training") {
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
@@ -953,7 +953,7 @@ export default function App() {
                     </div>
                     {p?.passed && <span style={{fontSize:10,fontWeight:700,color:C.grn,background:C.grnBg,padding:"3px 8px",borderRadius:6}}>{p.score}/{p.total}</span>}
                     {p && !p.passed && <span style={{fontSize:10,fontWeight:700,color:C.gold,background:C.goldBg,padding:"3px 8px",borderRadius:6}}>{p.score}/{p.total}</span>}
-                    {!p && i===nextQuiz && <span style={{fontSize:10,fontWeight:700,color:C.navy,background:C.navy+"12",padding:"3px 8px",borderRadius:6}}>Start \u2192</span>}
+                    {!p && i===nextQuiz && <span style={{fontSize:10,fontWeight:700,color:C.navy,background:C.navy+"12",padding:"3px 8px",borderRadius:6}}>Start →</span>}
                   </div>
                   <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:12}}>
                     {cats.map((c,j)=>(
@@ -991,7 +991,7 @@ export default function App() {
     const pct = ((qIdx + (locked ? 1 : 0)) / quiz.questions.length) * 100;
 
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <Modal open={modal==="exit"} onClose={()=>setModal(null)}>
@@ -1110,7 +1110,7 @@ export default function App() {
     const nextIdx = quizIdx < 14 ? quizIdx + 1 : null;
 
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <Confetti />
@@ -1169,7 +1169,7 @@ export default function App() {
     const sc = trail.filter(a=>a.picked===a.correct).length;
 
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <div style={{background:C.navy,textAlign:"center",padding:"28px 24px"}}>
@@ -1251,7 +1251,7 @@ export default function App() {
     const d = new Date();
     const dateStr = d.toLocaleDateString("en-US", {month:"long",day:"numeric",year:"numeric"});
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
@@ -1315,7 +1315,7 @@ export default function App() {
     }).sort((a,b) => b.passed - a.passed || b.acc - a.acc);
 
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
@@ -1364,7 +1364,7 @@ export default function App() {
   if (screen === "admin") {
     if (!adminAuth) {
       return (
-        <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif",display:"flex",flexDirection:"column"}}>
+        <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif",display:"flex",flexDirection:"column"}}>
           <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
           <style>{CSS}</style>
           <NavBar
@@ -1426,7 +1426,7 @@ export default function App() {
     const teamAns = teamStats.reduce((s,t)=>s+t.ta,0);
 
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
@@ -1682,8 +1682,8 @@ export default function App() {
           {/* 2. FIX THIS NEXT — the money card, position #2 */}
           {a.fix && (
             <div style={{background:C.navy,borderRadius:16,padding:"20px",marginBottom:16,position:"relative",overflow:"hidden"}}>
-              <div style={{position:"absolute",right:-10,top:-10,fontSize:80,opacity:0.05,pointerEvents:"none"}}>\ud83d\udd25</div>
-              <div style={{fontSize:11,fontWeight:800,color:"#E74C3C",letterSpacing:1,marginBottom:6}}>\ud83d\udd25 FIX THIS NEXT</div>
+              <div style={{position:"absolute",right:-10,top:-10,fontSize:80,opacity:0.05,pointerEvents:"none"}}>🔥</div>
+              <div style={{fontSize:11,fontWeight:800,color:"#E74C3C",letterSpacing:1,marginBottom:6}}>🔥 FIX THIS NEXT</div>
               <div style={{fontSize:16,color:"#fff",fontWeight:700,marginBottom:12,lineHeight:1.5}}>{a.fix.headline}</div>
               <div style={{background:"rgba(255,255,255,0.08)",borderRadius:10,padding:"14px 16px"}}>
                 <div style={{fontSize:10,color:"rgba(255,255,255,0.4)",fontWeight:700,letterSpacing:0.5,marginBottom:6}}>SCRIPT TO PRACTICE</div>
@@ -1737,7 +1737,7 @@ export default function App() {
           {/* 4. BLIND SPOTS — red wash, stacked */}
           {a.blindSpots?.length > 0 && (
             <div style={{background:darkMode?"#2A1515":`${C.red}08`,borderRadius:16,border:`1px solid ${C.red}20`,padding:"16px 18px",marginBottom:12}}>
-              <div style={{fontSize:11,fontWeight:800,color:C.red,letterSpacing:0.5,marginBottom:10}}>\u26a0\ufe0f BLIND SPOTS</div>
+              <div style={{fontSize:11,fontWeight:800,color:C.red,letterSpacing:0.5,marginBottom:10}}>⚠️ BLIND SPOTS</div>
               {a.blindSpots.map((b, i) => (
                 <div key={i} style={{marginBottom:i < a.blindSpots.length-1 ? 12 : 0}}>
                   <div style={{fontSize:14,fontWeight:800,color:C.red,marginBottom:2}}>{b.label}</div>
@@ -1750,10 +1750,10 @@ export default function App() {
           {/* 5. STRENGTHS — green wash, stacked */}
           {a.strengths?.length > 0 && (
             <div style={{background:darkMode?"#152A17":`${C.grn}08`,borderRadius:16,border:`1px solid ${C.grn}20`,padding:"16px 18px",marginBottom:12}}>
-              <div style={{fontSize:11,fontWeight:800,color:C.grn,letterSpacing:0.5,marginBottom:10}}>\u2705 WHAT WORKED</div>
+              <div style={{fontSize:11,fontWeight:800,color:C.grn,letterSpacing:0.5,marginBottom:10}}>✅ WHAT WORKED</div>
               {a.strengths.map((s, i) => (
                 <div key={i} style={{fontSize:13,lineHeight:1.6,color:C.dk,marginBottom:4,paddingLeft:16,position:"relative"}}>
-                  <span style={{position:"absolute",left:0,color:C.grn,fontWeight:800}}>\u2022</span>{s}
+                  <span style={{position:"absolute",left:0,color:C.grn,fontWeight:800}}>•</span>{s}
                 </div>
               ))}
             </div>
@@ -1772,7 +1772,7 @@ export default function App() {
       const parsed = parseStored(item);
       const dateStr = new Date(item.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
       return (
-        <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif"}}>
+        <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
           <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
           <style>{CSS}</style>
           <NavBar
@@ -1792,7 +1792,7 @@ export default function App() {
     }
 
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
@@ -1932,7 +1932,7 @@ export default function App() {
     const marketJobs = heatmapData?.[heatmapMarket] || [];
 
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif",display:"flex",flexDirection:"column"}}>
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif",display:"flex",flexDirection:"column"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
@@ -2164,7 +2164,7 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
     const confColor = (c) => c==="high"?"#27AE60":c==="medium"?"#F39C12":"#E74C3C";
 
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
@@ -2324,11 +2324,11 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
     const overdue = todayTasks.filter(t => t.endDate && t.endDate < todayStr);
 
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
-          left={<button onClick={()=>setScreen("home")} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>\u2190 Back</button>}
+          left={<button onClick={()=>setScreen("home")} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>← Back</button>}
           center="Today"
           right={<button onClick={fetchTasks} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>Refresh</button>}
         />
@@ -2354,7 +2354,7 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
 
           {!membershipId && (
             <div style={{textAlign:"center",padding:40,color:C.mut}}>
-              <div style={{fontSize:32,marginBottom:8}}>\ud83d\udd17</div>
+              <div style={{fontSize:32,marginBottom:8}}>🔗</div>
               <div style={{fontSize:16,fontWeight:700,color:C.dk}}>Not linked to JobTread</div>
               <div style={{fontSize:14,marginTop:4}}>Ask Zac to connect your account.</div>
             </div>
@@ -2362,7 +2362,7 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
 
           {membershipId && todayTasks.length === 0 && (
             <div style={{textAlign:"center",padding:40,color:C.mut}}>
-              <div style={{fontSize:32,marginBottom:8}}>\u2705</div>
+              <div style={{fontSize:32,marginBottom:8}}>✅</div>
               <div style={{fontSize:16,fontWeight:700,color:C.dk}}>All caught up!</div>
               <div style={{fontSize:14,marginTop:4}}>No open tasks or to-do's right now.</div>
               <button onClick={fetchTasks} style={{marginTop:16,padding:"10px 24px",borderRadius:10,background:C.navy,color:"#fff",border:"none",fontSize:14,fontWeight:600,cursor:"pointer"}}>Check Again</button>
@@ -2372,7 +2372,7 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
           {/* Field Work (Scheduled Tasks) */}
           {scheduled.length > 0 && (
             <>
-              <div style={{fontSize:11,fontWeight:700,color:C.navy,letterSpacing:0.5,textTransform:"uppercase",marginBottom:8}}>\ud83d\udce5 Field Work — Estimates & Site Visits</div>
+              <div style={{fontSize:11,fontWeight:700,color:C.navy,letterSpacing:0.5,textTransform:"uppercase",marginBottom:8}}>📥 Field Work — Estimates & Site Visits</div>
               {scheduled.map((t,i) => {
                 const isOverdue = t.endDate && t.endDate < todayStr;
                 const isToday = t.endDate === todayStr;
@@ -2394,7 +2394,7 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
           {/* Desk Work (To-Do's) */}
           {todos.length > 0 && (
             <>
-              <div style={{fontSize:11,fontWeight:700,color:"#8E44AD",letterSpacing:0.5,textTransform:"uppercase",marginBottom:8,marginTop:scheduled.length>0?16:0}}>\ud83d\udcbb Desk Work — To-Do's</div>
+              <div style={{fontSize:11,fontWeight:700,color:"#8E44AD",letterSpacing:0.5,textTransform:"uppercase",marginBottom:8,marginTop:scheduled.length>0?16:0}}>💻 Desk Work — To-Do's</div>
               {todos.map((t,i) => {
                 const isOverdue = t.endDate && t.endDate < todayStr;
                 return (
@@ -2444,7 +2444,7 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
     const cats = [...new Set(OBJECTIONS.map(o => o.cat))];
 
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
@@ -2495,7 +2495,7 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
   // ═══ RESOURCES ═══
   if (screen === "resources") {
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
