@@ -372,7 +372,7 @@ export default function App() {
         {/* Cybertruck Video Hero */}
         <div style={{position:"relative",overflow:"hidden"}}>
           <video autoPlay muted loop playsInline poster={CYBER}
-            style={{width:"100%",height:280,objectFit:"cover",objectPosition:"center 55%",display:"block"}}>
+            style={{width:"100%",height:"clamp(280px, 40vh, 450px)",objectFit:"cover",objectPosition:"center 55%",display:"block"}}>
             <source src="/hero.mp4" type="video/mp4"/>
           </video>
           <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, rgba(11,25,41,0.3) 0%, rgba(11,25,41,0.5) 40%, rgba(11,25,41,0.97) 100%)"}}/>
@@ -608,7 +608,7 @@ export default function App() {
         )}
 
         <div style={{position:"relative",overflow:"hidden"}}>
-          <img src={CYBER} alt="" style={{width:"100%",height:260,objectFit:"cover",objectPosition:"center 55%",display:"block"}}/>
+          <img src={CYBER} alt="" style={{width:"100%",height:"clamp(260px, 35vh, 400px)",objectFit:"cover",objectPosition:"center 55%",display:"block"}}/>
           <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, rgba(11,25,41,0.35) 0%, rgba(11,25,41,0.6) 50%, rgba(11,25,41,0.97) 100%)"}}/>
           <div style={{position:"absolute",top:0,left:0,right:0,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"max(14px, calc(env(safe-area-inset-top, 0px) + 8px)) 18px 14px"}}>
             <div style={{display:"flex",alignItems:"center",gap:10}}>
