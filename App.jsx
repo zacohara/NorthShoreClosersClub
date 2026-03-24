@@ -369,9 +369,12 @@ export default function App() {
           @keyframes loginFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
         `}</style>
 
-        {/* Cybertruck Hero */}
+        {/* Cybertruck Video Hero */}
         <div style={{position:"relative",overflow:"hidden"}}>
-          <img src={CYBER} alt="" style={{width:"100%",height:280,objectFit:"cover",objectPosition:"center 55%",display:"block"}}/>
+          <video autoPlay muted loop playsInline poster={CYBER}
+            style={{width:"100%",height:280,objectFit:"cover",objectPosition:"center 55%",display:"block"}}>
+            <source src="/hero.mp4" type="video/mp4"/>
+          </video>
           <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, rgba(11,25,41,0.3) 0%, rgba(11,25,41,0.5) 40%, rgba(11,25,41,0.97) 100%)"}}/>
           <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",paddingTop:"max(20px, env(safe-area-inset-top, 0px))"}}>
             <img src={ICON} alt="North Shore Masonry" style={{width:80,height:80,marginBottom:14,filter:"drop-shadow(0 4px 16px rgba(0,0,0,0.4))",animation:"loginFloat 4s ease-in-out infinite"}}/>
