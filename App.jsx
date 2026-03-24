@@ -1858,8 +1858,11 @@ export default function App() {
     const CLIENT_ENDINGS = [240, 480, 640, 860, 980];
     const roundClient = (raw) => {
       if (raw <= 0) return 0;
+      // Check current and previous thousand
       const base = Math.floor(raw / 1000) * 1000;
+      // First check if any ending in current thousand works (round up)
       for (const e of CLIENT_ENDINGS) { if (base + e >= raw) return base + e; }
+      // If none work, use first ending of next thousand
       return (base + 1000) + CLIENT_ENDINGS[0];
     };
     const roundSub = (raw) => raw <= 0 ? 0 : Math.ceil(raw / 200) * 200;
@@ -1938,35 +1941,36 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
 
     const runLocalEstimate = () => {
       const d = estInput.toLowerCase();
+      // Per-unit pricing (NOT full range — eliminates wide spreads)
       const KB = {
-        "Tuckpointing":{n:312,p10:2800,med:8400,p90:18500,c10:1800,cMed:5200,c90:12000},
-        "Lintel/Steel":{n:187,p10:1200,med:2800,p90:5500,c10:800,cMed:1800,c90:3500},
-        "Chimney Rebuild":{n:89,p10:3200,med:6800,p90:14000,c10:2100,cMed:4400,c90:9000},
-        "Chimney Repair":{n:76,p10:800,med:2800,p90:10000,c10:500,cMed:1800,c90:6500},
-        "Parapet/Coping":{n:64,p10:2200,med:4200,p90:8400,c10:1400,cMed:2700,c90:5400},
-        "Concrete":{n:52,p10:1500,med:4000,p90:12000,c10:900,cMed:2500,c90:7500},
-        "Retaining Wall":{n:45,p10:2500,med:5500,p90:12000,c10:1600,cMed:3500,c90:7700},
-        "Porch/Steps":{n:41,p10:2500,med:4000,p90:6000,c10:1600,cMed:2600,c90:3900},
-        "Brick Repair":{n:38,p10:500,med:1200,p90:2800,c10:320,cMed:770,c90:1800},
-        "Stone/Limestone":{n:34,p10:2200,med:3000,p90:3800,c10:1400,cMed:1950,c90:2500},
-        "Caulking":{n:31,p10:580,med:1200,p90:3000,c10:375,cMed:775,c90:1950},
-        "Foundation":{n:28,p10:5000,med:8500,p90:12000,c10:3200,cMed:5500,c90:7800},
-        "Waterproofing":{n:22,p10:1500,med:3600,p90:8000,c10:940,cMed:2250,c90:5000},
+        "Tuckpointing":{n:312,unitLo:6,unitHi:14,cUnitLo:3.5,cUnitHi:8.5,unit:"sqft",defQty:300,minJob:2800},
+        "Lintel/Steel":{n:187,unitLo:1200,unitHi:3200,cUnitLo:800,cUnitHi:2000,unit:"each",defQty:1,minJob:1200},
+        "Chimney Rebuild":{n:89,unitLo:3200,unitHi:9000,cUnitLo:2100,cUnitHi:5800,unit:"each",defQty:1,minJob:3200},
+        "Chimney Repair":{n:76,unitLo:800,unitHi:3500,cUnitLo:500,cUnitHi:2200,unit:"each",defQty:1,minJob:800},
+        "Parapet/Coping":{n:64,unitLo:220,unitHi:420,cUnitLo:140,cUnitHi:270,unit:"lf",defQty:20,minJob:2200},
+        "Concrete":{n:52,unitLo:10,unitHi:16,cUnitLo:6,cUnitHi:10,unit:"sqft",defQty:150,minJob:1500},
+        "Retaining Wall":{n:45,unitLo:38,unitHi:62,cUnitLo:24,cUnitHi:40,unit:"lf",defQty:30,minJob:2500},
+        "Porch/Steps":{n:41,unitLo:500,unitHi:800,cUnitLo:320,cUnitHi:520,unit:"step",defQty:5,minJob:2500},
+        "Brick Repair":{n:38,unitLo:50,unitHi:90,cUnitLo:32,cUnitHi:58,unit:"brick",defQty:10,minJob:500},
+        "Stone/Limestone":{n:34,unitLo:2200,unitHi:3800,cUnitLo:1400,cUnitHi:2500,unit:"each",defQty:1,minJob:2200},
+        "Caulking":{n:31,unitLo:100,unitHi:200,cUnitLo:65,cUnitHi:130,unit:"opening",defQty:6,minJob:580,bundledCostLo:15,bundledCostHi:35},
+        "Foundation":{n:28,unitLo:5000,unitHi:12000,cUnitLo:3200,cUnitHi:7800,unit:"each",defQty:1,minJob:5000},
+        "Waterproofing":{n:22,unitLo:4,unitHi:8,cUnitLo:2.5,cUnitHi:5,unit:"sqft",defQty:200,minJob:1500},
       };
       const patterns = [
-        {rx:/tuckpoint|repoint|mortar\s*joint/i, scope:"Tuckpointing", qtyRx:/(\d+)\s*%/i},
+        {rx:/tuckpoint|repoint|mortar\s*joint|grind\s*and\s*point/i, scope:"Tuckpointing", qtyRx:/([\d,]+)\s*(?:sq|sf|sqft|square)/i},
         {rx:/lintel|steel\s*beam|i-beam|angle\s*iron/i, scope:"Lintel/Steel", qtyRx:/(\d+)\s*(?:lintel|beam|steel)/i},
-        {rx:/chimney.*(rebuild|reconstruct|tear)/i, scope:"Chimney Rebuild"},
-        {rx:/chimney.*(repair|cap|crown|flue|tuck)|chimney\s*work/i, scope:"Chimney Repair"},
-        {rx:/parapet|coping|cap\s*stone/i, scope:"Parapet/Coping", qtyRx:/(\d+)\s*(?:lf|linear|ft)/i},
-        {rx:/concrete|flatwork|sidewalk|driveway|slab/i, scope:"Concrete", qtyRx:/(\d+)\s*(?:sq|sf|sqft)/i},
-        {rx:/retaining|block\s*wall|cmu/i, scope:"Retaining Wall", qtyRx:/(\d+)\s*(?:lf|linear|ft)/i},
-        {rx:/porch|steps|stair|stoop/i, scope:"Porch/Steps", qtyRx:/(\d+)\s*(?:step|stair)/i},
-        {rx:/brick.*(repair|replace|fix|crack|spall)|spalling|loose\s*brick/i, scope:"Brick Repair", qtyRx:/(\d+)\s*brick/i},
-        {rx:/stone|limestone|bluestone|flagstone/i, scope:"Stone/Limestone"},
-        {rx:/caulk|sealant|expansion\s*joint/i, scope:"Caulking", qtyRx:/(\d+)\s*(?:window|opening|door)/i},
+        {rx:/chimney.*(rebuild|reconstruct|tear|rebuilt|replace entirely)/i, scope:"Chimney Rebuild"},
+        {rx:/chimney.*(repair|cap|crown|flue|tuck|work|fix)/i, scope:"Chimney Repair"},
+        {rx:/parapet|coping|cap\s*stone/i, scope:"Parapet/Coping", qtyRx:/(\d+)\s*(?:lf|linear|ft|feet)/i},
+        {rx:/concrete|flatwork|sidewalk|driveway|slab/i, scope:"Concrete", qtyRx:/(\d+)\s*(?:sq|sf|sqft|square)/i},
+        {rx:/retaining|block\s*wall|cmu/i, scope:"Retaining Wall", qtyRx:/(\d+)\s*(?:lf|linear|ft|feet)/i},
+        {rx:/porch|front\s*steps|stair|stoop/i, scope:"Porch/Steps", qtyRx:/(\d+)\s*(?:step|stair)/i},
+        {rx:/brick.*(repair|replace|fix|crack|spall)|spalling|loose\s*brick|(\d+)\s*(?:loose\s*)?brick/i, scope:"Brick Repair", qtyRx:/(\d+)\s*(?:loose\s*)?brick/i},
+        {rx:/(?<!lime)stone|limestone|bluestone|flagstone/i, scope:"Stone/Limestone", qtyRx:/(\d+)\s*(?:stone|limestone|sill|pillar|column)/i},
+        {rx:/caulk|sealant|expansion\s*joint/i, scope:"Caulking", qtyRx:/(\d+)\s*(?:window|opening|door|joint)/i},
         {rx:/foundation|structural|load\s*bearing|bulg/i, scope:"Foundation"},
-        {rx:/waterproof|seal.*wall|damp|efflor/i, scope:"Waterproofing", qtyRx:/(\d+)\s*(?:sq|sf)/i},
+        {rx:/waterproof|seal.*wall|damp\s*proof|efflor/i, scope:"Waterproofing", qtyRx:/(\d+)\s*(?:sq|sf|sqft)/i},
       ];
       // Auto-detect building type
       if (/3[\s-]*flat|3[\s-]*story|three\s*story|victorian/i.test(d)) setEstBuilding("3flat");
@@ -1982,13 +1986,24 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
           matched.add(p.scope);
           const kb = KB[p.scope];
           const qm = p.qtyRx ? d.match(p.qtyRx) : null;
-          const qty = qm ? parseInt(qm[1]) : 1;
+          const qty = qm ? parseInt(qm[1].replace(/,/g,"")) : kb.defQty;
+          const isBundled = matched.size > 1;
+          // Per-unit pricing
+          let pLo = Math.max(kb.unitLo * qty * bm, kb.minJob * bm);
+          let pHi = kb.unitHi * qty * bm;
+          if (pHi < pLo) pHi = pLo * 1.5;
+          let cLo, cHi;
+          if (isBundled && kb.bundledCostLo) {
+            cLo = kb.bundledCostLo * qty * bm;
+            cHi = kb.bundledCostHi * qty * bm;
+          } else {
+            cLo = kb.cUnitLo * qty * bm;
+            cHi = kb.cUnitHi * qty * bm;
+          }
           found.push({
-            scope: p.scope, description: p.scope, qty,
-            price_low: roundClient(kb.p10 * qty * bm),
-            price_high: roundClient(kb.p90 * qty * bm),
-            cost_low: roundSub(kb.c10 * qty * bm),
-            cost_high: roundSub(kb.c90 * qty * bm),
+            scope: p.scope, description: qty > 1 ? qty+" "+kb.unit : p.scope, qty,
+            price_low: roundClient(pLo), price_high: roundClient(pHi),
+            cost_low: roundSub(cLo), cost_high: roundSub(cHi),
             confidence: kb.n > 30 ? "high" : kb.n > 10 ? "medium" : "low",
             is_addon: false, n: kb.n
           });
@@ -1996,12 +2011,15 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
       }
       // Auto-add lift for 3+ stories
       if ((estBuilding === "3flat" || estBuilding === "midrise") && found.length > 0) {
-        found.push({ scope:"Lift Rental", description:"Required for upper elevation access", qty:1, price_low:roundClient(1500*bm), price_high:roundClient(4000*bm), cost_low:roundSub(1300*bm), cost_high:roundSub(3500*bm), confidence:"high", is_addon:true });
+        found.push({ scope:"Lift Rental", description:"Upper elevation access", qty:1, price_low:roundClient(1500*bm), price_high:roundClient(4000*bm), cost_low:roundSub(1300*bm), cost_high:roundSub(3500*bm), confidence:"high", is_addon:true });
+      }
+      // Auto-add permit for structural or 3+ scopes
+      if (found.length >= 3 || found.some(s => s.scope === "Foundation")) {
+        found.push({ scope:"Permit", description:"Building permit", qty:1, price_low:roundClient(750*bm), price_high:roundClient(1500*bm), cost_low:roundSub(650*bm), cost_high:roundSub(1350*bm), confidence:"high", is_addon:true });
       }
       if (found.length === 0 && d.trim().length > 10) {
         if (/masonry|brick\s*work|exterior|facade/i.test(d)) {
-          const kb = KB["Tuckpointing"];
-          found.push({ scope:"General Masonry", description:"Masonry work", qty:1, price_low:roundClient(kb.p10*bm), price_high:roundClient(kb.p90*bm), cost_low:roundSub(kb.c10*bm), cost_high:roundSub(kb.c90*bm), confidence:"medium", is_addon:false, n:312 });
+          found.push({ scope:"General Masonry", description:"Masonry work", qty:1, price_low:roundClient(2800*bm), price_high:roundClient(8400*bm), cost_low:roundSub(1800*bm), cost_high:roundSub(5200*bm), confidence:"medium", is_addon:false, n:312 });
         }
       }
       setEstScopes(found);
