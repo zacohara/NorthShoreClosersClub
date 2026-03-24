@@ -1851,288 +1851,287 @@ export default function App() {
 
 
 
+
   // ═══ ESTIMATOR ═══
   if (screen === "estimator") {
-    const KB = {
-      "Tuckpointing":{n:312,pLow:2800,pMed:8400,pHigh:18500,cLow:1800,cMed:5200,cHigh:12000},
-      "Lintel Replacement":{n:187,pLow:1200,pMed:2800,pHigh:5500,cLow:800,cMed:1800,cHigh:3500},
-      "Chimney Rebuild":{n:89,pLow:3200,pMed:6800,pHigh:14000,cLow:2100,cMed:4400,cHigh:9000},
-      "Chimney Repair":{n:76,pLow:800,pMed:2800,pHigh:10000,cLow:500,cMed:1800,cHigh:6500},
-      "Parapet / Coping":{n:64,pLow:2200,pMed:4200,pHigh:8400,cLow:1400,cMed:2700,cHigh:5400},
-      "Concrete":{n:52,pLow:1500,pMed:4000,pHigh:12000,cLow:900,cMed:2500,cHigh:7500},
-      "Retaining Wall":{n:45,pLow:2500,pMed:5500,pHigh:12000,cLow:1600,cMed:3500,cHigh:7700},
-      "Porch / Steps":{n:41,pLow:2500,pMed:4000,pHigh:6000,cLow:1600,cMed:2600,cHigh:3900},
-      "Brick Repair":{n:38,pLow:500,pMed:1200,pHigh:2800,cLow:320,cMed:770,cHigh:1800},
-      "Stone / Limestone":{n:34,pLow:2200,pMed:3000,pHigh:3800,cLow:1400,cMed:1950,cHigh:2500},
-      "Caulking":{n:31,pLow:580,pMed:1200,pHigh:3000,cLow:375,cMed:775,cHigh:1950},
-      "Foundation":{n:28,pLow:5000,pMed:8500,pHigh:12000,cLow:3200,cMed:5500,cHigh:7800},
-      "Waterproofing":{n:22,pLow:1500,pMed:3600,pHigh:8000,cLow:940,cMed:2250,cHigh:5000},
-      "Window Opening":{n:15,pLow:1200,pMed:2400,pHigh:4500,cLow:780,cMed:1550,cHigh:2900},
-      "Brick Staining":{n:12,pLow:800,pMed:2000,pHigh:4000,cLow:500,cMed:1300,cHigh:2600},
+    // Rounding rules from the real NSM estimator
+    const CLIENT_ENDINGS = [240, 480, 640, 860, 980];
+    const roundClient = (raw) => {
+      if (raw <= 0) return 0;
+      const base = Math.floor(raw / 1000) * 1000;
+      for (const e of CLIENT_ENDINGS) { if (base + e >= raw) return base + e; }
+      return (base + 1000) + CLIENT_ENDINGS[0];
     };
+    const roundSub = (raw) => raw <= 0 ? 0 : Math.ceil(raw / 200) * 200;
+
+    const SYS_PROMPT = `You are the pricing engine for North Shore Masonry (NSM), a masonry contractor in IL/WI/TX/IN. 845 approved estimates, 1,630 line items. Break the description into scope items, return a JSON array.
+
+PRICING DATA:
+Tuckpointing | n=312 | per sqft: $6-$14 price, $3.50-$8.50 cost | markup: 1.58x | margin: 37%. Percentage-based: 15%=lower, 30%+=mid-upper.
+Lintel/Steel | n=187 | per lintel: 4ft=$1,200-$2,200, 6ft=$1,800-$3,200, 8ft+=$2,800-$5,500 | cost 0.65x price
+Chimney Rebuild | n=89 | <=3x3ft=$3,200-$5,500, 4-5ft=$5,500-$9,000, 6ft+=$8,500-$14,000 | cost 0.65x
+Chimney Repair | n=76 | cap=$800-$1,800, crown=$1,800-$3,500, multi=$2,800-$10,000 | cost 0.65x
+Parapet/Coping | n=64 | $220-$420/LF price, $140-$270/LF cost
+Concrete | n=52 | $10-$16/sqft price, $6-$10/sqft cost
+Retaining Wall | n=45 | $38-$62/LF per ft height price, $24-$40/LF cost
+Porch/Steps | n=41 | base $800 + $500/step, range 0.85x-1.5x | cost 0.65x
+Brick Repair | n=38 | <=10 bricks=$500-$900, 11+=$800-$2,800 | cost 0.65x
+Stone/Limestone | n=34 | $2,200-$3,800 per unit | cost 0.65x
+Caulking | n=31 | $100-$200/opening, min $580 | cost 0.65x
+Foundation | n=28 | $5,000-$12,000 | cost 0.65x
+Waterproofing | n=22 | $4-$8/sqft price, $2.50-$5/sqft cost
+
+ADD-ONS (auto-detect): Lift=$1,500-$4,000 (3+ stories), Scaffold=$2,500-$7,000, Permit=$750-$1,500 (structural)
+
+BUILDING TYPE MULTIPLIERS: Single family=1.0x, 2-flat=1.15x, 3-flat=1.35x, 4+ story=1.6x, Commercial=1.45x
+
+Return ONLY a JSON array: [{"scope":"...","description":"...","qty":1,"price_low":N,"price_high":N,"cost_low":N,"cost_high":N,"confidence":"high|medium|low","is_addon":false}]
+No markdown. No backticks. No explanation. Raw JSON only.`;
 
     const BUILDING_MULT = {
-      "residential": {label:"Single Family Home",mult:1.0},
+      "residential": {label:"Single Family",mult:1.0},
       "2flat": {label:"2-Flat",mult:1.15},
-      "3flat": {label:"3-Flat / 3-Story",mult:1.35},
-      "midrise": {label:"4+ Story / Mid-Rise",mult:1.6},
+      "3flat": {label:"3-Flat",mult:1.35},
+      "midrise": {label:"4+ Story",mult:1.6},
       "commercial": {label:"Commercial",mult:1.45},
     };
 
-    // NLP scope extraction
-    const parseScopes = (text) => {
-      const d = text.toLowerCase();
-      const found = [];
+    const runAIEstimate = async () => {
+      if (estInput.trim().length < 10) return;
+      setEstLoading(true);
+      setEstScopes([]);
+      try {
+        const buildingCtx = `Building type: ${BUILDING_MULT[estBuilding].label} (${BUILDING_MULT[estBuilding].mult}x multiplier already factored into pricing data above — do NOT multiply again)`;
+        const resp = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "claude-sonnet-4-20250514",
+            max_tokens: 1000,
+            system: SYS_PROMPT,
+            messages: [{ role: "user", content: buildingCtx + "\n\nJob description: " + estInput }],
+          })
+        });
+        const data = await resp.json();
+        const text = (data.content || []).map(c => c.text || "").join("");
+        const clean = text.replace(/```json|```/g, "").trim();
+        const parsed = JSON.parse(clean);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Apply building multiplier and rounding
+          const bm = BUILDING_MULT[estBuilding].mult;
+          const rounded = parsed.map(item => ({
+            ...item,
+            price_low: roundClient(item.price_low * bm),
+            price_high: roundClient(item.price_high * bm),
+            cost_low: roundSub(item.cost_low * bm),
+            cost_high: roundSub(item.cost_high * bm),
+          }));
+          setEstScopes(rounded);
+        }
+      } catch (e) {
+        console.error("Estimate error:", e);
+        // Fall back to local
+        runLocalEstimate();
+      }
+      setEstLoading(false);
+    };
+
+    const runLocalEstimate = () => {
+      const d = estInput.toLowerCase();
+      const KB = {
+        "Tuckpointing":{n:312,p10:2800,med:8400,p90:18500,c10:1800,cMed:5200,c90:12000},
+        "Lintel/Steel":{n:187,p10:1200,med:2800,p90:5500,c10:800,cMed:1800,c90:3500},
+        "Chimney Rebuild":{n:89,p10:3200,med:6800,p90:14000,c10:2100,cMed:4400,c90:9000},
+        "Chimney Repair":{n:76,p10:800,med:2800,p90:10000,c10:500,cMed:1800,c90:6500},
+        "Parapet/Coping":{n:64,p10:2200,med:4200,p90:8400,c10:1400,cMed:2700,c90:5400},
+        "Concrete":{n:52,p10:1500,med:4000,p90:12000,c10:900,cMed:2500,c90:7500},
+        "Retaining Wall":{n:45,p10:2500,med:5500,p90:12000,c10:1600,cMed:3500,c90:7700},
+        "Porch/Steps":{n:41,p10:2500,med:4000,p90:6000,c10:1600,cMed:2600,c90:3900},
+        "Brick Repair":{n:38,p10:500,med:1200,p90:2800,c10:320,cMed:770,c90:1800},
+        "Stone/Limestone":{n:34,p10:2200,med:3000,p90:3800,c10:1400,cMed:1950,c90:2500},
+        "Caulking":{n:31,p10:580,med:1200,p90:3000,c10:375,cMed:775,c90:1950},
+        "Foundation":{n:28,p10:5000,med:8500,p90:12000,c10:3200,cMed:5500,c90:7800},
+        "Waterproofing":{n:22,p10:1500,med:3600,p90:8000,c10:940,cMed:2250,c90:5000},
+      };
       const patterns = [
-        { rx: /tuckpoint|tuck\s*point|repoint|mortar\s*joint|grind\s*and\s*point/i, scope: "Tuckpointing" },
-        { rx: /lintel|steel\s*beam|i-beam|angle\s*iron/i, scope: "Lintel Replacement" },
-        { rx: /chimney.*(rebuild|reconstruct|tear\s*down)|rebuild.*chimney/i, scope: "Chimney Rebuild" },
-        { rx: /chimney.*(repair|cap|crown|flue|tuck)|repair.*chimney|chimney\s*work/i, scope: "Chimney Repair" },
-        { rx: /parapet|coping|cap\s*stone/i, scope: "Parapet / Coping" },
-        { rx: /concrete|flatwork|sidewalk|driveway|slab|curb/i, scope: "Concrete" },
-        { rx: /retaining\s*wall|block\s*wall|cmu\s*wall|garden\s*wall/i, scope: "Retaining Wall" },
-        { rx: /porch|steps|stair|stoop|front\s*entry/i, scope: "Porch / Steps" },
-        { rx: /brick.*(repair|replace|fix|crack|spall)|spalling|replace.*brick|loose\s*brick/i, scope: "Brick Repair" },
-        { rx: /stone|limestone|bluestone|flagstone|greystone/i, scope: "Stone / Limestone" },
-        { rx: /caulk|sealant|expansion\s*joint/i, scope: "Caulking" },
-        { rx: /foundation|structural|load\s*bearing|bulg/i, scope: "Foundation" },
-        { rx: /waterproof|water\s*proof|seal.*wall|damp\s*proof|efflor/i, scope: "Waterproofing" },
-        { rx: /window.*(open|cut|block|install)|glass\s*block/i, scope: "Window Opening" },
-        { rx: /stain.*brick|brick.*stain|paint.*brick|brick.*paint/i, scope: "Brick Staining" },
+        {rx:/tuckpoint|repoint|mortar\s*joint/i, scope:"Tuckpointing", qtyRx:/(\d+)\s*%/i},
+        {rx:/lintel|steel\s*beam|i-beam|angle\s*iron/i, scope:"Lintel/Steel", qtyRx:/(\d+)\s*(?:lintel|beam|steel)/i},
+        {rx:/chimney.*(rebuild|reconstruct|tear)/i, scope:"Chimney Rebuild"},
+        {rx:/chimney.*(repair|cap|crown|flue|tuck)|chimney\s*work/i, scope:"Chimney Repair"},
+        {rx:/parapet|coping|cap\s*stone/i, scope:"Parapet/Coping", qtyRx:/(\d+)\s*(?:lf|linear|ft)/i},
+        {rx:/concrete|flatwork|sidewalk|driveway|slab/i, scope:"Concrete", qtyRx:/(\d+)\s*(?:sq|sf|sqft)/i},
+        {rx:/retaining|block\s*wall|cmu/i, scope:"Retaining Wall", qtyRx:/(\d+)\s*(?:lf|linear|ft)/i},
+        {rx:/porch|steps|stair|stoop/i, scope:"Porch/Steps", qtyRx:/(\d+)\s*(?:step|stair)/i},
+        {rx:/brick.*(repair|replace|fix|crack|spall)|spalling|loose\s*brick/i, scope:"Brick Repair", qtyRx:/(\d+)\s*brick/i},
+        {rx:/stone|limestone|bluestone|flagstone/i, scope:"Stone/Limestone"},
+        {rx:/caulk|sealant|expansion\s*joint/i, scope:"Caulking", qtyRx:/(\d+)\s*(?:window|opening|door)/i},
+        {rx:/foundation|structural|load\s*bearing|bulg/i, scope:"Foundation"},
+        {rx:/waterproof|seal.*wall|damp|efflor/i, scope:"Waterproofing", qtyRx:/(\d+)\s*(?:sq|sf)/i},
       ];
       // Auto-detect building type
-      let detectedBuilding = estBuilding;
-      if (/3[\s-]*flat|3[\s-]*story|three\s*story|victorian/i.test(d)) detectedBuilding = "3flat";
-      else if (/2[\s-]*flat|two[\s-]*flat|duplex/i.test(d)) detectedBuilding = "2flat";
-      else if (/4[\s-]*story|mid[\s-]*rise|high[\s-]*rise|5[\s-]*story|6[\s-]*story|condo\s*build|apartment/i.test(d)) detectedBuilding = "midrise";
-      else if (/commercial|warehouse|office|retail|church|school/i.test(d)) detectedBuilding = "commercial";
+      if (/3[\s-]*flat|3[\s-]*story|three\s*story|victorian/i.test(d)) setEstBuilding("3flat");
+      else if (/2[\s-]*flat|two[\s-]*flat|duplex/i.test(d)) setEstBuilding("2flat");
+      else if (/4[\s-]*story|mid[\s-]*rise|high[\s-]*rise|condo\s*build|apartment/i.test(d)) setEstBuilding("midrise");
+      else if (/commercial|warehouse|office|retail|church|school/i.test(d)) setEstBuilding("commercial");
 
-      if (detectedBuilding !== estBuilding) setEstBuilding(detectedBuilding);
-
+      const bm = BUILDING_MULT[estBuilding].mult;
+      const found = [];
+      const matched = new Set();
       for (const p of patterns) {
-        if (p.rx.test(d) && !found.find(f => f.name === p.scope)) {
-          found.push({ name: p.scope, ...KB[p.scope], size: "med", lift: false, tightAccess: false });
+        if (p.rx.test(d) && !matched.has(p.scope)) {
+          matched.add(p.scope);
+          const kb = KB[p.scope];
+          const qm = p.qtyRx ? d.match(p.qtyRx) : null;
+          const qty = qm ? parseInt(qm[1]) : 1;
+          found.push({
+            scope: p.scope, description: p.scope, qty,
+            price_low: roundClient(kb.p10 * qty * bm),
+            price_high: roundClient(kb.p90 * qty * bm),
+            cost_low: roundSub(kb.c10 * qty * bm),
+            cost_high: roundSub(kb.c90 * qty * bm),
+            confidence: kb.n > 30 ? "high" : kb.n > 10 ? "medium" : "low",
+            is_addon: false, n: kb.n
+          });
         }
       }
-      // If nothing matched but text has content, default to Masonry/Tuckpointing
+      // Auto-add lift for 3+ stories
+      if ((estBuilding === "3flat" || estBuilding === "midrise") && found.length > 0) {
+        found.push({ scope:"Lift Rental", description:"Required for upper elevation access", qty:1, price_low:roundClient(1500*bm), price_high:roundClient(4000*bm), cost_low:roundSub(1300*bm), cost_high:roundSub(3500*bm), confidence:"high", is_addon:true });
+      }
       if (found.length === 0 && d.trim().length > 10) {
         if (/masonry|brick\s*work|exterior|facade/i.test(d)) {
-          found.push({ name: "Tuckpointing", ...KB["Tuckpointing"], size: "med", lift: false, tightAccess: false });
+          const kb = KB["Tuckpointing"];
+          found.push({ scope:"General Masonry", description:"Masonry work", qty:1, price_low:roundClient(kb.p10*bm), price_high:roundClient(kb.p90*bm), cost_low:roundSub(kb.c10*bm), cost_high:roundSub(kb.c90*bm), confidence:"medium", is_addon:false, n:312 });
         }
       }
-      return found;
+      setEstScopes(found);
     };
 
-    const runEstimate = () => {
-      const scopes = parseScopes(estInput);
-      setEstScopes(scopes);
-    };
-
-    const addScope = (scopeName) => {
-      if (estScopes.find(s => s.name === scopeName)) return;
-      setEstScopes(prev => [...prev, { name: scopeName, ...KB[scopeName], size: "med", lift: false, tightAccess: false }]);
-    };
-
-    const updateScope = (idx, key, val) => {
-      setEstScopes(prev => prev.map((s, i) => i === idx ? { ...s, [key]: val } : s));
-    };
-
-    const SIZE_MULT = { small: { label: "Spot Repair", mult: 0.4 }, med: { label: "1-2 Elevations", mult: 1.0 }, large: { label: "Full Building", mult: 2.2 } };
-    const removeScope = (idx) => setEstScopes(prev => prev.filter((_, i) => i !== idx));
-
-    const bMult = BUILDING_MULT[estBuilding].mult;
-    const bundleDiscount = estScopes.length >= 4 ? 0.90 : estScopes.length >= 2 ? 0.95 : 1.0;
-    const bundleLabel = estScopes.length >= 4 ? "10% bundle" : estScopes.length >= 2 ? "5% bundle" : "";
-    const calcAccess = (sc) => (sc.lift ? 2500 : 0) + (sc.tightAccess ? 800 : 0);
-    const calcSizeMult = (sc) => SIZE_MULT[sc.size || "med"].mult;
-    const totalPriceLow = Math.round(estScopes.reduce((s, sc) => s + (sc.pLow * calcSizeMult(sc) * bMult * bundleDiscount) + calcAccess(sc), 0));
-    const totalPriceHigh = Math.round(estScopes.reduce((s, sc) => s + (sc.pHigh * calcSizeMult(sc) * bMult * bundleDiscount) + calcAccess(sc), 0));
-    const totalCostLow = Math.round(estScopes.reduce((s, sc) => s + (sc.cLow * calcSizeMult(sc) * bMult) + (calcAccess(sc) * 0.65), 0));
-    const totalCostHigh = Math.round(estScopes.reduce((s, sc) => s + (sc.cHigh * calcSizeMult(sc) * bMult) + (calcAccess(sc) * 0.65), 0));
-    const marginLow = totalPriceHigh > 0 ? Math.round((1 - totalCostHigh / totalPriceHigh) * 100) : 0;
-    const marginHigh = totalPriceLow > 0 ? Math.round((1 - totalCostLow / totalPriceLow) * 100) : 0;
     const fmt = (n) => "$" + n.toLocaleString();
+    const totalPL = estScopes.reduce((s,sc) => s + (sc.price_low||0), 0);
+    const totalPH = estScopes.reduce((s,sc) => s + (sc.price_high||0), 0);
+    const totalCL = estScopes.reduce((s,sc) => s + (sc.cost_low||0), 0);
+    const totalCH = estScopes.reduce((s,sc) => s + (sc.cost_high||0), 0);
+    const sweetSpot = roundClient(Math.round((totalPL + totalPH) / 2));
+    const marginLow = totalPH > 0 ? Math.round((1 - totalCH/totalPH)*100) : 0;
+    const marginHigh = totalPL > 0 ? Math.round((1 - totalCL/totalPL)*100) : 0;
+    const confColor = (c) => c==="high"?"#27AE60":c==="medium"?"#F39C12":"#E74C3C";
 
     return (
       <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
-          left={<button onClick={()=>{setEstScopes([]);setEstInput("");setScreen("home");}} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>← Back</button>}
+          left={<button onClick={()=>{setEstScopes([]);setEstInput("");setScreen("home");}} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>{"\u2190 Back"}</button>}
           center="Estimator"
           right={<span/>}
         />
         <div style={{maxWidth:700,margin:"0 auto",padding:"16px 16px 48px"}}>
 
-          {/* Natural Language Input */}
+          {/* NLP Input */}
           <div style={{background:C.card,borderRadius:16,padding:"18px",border:`1px solid ${C.bdr}`,marginBottom:16}}>
             <div style={{fontSize:14,fontWeight:800,color:C.dk,marginBottom:8}}>Describe the job</div>
-            <textarea
-              value={estInput}
-              onChange={e=>setEstInput(e.target.value)}
-              placeholder={"e.g. 3-flat needs tuckpointing on rear and south elevations, chimney cap repair, and some loose bricks replaced on the front..."}
-              style={{width:"100%",minHeight:120,padding:"14px",borderRadius:10,border:`1px solid ${C.bdr}`,fontSize:16,fontFamily:"inherit",lineHeight:1.6,resize:"vertical",outline:"none",color:C.dk,background:C.inp}}
-              onFocus={e=>{e.target.style.borderColor=C.navy;}}
-              onBlur={e=>{e.target.style.borderColor=C.bdr;}}
-            />
+            <textarea value={estInput} onChange={e=>setEstInput(e.target.value)}
+              placeholder={"e.g. 3-flat needs tuckpointing on rear and south elevations, 2 lintels at 6ft, chimney cap repair, and about 15 loose bricks on the front..."}
+              style={{width:"100%",minHeight:120,padding:"14px",borderRadius:10,border:`1px solid ${C.bdr}`,fontSize:16,fontFamily:"inherit",lineHeight:1.6,resize:"vertical",outline:"none",color:C.dk,background:C.inp,boxSizing:"border-box"}}/>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10}}>
-              <div onClick={()=>setEstMode(estMode==="nlp"?"manual":"nlp")} style={{fontSize:12,color:C.navy,fontWeight:600,cursor:"pointer"}}>
-                {estMode==="nlp" ? "Or build manually \u2193" : "Back to describe \u2191"}
-              </div>
-              <div onClick={()=>{if(estInput.trim().length>5)runEstimate();}}
-                style={{padding:"10px 24px",borderRadius:10,background:estInput.trim().length>5?C.navy:"#CBD5E1",color:"#fff",fontSize:15,fontWeight:700,cursor:estInput.trim().length>5?"pointer":"not-allowed"}}>
-                Estimate
+              <div style={{fontSize:11,color:C.mut}}>AI-powered pricing from 845 approved estimates</div>
+              <div style={{display:"flex",gap:6}}>
+                <div onClick={()=>{if(estInput.trim().length>10)runLocalEstimate();}}
+                  style={{padding:"8px 16px",borderRadius:8,background:estInput.trim().length>10?C.card:"#CBD5E1",color:estInput.trim().length>10?C.dk:"#999",border:`1px solid ${C.bdr}`,fontSize:13,fontWeight:600,cursor:estInput.trim().length>10?"pointer":"not-allowed"}}>
+                  Quick
+                </div>
+                <div onClick={()=>{if(estInput.trim().length>10&&!estLoading)runAIEstimate();}}
+                  style={{padding:"8px 16px",borderRadius:8,background:estInput.trim().length>10&&!estLoading?C.navy:"#CBD5E1",color:"#fff",fontSize:13,fontWeight:700,cursor:estInput.trim().length>10&&!estLoading?"pointer":"not-allowed"}}>
+                  {estLoading ? "Analyzing..." : "AI Estimate"}
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Building Type Selector */}
+          {/* Building Type */}
           <div style={{marginBottom:16}}>
-            <div style={{fontSize:11,fontWeight:700,color:C.mut,letterSpacing:0.5,marginBottom:8,textTransform:"uppercase"}}>Building Type</div>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+            <div style={{fontSize:11,fontWeight:700,color:C.mut,letterSpacing:0.5,marginBottom:6,textTransform:"uppercase"}}>Building Type</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
               {Object.entries(BUILDING_MULT).map(([key, val]) => (
-                <div key={key} onClick={()=>{setEstBuilding(key);if(estScopes.length>0){const s=[...estScopes];setEstScopes(s);}}}
-                  style={{padding:"8px 14px",borderRadius:10,cursor:"pointer",fontSize:13,fontWeight:key===estBuilding?700:500,
-                    background:key===estBuilding?C.navy:"transparent",
-                    color:key===estBuilding?"#fff":C.dk,
+                <div key={key} onClick={()=>setEstBuilding(key)}
+                  style={{padding:"6px 12px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:key===estBuilding?700:500,
+                    background:key===estBuilding?C.navy:"transparent",color:key===estBuilding?"#fff":C.dk,
                     border:`1px solid ${key===estBuilding?C.navy:C.bdr}`}}>
-                  {val.label}
-                  {val.mult !== 1.0 && <span style={{fontSize:10,opacity:0.6,marginLeft:4}}>({val.mult}x)</span>}
+                  {val.label}{val.mult!==1.0?` (${val.mult}x)`:""}
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Manual Scope Builder (secondary) */}
-          {estMode==="manual" && (
-            <div style={{marginBottom:16}}>
-              <div style={{fontSize:11,fontWeight:700,color:C.mut,letterSpacing:0.5,marginBottom:8,textTransform:"uppercase"}}>Add Scopes Manually</div>
-              <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                {Object.keys(KB).map(scope => {
-                  const added = estScopes.find(s => s.name === scope);
-                  return (
-                    <div key={scope} onClick={()=>added?null:addScope(scope)}
-                      style={{padding:"8px 12px",borderRadius:8,cursor:added?"default":"pointer",fontSize:13,fontWeight:600,
-                        background:added?C.navy+"15":"transparent",
-                        color:added?C.navy:C.dk,
-                        border:`1px solid ${added?C.navy+"40":C.bdr}`,
-                        opacity:added?0.6:1}}>
-                      {added?"\u2713 ":""}{scope}
-                      <span style={{fontSize:9,color:C.mut,marginLeft:4}}>n={KB[scope].n}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Scope Breakdown */}
+          {/* Results */}
           {estScopes.length > 0 && (
-            <div style={{marginBottom:16}}>
-              <div style={{fontSize:11,fontWeight:700,color:C.mut,letterSpacing:0.5,marginBottom:8,textTransform:"uppercase"}}>
-                Scope Breakdown {bundleLabel && <span style={{color:C.grn,fontSize:10}}>({bundleLabel})</span>}
+            <>
+              {/* Sweet Spot */}
+              <div style={{background:`linear-gradient(145deg, #27AE60 0%, #1B7A43 100%)`,borderRadius:16,padding:"20px",marginBottom:16,textAlign:"center"}}>
+                <div style={{fontSize:10,color:"rgba(255,255,255,0.6)",fontWeight:700,letterSpacing:1}}>SWEET SPOT PRICE</div>
+                <div style={{fontSize:36,fontWeight:900,color:"#fff"}}>{fmt(sweetSpot)}</div>
+                <div style={{fontSize:12,color:"rgba(255,255,255,0.7)",marginTop:4}}>Range: {fmt(totalPL)} \u2014 {fmt(totalPH)} \u00b7 Margin: {marginLow}\u2014{marginHigh}%</div>
               </div>
+
+              {/* Line Items */}
+              <div style={{fontSize:11,fontWeight:700,color:C.mut,letterSpacing:0.5,marginBottom:8,textTransform:"uppercase"}}>Scope Breakdown ({estScopes.length} items)</div>
               {estScopes.map((sc, i) => {
-                const szM = calcSizeMult(sc);
-                const acc = calcAccess(sc);
-                const pL = Math.round((sc.pLow * szM * bMult * bundleDiscount) + acc);
-                const pH = Math.round((sc.pHigh * szM * bMult * bundleDiscount) + acc);
-                const cL = Math.round((sc.cLow * szM * bMult) + (acc * 0.65));
-                const cH = Math.round((sc.cHigh * szM * bMult) + (acc * 0.65));
-                const mL = pH > 0 ? Math.round((1 - cH/pH)*100) : 0;
-                const mH = pL > 0 ? Math.round((1 - cL/pL)*100) : 0;
+                const m = sc.price_high > 0 ? Math.round((1 - sc.cost_high/sc.price_high)*100) : 0;
                 return (
-                  <div key={i} style={{background:C.card,borderRadius:12,padding:"14px 16px",border:`1px solid ${C.bdr}`,marginBottom:8}}>
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                      <div style={{fontSize:15,fontWeight:800,color:C.dk}}>{sc.name}</div>
-                      <div onClick={()=>removeScope(i)} style={{fontSize:12,color:C.red,cursor:"pointer",fontWeight:600}}>Remove</div>
-                    </div>
-                    {/* Size selector */}
-                    <div style={{display:"flex",gap:4,marginBottom:8}}>
-                      {Object.entries(SIZE_MULT).map(([key, val]) => (
-                        <div key={key} onClick={()=>updateScope(i,"size",key)}
-                          style={{flex:1,padding:"6px 4px",borderRadius:8,textAlign:"center",cursor:"pointer",fontSize:11,fontWeight:sc.size===key?700:500,
-                            background:sc.size===key?C.navy+"15":"transparent",color:sc.size===key?C.navy:C.mut,
-                            border:`1px solid ${sc.size===key?C.navy+"40":C.bdr}`}}>
-                          {val.label}
-                        </div>
-                      ))}
-                    </div>
-                    {/* Access toggles */}
-                    <div style={{display:"flex",gap:6,marginBottom:10}}>
-                      <div onClick={()=>updateScope(i,"lift",!sc.lift)}
-                        style={{padding:"5px 10px",borderRadius:6,cursor:"pointer",fontSize:11,fontWeight:600,
-                          background:sc.lift?"#E74C3C15":"transparent",color:sc.lift?"#E74C3C":C.mut,
-                          border:`1px solid ${sc.lift?"#E74C3C40":C.bdr}`}}>
-                        {sc.lift?"✓ ":""}Lift/Scaffold (+$2,500)
+                  <div key={i} style={{background:sc.is_addon?C.navy+"08":C.card,borderRadius:12,padding:"14px 16px",border:`1px solid ${sc.is_addon?C.navy+"25":C.bdr}`,marginBottom:8}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                      <div style={{display:"flex",alignItems:"center",gap:8}}>
+                        <div style={{fontSize:14,fontWeight:800,color:C.dk}}>{sc.scope}</div>
+                        {sc.qty > 1 && <span style={{fontSize:11,color:C.navy,fontWeight:700,background:C.navy+"12",padding:"2px 6px",borderRadius:4}}>x{sc.qty}</span>}
+                        {sc.is_addon && <span style={{fontSize:9,color:C.navy,fontWeight:700,background:C.navy+"12",padding:"2px 6px",borderRadius:4}}>ADD-ON</span>}
                       </div>
-                      <div onClick={()=>updateScope(i,"tightAccess",!sc.tightAccess)}
-                        style={{padding:"5px 10px",borderRadius:6,cursor:"pointer",fontSize:11,fontWeight:600,
-                          background:sc.tightAccess?"#E67E2215":"transparent",color:sc.tightAccess?"#E67E22":C.mut,
-                          border:`1px solid ${sc.tightAccess?"#E67E2240":C.bdr}`}}>
-                        {sc.tightAccess?"✓ ":""}Tight Access (+$800)
-                      </div>
+                      {sc.confidence && <span style={{fontSize:9,fontWeight:700,color:confColor(sc.confidence),background:confColor(sc.confidence)+"15",padding:"2px 6px",borderRadius:4}}>{sc.confidence}</span>}
                     </div>
-                    {/* Pricing */}
+                    {sc.description && sc.description !== sc.scope && <div style={{fontSize:12,color:C.mut,marginBottom:6}}>{sc.description}</div>}
                     <div style={{display:"flex",gap:12}}>
                       <div style={{flex:1}}>
-                        <div style={{fontSize:10,color:C.mut,fontWeight:600,marginBottom:2}}>CLIENT PRICE</div>
-                        <div style={{fontSize:15,fontWeight:800,color:C.dk}}>{fmt(pL)} — {fmt(pH)}</div>
+                        <div style={{fontSize:9,color:C.mut,fontWeight:600}}>CLIENT</div>
+                        <div style={{fontSize:14,fontWeight:800,color:C.dk}}>{fmt(sc.price_low)} \u2014 {fmt(sc.price_high)}</div>
                       </div>
                       <div style={{flex:1}}>
-                        <div style={{fontSize:10,color:C.mut,fontWeight:600,marginBottom:2}}>SUB COST</div>
-                        <div style={{fontSize:15,fontWeight:700,color:C.mut}}>{fmt(cL)} — {fmt(cH)}</div>
+                        <div style={{fontSize:9,color:C.mut,fontWeight:600}}>SUB COST</div>
+                        <div style={{fontSize:14,fontWeight:700,color:C.mut}}>{fmt(sc.cost_low)} \u2014 {fmt(sc.cost_high)}</div>
                       </div>
                       <div>
-                        <div style={{fontSize:10,color:C.mut,fontWeight:600,marginBottom:2}}>MARGIN</div>
-                        <div style={{fontSize:15,fontWeight:800,color:mL>=35?C.grn:mL>=25?C.gold:C.red}}>{mL}—{mH}%</div>
+                        <div style={{fontSize:9,color:C.mut,fontWeight:600}}>MARGIN</div>
+                        <div style={{fontSize:14,fontWeight:800,color:m>=35?C.grn:m>=25?C.gold:C.red}}>{m}%</div>
                       </div>
                     </div>
-                    <div style={{fontSize:10,color:C.mut,marginTop:4}}>{sc.n} comparable estimates · {SIZE_MULT[sc.size||"med"].label}{sc.lift?" · Lift":""}{sc.tightAccess?" · Tight access":""}</div>
                   </div>
                 );
               })}
-            </div>
+
+              {/* Total Summary */}
+              <div style={{background:C.navy,borderRadius:16,padding:"18px",marginTop:8}}>
+                <div style={{display:"flex",justifyContent:"space-between"}}>
+                  <div>
+                    <div style={{fontSize:9,color:"rgba(255,255,255,0.5)",fontWeight:700}}>TOTAL RANGE</div>
+                    <div style={{fontSize:20,fontWeight:900,color:"#fff"}}>{fmt(totalPL)} \u2014 {fmt(totalPH)}</div>
+                  </div>
+                  <div style={{textAlign:"right"}}>
+                    <div style={{fontSize:9,color:"rgba(255,255,255,0.5)",fontWeight:700}}>SUB COST</div>
+                    <div style={{fontSize:16,fontWeight:700,color:"rgba(255,255,255,0.7)"}}>{fmt(totalCL)} \u2014 {fmt(totalCH)}</div>
+                  </div>
+                </div>
+                <div style={{fontSize:10,color:"rgba(255,255,255,0.4)",marginTop:8}}>
+                  Client prices rounded to NSM endings (240/480/640/860/980) \u00b7 Sub costs rounded to nearest $200
+                </div>
+              </div>
+            </>
           )}
 
-          {/* Total Summary */}
-          {estScopes.length > 0 && (
-            <div style={{background:C.navy,borderRadius:16,padding:"20px",marginBottom:16}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-                <div>
-                  <div style={{fontSize:10,color:"rgba(255,255,255,0.5)",fontWeight:700,letterSpacing:0.5,marginBottom:4}}>TOTAL ESTIMATE RANGE</div>
-                  <div style={{fontSize:24,fontWeight:900,color:"#fff"}}>{fmt(totalPriceLow)} — {fmt(totalPriceHigh)}</div>
-                </div>
-                <div style={{textAlign:"right"}}>
-                  <div style={{fontSize:10,color:"rgba(255,255,255,0.5)",fontWeight:700,letterSpacing:0.5,marginBottom:4}}>MARGIN</div>
-                  <div style={{fontSize:22,fontWeight:900,color:marginLow>=35?"#2ECC71":marginLow>=25?"#F1C40F":"#E74C3C"}}>{marginLow}—{marginHigh}%</div>
-                </div>
-              </div>
-              <div style={{display:"flex",gap:16,marginTop:12}}>
-                <div>
-                  <div style={{fontSize:9,color:"rgba(255,255,255,0.4)"}}>Sub Cost</div>
-                  <div style={{fontSize:14,fontWeight:700,color:"rgba(255,255,255,0.7)"}}>{fmt(totalCostLow)} — {fmt(totalCostHigh)}</div>
-                </div>
-                <div>
-                  <div style={{fontSize:9,color:"rgba(255,255,255,0.4)"}}>Building</div>
-                  <div style={{fontSize:14,fontWeight:700,color:"rgba(255,255,255,0.7)"}}>{BUILDING_MULT[estBuilding].label}</div>
-                </div>
-                {bundleLabel && <div>
-                  <div style={{fontSize:9,color:"rgba(255,255,255,0.4)"}}>Savings</div>
-                  <div style={{fontSize:14,fontWeight:700,color:"#2ECC71"}}>{bundleLabel}</div>
-                </div>}
-              </div>
-              <div style={{marginTop:12,padding:"8px 12px",background:"rgba(255,255,255,0.06)",borderRadius:8}}>
-                <div style={{fontSize:11,color:"rgba(255,255,255,0.5)",lineHeight:1.5}}>Based on {estScopes.reduce((s,sc)=>s+sc.n,0)} approved estimates. Adjust for site conditions and access.</div>
-              </div>
-            </div>
-          )}
-
-          {estScopes.length === 0 && estMode === "nlp" && (
+          {estScopes.length === 0 && !estLoading && (
             <div style={{textAlign:"center",padding:"30px 20px",color:C.mut}}>
-              <div style={{fontSize:32,marginBottom:8}}>🤖</div>
+              <div style={{fontSize:32,marginBottom:8}}>{"\ud83e\udd16"}</div>
               <div style={{fontSize:16,fontWeight:700,color:C.dk,marginBottom:4}}>Describe the job above</div>
-              <div style={{fontSize:14,lineHeight:1.6}}>Type what you see on-site and tap Estimate. The AI will break it into scopes with pricing from 845+ approved NSM estimates.</div>
+              <div style={{fontSize:14,lineHeight:1.6}}>Include building type, elevations, quantities, and specific scopes. The more detail, the tighter the estimate.</div>
+              <div style={{fontSize:12,color:C.mut,marginTop:12}}>{"\"Quick\" uses local pattern matching \u00b7 \"AI Estimate\" uses Claude for smarter parsing"}</div>
             </div>
           )}
         </div>
