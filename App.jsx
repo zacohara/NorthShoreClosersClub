@@ -363,27 +363,29 @@ export default function App() {
   // ═══ LOGIN ═══
   if (screen === "login") {
     return (
-      <div style={{minHeight:"100vh",background:"#0D2137",fontFamily:"'Outfit',sans-serif",display:"flex",flexDirection:"column"}}>
-        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-        <style>{CSS}</style>
+      <div style={{minHeight:"100vh",background:"#0B1929",fontFamily:"'DM Sans','Outfit',sans-serif",display:"flex",flexDirection:"column"}}>
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+        <style>{CSS}{`
+          @keyframes loginFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+        `}</style>
 
-        {/* Hero Banner */}
-        <div style={{position:"relative",overflow:"hidden",paddingTop:"max(48px, calc(env(safe-area-inset-top, 0px) + 32px))",paddingBottom:"40px",textAlign:"center"}}>
-          <div style={{position:"absolute",inset:0,backgroundImage:`url(${BG})`,backgroundSize:"cover",backgroundPosition:"center",opacity:0.25}}/>
-          <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, rgba(13,33,55,0.3) 0%, rgba(13,33,55,0.8) 100%)"}}/>
-          <div style={{position:"relative"}}>
-            <img src={ICON} alt="North Shore Masonry" style={{width:88,height:88,marginBottom:16,borderRadius:16,boxShadow:"0 8px 32px rgba(0,0,0,0.3)"}}/>
-            <div style={{color:"rgba(255,255,255,0.5)",fontSize:11,fontWeight:700,letterSpacing:3,textTransform:"uppercase",marginBottom:6}}>North Shore Masonry</div>
-            <div style={{color:"#fff",fontSize:34,fontWeight:900,letterSpacing:-0.5,lineHeight:1.1}}>Closer's Club</div>
+        {/* Cybertruck Hero */}
+        <div style={{position:"relative",overflow:"hidden"}}>
+          <img src={CYBER} alt="" style={{width:"100%",height:280,objectFit:"cover",objectPosition:"center 55%",display:"block"}}/>
+          <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, rgba(11,25,41,0.3) 0%, rgba(11,25,41,0.5) 40%, rgba(11,25,41,0.97) 100%)"}}/>
+          <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",paddingTop:"max(20px, env(safe-area-inset-top, 0px))"}}>
+            <img src={ICON} alt="North Shore Masonry" style={{width:80,height:80,marginBottom:14,filter:"drop-shadow(0 4px 16px rgba(0,0,0,0.4))",animation:"loginFloat 4s ease-in-out infinite"}}/>
+            <div style={{color:"rgba(255,255,255,0.45)",fontSize:11,fontWeight:700,letterSpacing:3,textTransform:"uppercase",marginBottom:6}}>North Shore Masonry</div>
+            <div style={{color:"#fff",fontSize:36,fontWeight:900,letterSpacing:-0.5,lineHeight:1.1,textShadow:"0 2px 16px rgba(0,0,0,0.4)"}}>Closer's Club</div>
           </div>
         </div>
 
-        {/* User Picker Card */}
-        <div style={{flex:1,background:"#F0F4F8",borderRadius:"24px 24px 0 0",padding:"28px 20px",marginTop:-16,position:"relative"}}>
+        {/* User Picker — Dark Theme */}
+        <div style={{flex:1,padding:"24px 20px",position:"relative"}}>
           <div style={{maxWidth:420,margin:"0 auto"}}>
-            <div style={{marginBottom:20}}>
-              <div style={{fontSize:20,fontWeight:800,color:"#1B3A50"}}>Welcome back,</div>
-              <div style={{fontSize:15,color:"#6B8299"}}>Who's closing today?</div>
+            <div style={{marginBottom:18}}>
+              <div style={{fontSize:20,fontWeight:800,color:"#fff"}}>Welcome back,</div>
+              <div style={{fontSize:15,color:"rgba(255,255,255,0.4)"}}>Who's closing today?</div>
             </div>
 
             <div style={{display:"flex",flexDirection:"column",gap:6}}>
@@ -391,27 +393,26 @@ export default function App() {
                 <button key={u} onClick={async() => { const pw = await getPassword(u); if (!pw) { setUser(u);setPasswordMode("set");setPwInput("");setPwConfirm("");setPwError(""); } else { setUser(u);setPasswordMode("enter");setPwInput("");setPwError(""); } }}
                   style={{
                     display:"flex",alignItems:"center",gap:14,
-                    background:"#fff",border:"1px solid #E2E8F0",borderRadius:14,
-                    padding:"14px 18px",cursor:"pointer",transition:"all 0.15s",
-                    boxShadow:"0 1px 3px rgba(0,0,0,0.04)",width:"100%",textAlign:"left"
+                    background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:14,
+                    padding:"14px 18px",cursor:"pointer",transition:"all 0.2s",
+                    boxShadow:"0 2px 8px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.04)",width:"100%",textAlign:"left"
                   }}>
                   {profiles[u]?.avatar ? (
-                    <img src={profiles[u].avatar} alt="" style={{width:44,height:44,borderRadius:"50%",objectFit:"cover",border:"2px solid #E2E8F0"}}/>
+                    <img src={profiles[u].avatar} alt="" style={{width:44,height:44,borderRadius:"50%",objectFit:"cover",border:"2px solid rgba(255,255,255,0.15)"}}/>
                   ) : (
-                    <div style={{width:44,height:44,borderRadius:"50%",background:"#1B4F72",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,fontWeight:800,flexShrink:0}}>{u[0]}</div>
+                    <div style={{width:44,height:44,borderRadius:"50%",background:"rgba(93,165,186,0.2)",color:"#5DA5BA",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,fontWeight:800,flexShrink:0,border:"2px solid rgba(93,165,186,0.15)"}}>{u[0]}</div>
                   )}
-                  <div style={{fontSize:17,fontWeight:700,color:"#1B3A50"}}>{u}</div>
+                  <div style={{fontSize:17,fontWeight:700,color:"#fff"}}>{u}</div>
                 </button>
               ))}
             </div>
 
             <button onClick={() => { setAdminAuth(false); setAdminPw(""); setAdminErr(false); setScreen("admin"); }}
-              style={{width:"100%",marginTop:20,padding:"12px",borderRadius:10,background:"transparent",border:"1px solid #D1D9E0",color:"#8899AA",fontSize:13,fontWeight:600,cursor:"pointer"}}>
+              style={{width:"100%",marginTop:20,padding:"12px",borderRadius:10,background:"transparent",border:"1px solid rgba(255,255,255,0.08)",color:"rgba(255,255,255,0.35)",fontSize:13,fontWeight:600,cursor:"pointer"}}>
               Admin Portal
             </button>
 
-            <div style={{textAlign:"center",padding:"16px 0 8px",color:"#8899AA",fontSize:11}}>
-              <button onClick={()=>setDarkMode(d=>!d)} style={{background:"none",border:"none",color:"#8899AA",fontSize:14,cursor:"pointer",marginBottom:4,display:"block",margin:"0 auto 4px"}}>{darkMode ? "\u2600\ufe0f" : "\ud83c\udf19"}</button>
+            <div style={{textAlign:"center",padding:"16px 0 8px",color:"rgba(255,255,255,0.25)",fontSize:11}}>
               Brick by brick. — North Shore Masonry
             </div>
           </div>
@@ -419,20 +420,20 @@ export default function App() {
 
         {/* Password Modal */}
         {passwordMode && (
-          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-            <div style={{background:"#fff",borderRadius:20,maxWidth:380,width:"100%",padding:"32px 24px",boxShadow:"0 24px 48px rgba(0,0,0,0.3)"}}>
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.8)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+            <div style={{background:"#132F44",borderRadius:20,maxWidth:380,width:"100%",padding:"32px 24px",boxShadow:"0 24px 48px rgba(0,0,0,0.5)",border:"1px solid rgba(255,255,255,0.06)"}}>
               <div style={{textAlign:"center",marginBottom:20}}>
                 <div style={{fontSize:40,marginBottom:8}}>{passwordMode==="set"?"\ud83d\udd10":"\ud83d\udd11"}</div>
-                <div style={{fontSize:20,fontWeight:800,color:"#1B4F72"}}>{passwordMode==="set"?"Create Your Password":"Enter Password"}</div>
-                <div style={{fontSize:13,color:"#888",marginTop:4}}>{passwordMode==="set"?"Set a password for your account":"Welcome back, "+user}</div>
+                <div style={{fontSize:20,fontWeight:800,color:"#fff"}}>{passwordMode==="set"?"Create Your Password":"Enter Password"}</div>
+                <div style={{fontSize:13,color:"rgba(255,255,255,0.4)",marginTop:4}}>{passwordMode==="set"?"Set a password for your account":"Welcome back, "+user}</div>
               </div>
               <input type="password" value={pwInput} onChange={e=>{setPwInput(e.target.value);setPwError("");}}
                 placeholder={passwordMode==="set"?"New password":"Password"} autoFocus
-                style={{width:"100%",padding:"14px",borderRadius:10,border:"1px solid #DDE3EA",fontSize:16,marginBottom:10,outline:"none",fontFamily:"inherit",boxSizing:"border-box"}}/>
+                style={{width:"100%",padding:"14px",borderRadius:10,border:"1px solid rgba(255,255,255,0.1)",fontSize:16,marginBottom:10,outline:"none",fontFamily:"inherit",boxSizing:"border-box",background:"rgba(255,255,255,0.05)",color:"#fff"}}/>
               {passwordMode==="set" && (
                 <input type="password" value={pwConfirm} onChange={e=>{setPwConfirm(e.target.value);setPwError("");}}
                   placeholder="Confirm password"
-                  style={{width:"100%",padding:"14px",borderRadius:10,border:"1px solid #DDE3EA",fontSize:16,marginBottom:10,outline:"none",fontFamily:"inherit",boxSizing:"border-box"}}/>
+                  style={{width:"100%",padding:"14px",borderRadius:10,border:"1px solid rgba(255,255,255,0.1)",fontSize:16,marginBottom:10,outline:"none",fontFamily:"inherit",boxSizing:"border-box",background:"rgba(255,255,255,0.05)",color:"#fff"}}/>
               )}
               {pwError && <div style={{color:"#E74C3C",fontSize:13,fontWeight:600,marginBottom:10,textAlign:"center"}}>{pwError}</div>}
               <button onClick={async()=>{
@@ -447,11 +448,11 @@ export default function App() {
                   if (ok) {setPasswordMode(null);updateStreak(user);setScreen("home");setShowWelcome(true);}
                   else setPwError("Wrong password");
                 }
-              }} style={{width:"100%",padding:"14px",borderRadius:12,background:"#1B4F72",color:"#fff",border:"none",fontSize:16,fontWeight:700,cursor:"pointer",marginBottom:10}}>
+              }} style={{width:"100%",padding:"14px",borderRadius:12,background:"linear-gradient(145deg, #5DA5BA 0%, #3D7A8E 100%)",color:"#fff",border:"none",fontSize:16,fontWeight:700,cursor:"pointer",marginBottom:10,boxShadow:"0 4px 16px rgba(93,165,186,0.25)"}}>
                 {passwordMode==="set"?"Create Password":"Login"}
               </button>
               <button onClick={()=>{setPasswordMode(null);setUser(null);setPwInput("");setPwConfirm("");setPwError("");}}
-                style={{width:"100%",padding:"10px",borderRadius:10,background:"transparent",color:"#888",border:"none",fontSize:13,cursor:"pointer"}}>
+                style={{width:"100%",padding:"10px",borderRadius:10,background:"transparent",color:"rgba(255,255,255,0.35)",border:"none",fontSize:13,cursor:"pointer"}}>
                 Back to user select
               </button>
             </div>
