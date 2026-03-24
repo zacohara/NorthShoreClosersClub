@@ -360,59 +360,59 @@ export default function App() {
   // ═══ LOGIN ═══
   if (screen === "login") {
     return (
-      <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Outfit',sans-serif",display:"flex",flexDirection:"column"}}>
+      <div style={{minHeight:"100vh",background:"#0D2137",fontFamily:"'Outfit',sans-serif",display:"flex",flexDirection:"column"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
-        <div style={{position:"relative",overflow:"hidden",background:C.navy,paddingTop:"max(40px, calc(env(safe-area-inset-top, 0px) + 24px))",paddingBottom:"36px",paddingLeft:"24px",paddingRight:"24px",textAlign:"center"}}>
-          <div style={{position:"absolute",inset:0,backgroundImage:`url(${BG})`,backgroundSize:"cover",backgroundPosition:"center",opacity:0.2}}/>
+
+        {/* Hero Banner */}
+        <div style={{position:"relative",overflow:"hidden",paddingTop:"max(48px, calc(env(safe-area-inset-top, 0px) + 32px))",paddingBottom:"40px",textAlign:"center"}}>
+          <div style={{position:"absolute",inset:0,backgroundImage:`url(${BG})`,backgroundSize:"cover",backgroundPosition:"center",opacity:0.25}}/>
+          <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, rgba(13,33,55,0.3) 0%, rgba(13,33,55,0.8) 100%)"}}/>
           <div style={{position:"relative"}}>
-            <img src={ICON} alt="North Shore Masonry" style={{width:72,height:72,marginBottom:16}}/>
-            <div style={{color:"rgba(255,255,255,0.55)",fontSize:12,fontWeight:700,letterSpacing:2.5,textTransform:"uppercase",marginBottom:4}}>North Shore Masonry</div>
-            <div className="hero-title" style={{color:"#fff",fontSize:30,fontWeight:900,letterSpacing:-0.5}}>Closer’s Club</div>
-            <div style={{color:C.sky,fontSize:16,fontWeight:600,marginTop:6}}>Sandler Daily Drill</div>
-            <div style={{color:"rgba(255,255,255,0.45)",fontSize:14,marginTop:4}}>15-day sales training · 90 questions</div>
+            <img src={ICON} alt="North Shore Masonry" style={{width:88,height:88,marginBottom:16,borderRadius:16,boxShadow:"0 8px 32px rgba(0,0,0,0.3)"}}/>
+            <div style={{color:"rgba(255,255,255,0.5)",fontSize:11,fontWeight:700,letterSpacing:3,textTransform:"uppercase",marginBottom:6}}>North Shore Masonry</div>
+            <div style={{color:"#fff",fontSize:34,fontWeight:900,letterSpacing:-0.5,lineHeight:1.1}}>Closer's Club</div>
           </div>
         </div>
-        <div style={{flex:1,maxWidth:420,margin:"0 auto",padding:"28px 20px",width:"100%"}}>
-          <div style={{fontSize:15,fontWeight:700,color:C.dk,marginBottom:16}}>Who’s drilling today?</div>
-          <div style={{display:"flex",flexDirection:"column",gap:8}}>
-            {USERS.map(u => {
-              const up = allProg[u] || {};
-              const pc = Object.values(up).filter(p=>p.passed).length;
-              const done = pc === 15;
-              return (
+
+        {/* User Picker Card */}
+        <div style={{flex:1,background:"#F0F4F8",borderRadius:"24px 24px 0 0",padding:"28px 20px",marginTop:-16,position:"relative"}}>
+          <div style={{maxWidth:420,margin:"0 auto"}}>
+            <div style={{marginBottom:20}}>
+              <div style={{fontSize:20,fontWeight:800,color:"#1B3A50"}}>Welcome back,</div>
+              <div style={{fontSize:15,color:"#6B8299"}}>Who's closing today?</div>
+            </div>
+
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              {USERS.map(u => (
                 <button key={u} onClick={async() => { const pw = await getPassword(u); if (!pw) { setUser(u);setPasswordMode("set");setPwInput("");setPwConfirm("");setPwError(""); } else { setUser(u);setPasswordMode("enter");setPwInput("");setPwError(""); } }}
-                  className="btn-outline"
                   style={{
-                    display:"flex",alignItems:"center",justifyContent:"space-between",
-                    background:C.card,border:`2px solid ${done ? C.grn+"44" : C.bdr}`,borderRadius:12,
-                    padding:"14px 18px",cursor:"pointer",transition:"all 0.15s"
+                    display:"flex",alignItems:"center",gap:14,
+                    background:"#fff",border:"1px solid #E2E8F0",borderRadius:14,
+                    padding:"14px 18px",cursor:"pointer",transition:"all 0.15s",
+                    boxShadow:"0 1px 3px rgba(0,0,0,0.04)",width:"100%",textAlign:"left"
                   }}>
-                  <div style={{display:"flex",alignItems:"center",gap:12}}>
-                    {profiles[u]?.avatar ? (
-                      <img src={profiles[u].avatar} alt="" style={{width:40,height:40,borderRadius:"50%",objectFit:"cover"}}/>
-                    ) : (
-                      <div style={{width:40,height:40,borderRadius:"50%",background:C.navy,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:800}}>{u[0]}</div>
-                    )}
-                    <div style={{textAlign:"left"}}>
-                      <div style={{fontSize:17,fontWeight:700,color:C.dk}}>{u}</div>
-                      <div style={{fontSize:13,color:C.mut}}>{pc > 0 ? `${pc}/15 passed` : "Not started"}</div>
-                    </div>
-                  </div>
-                  {done && <span style={{fontSize:18}}>🏆</span>}
-                  {pc > 0 && !done && <span style={{fontSize:12,fontWeight:700,color:C.sky}}>{Math.round(Object.values(up).reduce((s,p)=>s+(p.score||0),0)/Math.max(1,Object.values(up).reduce((s,p)=>s+(p.total||0),0))*100)}%</span>}
+                  {profiles[u]?.avatar ? (
+                    <img src={profiles[u].avatar} alt="" style={{width:44,height:44,borderRadius:"50%",objectFit:"cover",border:"2px solid #E2E8F0"}}/>
+                  ) : (
+                    <div style={{width:44,height:44,borderRadius:"50%",background:"#1B4F72",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,fontWeight:800,flexShrink:0}}>{u[0]}</div>
+                  )}
+                  <div style={{fontSize:17,fontWeight:700,color:"#1B3A50"}}>{u}</div>
                 </button>
-              );
-            })}
+              ))}
+            </div>
+
+            <button onClick={() => { setAdminAuth(false); setAdminPw(""); setAdminErr(false); setScreen("admin"); }}
+              style={{width:"100%",marginTop:20,padding:"12px",borderRadius:10,background:"transparent",border:"1px solid #D1D9E0",color:"#8899AA",fontSize:13,fontWeight:600,cursor:"pointer"}}>
+              Admin Portal
+            </button>
+
+            <div style={{textAlign:"center",padding:"16px 0 8px",color:"#8899AA",fontSize:11}}>
+              <button onClick={()=>setDarkMode(d=>!d)} style={{background:"none",border:"none",color:"#8899AA",fontSize:14,cursor:"pointer",marginBottom:4,display:"block",margin:"0 auto 4px"}}>{darkMode ? "\u2600\ufe0f" : "\ud83c\udf19"}</button>
+              Brick by brick. \u2014 North Shore Masonry
+            </div>
           </div>
-          <button onClick={() => { setAdminAuth(false); setAdminPw(""); setAdminErr(false); setScreen("admin"); }}
-            style={{width:"100%",marginTop:20,padding:"12px",borderRadius:10,background:"transparent",border:`1px solid ${C.bdr}`,color:C.mut,fontSize:13,fontWeight:600,cursor:"pointer"}}>
-            🔒 Admin Portal
-          </button>
         </div>
-        <div style={{textAlign:"center",padding:"16px",color:C.mut,fontSize:11}}>
-          <button onClick={()=>setDarkMode(d=>!d)} style={{background:"none",border:"none",color:C.mut,fontSize:16,cursor:"pointer",marginBottom:6,display:"block",margin:"0 auto 6px"}}>{darkMode ? "☀️" : "🌙"}</button>
-          Brick by brick. — North Shore Masonry</div>
 
         {/* Password Modal */}
         {passwordMode && (
@@ -458,6 +458,8 @@ export default function App() {
       </div>
     );
   }
+
+
 
 
   // ═══ HOME ═══
@@ -1961,10 +1963,10 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
         "Waterproofing":{n:22,unitLo:4,unitHi:8,cUnitLo:2.5,cUnitHi:5,unit:"sqft",defQty:200,minJob:1500},
       };
       const patterns = [
-        {rx:/tuckpoint|repoint|mortar\s*joint|grind\s*and\s*point/i, scope:"Tuckpointing", qtyRx:/([\d,]+)\s*(?:sq|sf|sqft|square)/i},
-        {rx:/lintel|steel\s*beam|i-beam|angle\s*iron/i, scope:"Lintel/Steel", qtyRx:/(\d+)\s*(?:lintel|beam|steel)/i},
+        {rx:/tuckpoint|repoint|mortar\s*joint|grind\s*and\s*point|mortar.*(?:fall|crumbl|deteriorat|fail|shot)|joints.*(?:open|fail|gone|shot)|\btp\b/i, scope:"Tuckpointing", qtyRx:/([\d,]+)\s*(?:sq|sf|sqft|square)/i},
+        {rx:/lintel|steel\s*beam|steel\s*(?:above|over)|i-beam|angle\s*iron/i, scope:"Lintel/Steel", qtyRx:/(\d+)\s*(?:lintel|beam|steel|window)/i},
         {rx:/chimney.*(rebuild|reconstruct|tear|rebuilt|replace entirely)/i, scope:"Chimney Rebuild"},
-        {rx:/chimney.*(repair|cap|crown|flue|tuck|work|fix)|(?:crown|flue).*chimney|\\bchim\\b.*(?:cap|repair|fix|work)/i, scope:"Chimney Repair"},
+        {rx:/chimney.*(repair|cap|crown|flue|tuck|work|fix)|(?:crown|flue).*chimney|\bchim\b.*(?:cap|repair|fix|work)/i, scope:"Chimney Repair"},
         {rx:/parapet|coping|cap\s*stone/i, scope:"Parapet/Coping", qtyRx:/(\d+)\s*(?:lf|linear|ft|feet)/i},
         {rx:/concrete|flatwork|sidewalk|driveway|slab/i, scope:"Concrete", qtyRx:/(\d+)\s*(?:sq|sf|sqft|square)/i},
         {rx:/retaining|block\s*wall|cmu/i, scope:"Retaining Wall", qtyRx:/(\d+)\s*(?:lf|linear|ft|feet)/i},
@@ -1973,7 +1975,7 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
         {rx:/(?<!lime)stone|limestone|bluestone|flagstone/i, scope:"Stone/Limestone", qtyRx:/(\d+)\s*(?:stone|limestone|sill|pillar|column)/i},
         {rx:/caulk|sealant|expansion\s*joint/i, scope:"Caulking", qtyRx:/(\d+)\s*(?:window|opening|door|joint)/i},
         {rx:/foundation|structural|load\s*bearing|bulg/i, scope:"Foundation"},
-        {rx:/waterproof|seal.*wall|damp\s*proof|efflor/i, scope:"Waterproofing", qtyRx:/(\d+)\s*(?:sq|sf|sqft)/i},
+        {rx:/waterproof|seal.*(?:wall|exterior|basement|masonry|brick)|water.*(?:coming|leak|intrusion).*(?:wall|through)|damp\s*proof|efflor/i, scope:"Waterproofing", qtyRx:/(\d+)\s*(?:sq|sf|sqft)/i},
       ];
       // Auto-detect building type
       if (/3[\s-]*flat|3[\s-]*story|three\s*story|victorian/i.test(d)) setEstBuilding("3flat");
