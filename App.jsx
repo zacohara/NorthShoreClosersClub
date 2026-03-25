@@ -205,6 +205,8 @@ export default function App() {
   const [heatmapData, setHeatmapData] = useState(null);
   const [estScopes, setEstScopes] = useState([]);
   const [estInput, setEstInput] = useState("");
+  const [estRecording, setEstRecording] = useState(false);
+  const estRecRef = React.useRef(null);
   const [objSearch, setObjSearch] = useState("");
   const [showQR, setShowQR] = useState(false);
   const [todayTasks, setTodayTasks] = useState([]);
@@ -2086,16 +2088,16 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
         "Waterproofing":{n:22,unitLo:4,unitHi:8,cUnitLo:2.5,cUnitHi:5,unit:"sqft",defQty:200,minJob:1500},
       };
       const patterns = [
-        {rx:/tuckpoint|repoint|mortar\s*joint|grind\s*and\s*point|mortar.*(?:fall|crumbl|deteriorat|fail|shot)|joints.*(?:open|fail|gone|shot)|\btp\b/i, scope:"Tuckpointing", qtyRx:/([\d,]+)\s*(?:sq|sf|sqft|square)/i},
-        {rx:/lintel|steel\s*beam|steel\s*(?:above|over)|i-beam|angle\s*iron/i, scope:"Lintel/Steel", qtyRx:/(\d+)\s*(?:lintel|beam|steel|window)/i},
-        {rx:/chimney.*(rebuild|reconstruct|tear|rebuilt|replace entirely)/i, scope:"Chimney Rebuild"},
-        {rx:/chimney.*(repair|cap|crown|flue|tuck|work|fix)|(?:crown|flue).*chimney|\bchim\b.*(?:cap|repair|fix|work)/i, scope:"Chimney Repair"},
+        {rx:/tuckpoint|took\s*point|tuck\s*point|repoint|mortar\s*joint|grind\s*and\s*point|mortar.*(?:fall|crumbl|deteriorat|fail|shot)|joints.*(?:open|fail|gone|shot)|\btp\b/i, scope:"Tuckpointing", qtyRx:/([\d,]+)\s*(?:sq|sf|sqft|square)/i},
+        {rx:/lintel|lint[ea]l|lint\b|steel\s*beam|steel\s*(?:above|over)|i-beam|angle\s*iron/i, scope:"Lintel/Steel", qtyRx:/(\d+)\s*(?:lintel|beam|steel|window)/i},
+        {rx:/chimney.*(rebuild|reconstruct|tear|rebuilt|replace entirely)|(?:rebuild|reconstruct|tear\s*down).*chimney/i, scope:"Chimney Rebuild"},
+        {rx:/chimney.*(repair|cap|crown|flue|tuck|work|fix)|(?:crown|flue).*chimney|\bchim\b.*(?:cap|repair|fix|work)|chiminy|chimley/i, scope:"Chimney Repair"},
         {rx:/parapet|coping|cap\s*stone/i, scope:"Parapet/Coping", qtyRx:/(\d+)\s*(?:lf|linear|ft|feet)/i},
         {rx:/concrete|flatwork|sidewalk|driveway|slab/i, scope:"Concrete", qtyRx:/(\d+)\s*(?:sq|sf|sqft|square)/i},
         {rx:/retaining|block\s*wall|cmu/i, scope:"Retaining Wall", qtyRx:/(\d+)\s*(?:lf|linear|ft|feet)/i},
         {rx:/porch|front\s*steps|stair|stoop/i, scope:"Porch/Steps", qtyRx:/(\d+)\s*(?:step|stair)/i},
         {rx:/brick.*(repair|replace|fix|crack|spall)|spalling|loose\s*brick|(\d+)\s*(?:loose\s*)?brick/i, scope:"Brick Repair", qtyRx:/(\d+)\s*(?:loose\s*)?brick/i},
-        {rx:/(?<!lime)stone|limestone|bluestone|flagstone/i, scope:"Stone/Limestone", qtyRx:/(\d+)\s*(?:stone|limestone|sill|pillar|column)/i},
+        {rx:/(?<!lime)stone(?!\s*cold)|limestone|bluestone|flagstone/i, scope:"Stone/Limestone", qtyRx:/(\d+)\s*(?:stone|limestone|sill|pillar|column)/i},
         {rx:/caulk|sealant|expansion\s*joint/i, scope:"Caulking", qtyRx:/(\d+)\s*(?:window|opening|door|joint)/i},
         {rx:/foundation|structural|load\s*bearing|bulg/i, scope:"Foundation"},
         {rx:/waterproof|seal.*(?:wall|exterior|basement|masonry|brick)|water.*(?:coming|leak|intrusion).*(?:wall|through)|damp\s*proof|efflor/i, scope:"Waterproofing", qtyRx:/(\d+)\s*(?:sq|sf|sqft)/i},
@@ -2107,6 +2109,11 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
       else if (/commercial|warehouse|office|retail|church|school/i.test(d)) setEstBuilding("commercial");
 
       const bm = BUILDING_MULT[estBuilding].mult;
+      const homeSizeMatch = d.match(/([\d,]+)\s*(?:sq|sf|sqft|square)[\s-]*(?:ft|foot|feet)?[\s-]*(?:home|house|building|bungalow|ranch|colonial|property|residence|brownstone|greystone)/i);
+      const homeSize = homeSizeMatch ? parseInt(homeSizeMatch[1].replace(/,/g,"")) : 0;
+      const pctMatches = [...d.matchAll(/(\d+)\s*%/g)].map(m => parseInt(m[1]));
+      const avgPct = pctMatches.length > 0 ? pctMatches.reduce((a,b)=>a+b,0) / pctMatches.length / 100 : 0;
+      const estWallArea = homeSize > 0 ? Math.round(homeSize * 1.0) : 0;
       const found = [];
       const matched = new Set();
       for (const p of patterns) {
@@ -2114,7 +2121,23 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
           matched.add(p.scope);
           const kb = KB[p.scope];
           const qm = p.qtyRx ? d.match(p.qtyRx) : null;
-          const qty = qm ? parseInt(qm[1].replace(/,/g,"")) : kb.defQty;
+          let rawQty = qm ? parseInt(qm[1].replace(/,/g,"")) : 0;
+          let qty;
+          if (rawQty > 0 && homeSize > 0 && Math.abs(rawQty - homeSize) < 50) {
+            const allSqftMatches = [...d.matchAll(/([\d,]+)\s*(?:sq|sf|sqft|square)/gi)];
+            const otherSqft = allSqftMatches.find(m => Math.abs(parseInt(m[1].replace(/,/g,"")) - homeSize) >= 50);
+            if (otherSqft) {
+              qty = parseInt(otherSqft[1].replace(/,/g,""));
+            } else if (kb.unit === "sqft" && pctMatches.length > 0) {
+              qty = Math.max(Math.round(estWallArea * avgPct), 50);
+            } else if (kb.unit === "sqft") {
+              qty = kb.defQty;
+            } else {
+              qty = rawQty || kb.defQty;
+            }
+          } else {
+            qty = rawQty || kb.defQty;
+          }
           const isBundled = matched.size > 1;
           // Per-unit pricing
           let pLo = Math.max(kb.unitLo * qty * bm, kb.minJob * bm);
@@ -2176,7 +2199,41 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
 
           {/* NLP Input */}
           <div style={{background:C.card,borderRadius:16,padding:"18px",border:`1px solid ${C.bdr}`,marginBottom:16}}>
-            <div style={{fontSize:14,fontWeight:800,color:C.dk,marginBottom:8}}>Describe the job</div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+              <div style={{fontSize:14,fontWeight:800,color:C.dk}}>Describe the job</div>
+              <div onClick={()=>{
+                if (estRecording) {
+                  if (estRecRef.current) { estRecRef.current.stop(); estRecRef.current = null; }
+                  setEstRecording(false);
+                } else {
+                  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+                  if (!SR) { alert("Voice input not supported in this browser. Use Chrome or Safari."); return; }
+                  const rec = new SR();
+                  rec.continuous = true; rec.interimResults = true; rec.lang = "en-US";
+                  let final = estInput;
+                  rec.onresult = (e) => {
+                    let interim = "";
+                    for (let i = e.resultIndex; i < e.results.length; i++) {
+                      if (e.results[i].isFinal) final += (final?" ":"") + e.results[i][0].transcript;
+                      else interim += e.results[i][0].transcript;
+                    }
+                    setEstInput(final + (interim?" "+interim:""));
+                  };
+                  rec.onerror = () => setEstRecording(false);
+                  rec.onend = () => setEstRecording(false);
+                  rec.start();
+                  estRecRef.current = rec;
+                  setEstRecording(true);
+                }
+              }}
+                style={{display:"flex",alignItems:"center",gap:6,padding:"6px 14px",borderRadius:8,
+                  background:estRecording?"#E74C3C":"rgba(93,165,186,0.15)",
+                  border:"1px solid "+(estRecording?"#E74C3C":"rgba(93,165,186,0.2)"),
+                  color:estRecording?"#fff":"#5DA5BA",fontSize:12,fontWeight:700,cursor:"pointer"}}>
+                <span style={{fontSize:16}}>{estRecording ? "\u23f9" : "\ud83c\udfa4"}</span>
+                {estRecording ? "Stop" : "Voice"}
+              </div>
+            </div>
             <textarea value={estInput} onChange={e=>setEstInput(e.target.value)}
               placeholder={"e.g. 3-flat needs tuckpointing on rear and south elevations, 2 lintels at 6ft, chimney cap repair, and about 15 loose bricks on the front..."}
               style={{width:"100%",minHeight:120,padding:"14px",borderRadius:10,border:`1px solid ${C.bdr}`,fontSize:16,fontFamily:"inherit",lineHeight:1.6,resize:"vertical",outline:"none",color:C.dk,background:C.inp,boxSizing:"border-box"}}/>
