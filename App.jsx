@@ -206,7 +206,7 @@ export default function App() {
   const [estScopes, setEstScopes] = useState([]);
   const [estInput, setEstInput] = useState("");
   const [estRecording, setEstRecording] = useState(false);
-  const estRecRef = React.useRef(null);
+  const estRecRef = useRef(null);
   const [objSearch, setObjSearch] = useState("");
   const [showQR, setShowQR] = useState(false);
   const [todayTasks, setTodayTasks] = useState([]);
