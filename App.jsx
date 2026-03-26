@@ -1048,7 +1048,7 @@ export default function App() {
                   style={{
                     display:"flex",gap:12,alignItems:"flex-start",
                     background:bg,borderRadius:11,padding:"14px 16px",
-                    border:`2px solid ${bd}`,cursor:locked?"default":"pointer",
+                    border:`2px solid ${bd}`,cursor:locked?"default":"pointer",boxShadow:(!locked&&isSel)?"0 0 12px rgba(93,165,186,0.4)":"none",
                     transition:"all 0.15s",opacity:locked&&!isAns&&!isSel?0.35:1
                   }}>
                   <div style={{
