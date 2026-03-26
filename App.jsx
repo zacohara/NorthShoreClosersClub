@@ -95,11 +95,11 @@ button:focus-visible, div[role="radio"]:focus-visible { outline: 3px solid #5DA5
 @media(max-width:600px){
   .qgrid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr)) !important}
 }
-.opt-card:hover:not([data-locked="true"]){background:#EBF5FB !important;border-color:#2471A3 !important}
-.quiz-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(27,79,114,0.10)}
+.opt-card:hover:not([data-locked="true"]){background:rgba(93,165,186,0.2) !important;border-color:#5DA5BA !important}
+.quiz-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
 .quiz-card{transition:transform 0.15s,box-shadow 0.15s}
 .btn-primary:hover{filter:brightness(1.1)}
-.btn-outline:hover{background:rgba(27,79,114,0.06)}
+.btn-outline:hover{background:rgba(93,165,186,0.15)}
 `;
 
 
