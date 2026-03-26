@@ -1069,7 +1069,7 @@ export default function App() {
             <div style={{marginBottom:18,animation:"slideUp 0.25s ease"}} aria-live="polite">
               <div style={{background:hit?C.grnBg:C.redBg,borderRadius:12,padding:"16px 18px",border:`1px solid ${hit?C.grn:C.red}40`,marginBottom:8}}>
                 <div style={{fontWeight:700,fontSize:14,color:hit?C.grn:C.red,marginBottom:6}}>
-                  {hit ? "✅ Correct!" : `❌ Incorrect — Answer was ${q.correct}`}
+                  {hit ? "✅ Correct!" : `❌ Incorrect — Answer was ${q.correct}: ${q.options[q.correct].substring(0,60)}${q.options[q.correct].length>60?"...":""}`}
                 </div>
                 <p style={{fontSize:13,lineHeight:1.65,color:C.dk,margin:0}}>{q.explanation}</p>
               </div>
