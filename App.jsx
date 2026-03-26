@@ -1032,11 +1032,11 @@ export default function App() {
             {opts.map(opt => {
               const isSel = picked === opt.dl;
               const isAns = opt.ol === q.correct;
-              let bg = C.card, bd = C.bdr;
+              let bg = "rgba(255,255,255,0.08)", bd = "rgba(255,255,255,0.15)";
               if (locked) {
-                if (isAns) { bg = C.grnBg; bd = C.grn; }
-                else if (isSel) { bg = C.redBg; bd = C.red; }
-              } else if (isSel) { bg = C.skyL; bd = C.navy; }
+                if (isAns) { bg = "rgba(39,174,96,0.15)"; bd = C.grn; }
+                else if (isSel) { bg = "rgba(231,76,60,0.15)"; bd = C.red; }
+              } else if (isSel) { bg = "rgba(27,79,114,0.5)"; bd = "#5DA5BA"; }
 
               return (
                 <div key={opt.dl} role="radio" aria-checked={isSel} aria-label={`Option ${opt.dl}`}
@@ -1054,12 +1054,12 @@ export default function App() {
                     minWidth:30,height:30,borderRadius:7,
                     display:"flex",alignItems:"center",justifyContent:"center",
                     fontSize:13,fontWeight:700,
-                    background:locked?(isAns?C.grn:isSel?C.red:"#F1F5F9"):(isSel?C.navy:"#F1F5F9"),
-                    color:(locked&&(isAns||isSel))||(!locked&&isSel)?"#fff":C.dk
+                    background:locked?(isAns?C.grn:isSel?C.red:"rgba(255,255,255,0.12)"):(isSel?"#5DA5BA":"rgba(255,255,255,0.12)"),
+                    color:"#fff"
                   }}>
                     {locked && isAns ? "✓" : locked && isSel && !isAns ? "✗" : opt.dl}
                   </div>
-                  <p style={{fontSize:14,lineHeight:1.55,color:C.dk,margin:0,paddingTop:4}}>{opt.text}</p>
+                  <p style={{fontSize:14,lineHeight:1.55,color:"#fff",margin:0,paddingTop:4}}>{opt.text}</p>
                 </div>
               );
             })}
@@ -1088,7 +1088,7 @@ export default function App() {
 
           {!locked ? (
             <button onClick={lock} disabled={!picked} className="btn-primary"
-              style={{width:"100%",padding:"14px",borderRadius:10,background:picked?C.navy:"#CBD5E1",color:"#fff",border:"none",fontSize:15,fontWeight:700,cursor:picked?"pointer":"not-allowed"}}>
+              style={{width:"100%",padding:"14px",borderRadius:10,background:picked?C.navy:"rgba(255,255,255,0.1)",color:"#fff",border:"none",fontSize:15,fontWeight:700,cursor:picked?"pointer":"not-allowed"}}>
               Confirm Answer
             </button>
           ) : (
@@ -1199,14 +1199,14 @@ export default function App() {
                   {Object.entries(q.options).map(([letter, text]) => {
                     const isCorrect = letter === q.correct;
                     const isPicked = letter === a.picked;
-                    let bg = C.inp, bd = C.bdr, fg = C.dk;
-                    if (isCorrect) { bg = C.grnBg; bd = C.grn; }
-                    else if (isPicked && !isCorrect) { bg = C.redBg; bd = C.red; }
+                    let bg = "rgba(255,255,255,0.08)", bd = "rgba(255,255,255,0.15)", fg = "#fff";
+                    if (isCorrect) { bg = "rgba(39,174,96,0.15)"; bd = C.grn; }
+                    else if (isPicked && !isCorrect) { bg = "rgba(231,76,60,0.15)"; bd = C.red; }
 
                     return (
                       <div key={letter} style={{display:"flex",gap:10,alignItems:"flex-start",background:bg,borderRadius:8,padding:"10px 12px",border:`1.5px solid ${bd}`,opacity:!isCorrect&&!isPicked?0.5:1}}>
                         <div style={{minWidth:26,height:26,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,
-                          background:isCorrect?C.grn:isPicked?C.red:"rgba(255,255,255,0.06)",color:isCorrect||isPicked?"#fff":C.dk}}>
+                          background:isCorrect?C.grn:isPicked?C.red:"rgba(255,255,255,0.12)",color:isCorrect||isPicked?"#fff":C.dk}}>
                           {isCorrect?"✓":isPicked?"✗":letter}
                         </div>
                         <div>
