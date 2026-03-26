@@ -2209,23 +2209,37 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
                   setEstRecording(false);
                 } else {
                   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-                  if (!SR) { alert("Voice input not supported in this browser. Use Chrome or Safari."); return; }
-                  const rec = new SR();
-                  rec.continuous = true; rec.interimResults = true; rec.lang = "en-US";
-                  let final = estInput;
-                  rec.onresult = (e) => {
-                    let interim = "";
-                    for (let i = e.resultIndex; i < e.results.length; i++) {
-                      if (e.results[i].isFinal) final += (final?" ":"") + e.results[i][0].transcript;
-                      else interim += e.results[i][0].transcript;
-                    }
-                    setEstInput(final + (interim?" "+interim:""));
-                  };
-                  rec.onerror = () => setEstRecording(false);
-                  rec.onend = () => setEstRecording(false);
-                  rec.start();
-                  estRecRef.current = rec;
-                  setEstRecording(true);
+                  if (!SR) { alert("Voice input not supported in this browser. Try opening in Chrome or Safari (not as a home screen app)."); return; }
+                  try {
+                    const rec = new SR();
+                    rec.continuous = false; rec.interimResults = true; rec.lang = "en-US";
+                    let final = estInput;
+                    rec.onresult = (e) => {
+                      let interim = "";
+                      for (let i = e.resultIndex; i < e.results.length; i++) {
+                        if (e.results[i].isFinal) final += (final?" ":"") + e.results[i][0].transcript;
+                        else interim += e.results[i][0].transcript;
+                      }
+                      setEstInput(final + (interim?" "+interim:""));
+                    };
+                    rec.onerror = (e) => {
+                      setEstRecording(false);
+                      if (e.error === "not-allowed") alert("Microphone access denied. Go to Settings > Safari > Microphone and allow for this site.");
+                      else if (e.error === "network") alert("Voice recognition requires an internet connection.");
+                      else if (e.error === "service-not-allowed") alert("Voice input is not available in this browser mode. Try opening closersclub.netlify.app directly in Safari or Chrome instead of the home screen app.");
+                      else if (e.error !== "aborted") alert("Voice error: " + e.error + ". Try again or type your description.");
+                    };
+                    rec.onend = () => {
+                      setEstRecording(false);
+                      estRecRef.current = null;
+                    };
+                    rec.start();
+                    estRecRef.current = rec;
+                    setEstRecording(true);
+                  } catch(err) {
+                    alert("Could not start voice input: " + err.message);
+                    setEstRecording(false);
+                  }
                 }
               }}
                 style={{display:"flex",alignItems:"center",gap:6,padding:"6px 14px",borderRadius:8,
