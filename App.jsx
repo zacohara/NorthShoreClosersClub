@@ -11,8 +11,8 @@ const PASS = 5;
 const ADMIN_PW = "buildinggreatness";
 const B = {
   navy:"#1B4F72",navyL:"#2471A3",sky:"#5DA5BA",skyL:"#D6EAF8",
-  grn:"#27AE60",grnBg:"#EAFAF1",red:"#E74C3C",redBg:"#FDEDEC",
-  gold:"#F39C12",goldBg:"#FEF9E7"
+  grn:"#27AE60",grnBg:"rgba(39,174,96,0.12)",red:"#E74C3C",redBg:"rgba(231,76,60,0.12)",
+  gold:"#F39C12",goldBg:"rgba(243,156,18,0.1)"
 };
 const LIGHT = {bg:"#0B1929",card:"rgba(255,255,255,0.04)",dk:"#fff",bdr:"rgba(255,255,255,0.08)",mut:"rgba(255,255,255,0.4)",inp:"rgba(255,255,255,0.06)"};
 const DARK = {bg:"#0B1929",card:"rgba(255,255,255,0.04)",dk:"#fff",bdr:"rgba(255,255,255,0.08)",mut:"rgba(255,255,255,0.4)",inp:"rgba(255,255,255,0.06)"};
@@ -1028,15 +1028,16 @@ export default function App() {
             <p className="q-text" style={{fontSize:15,lineHeight:1.7,color:C.dk,margin:0}}>{q.question}</p>
           </div>
 
-          <div role="radiogroup" aria-label="Answer options" style={{display:"flex",flexDirection:"column",gap:8,marginBottom:18}}>
+          <div role="radiogroup" aria-label="Answer options" style={{display:"flex",flexDirection:"column",gap:10,marginBottom:18}}>
             {opts.map(opt => {
               const isSel = picked === opt.dl;
               const isAns = opt.ol === q.correct;
-              let bg = "rgba(255,255,255,0.08)", bd = "rgba(255,255,255,0.15)";
+              let bg = "rgba(255,255,255,0.06)", bd = "rgba(255,255,255,0.18)";
+              let badgeBg = "rgba(255,255,255,0.15)", badgeColor = "rgba(255,255,255,0.7)";
               if (locked) {
-                if (isAns) { bg = "rgba(39,174,96,0.15)"; bd = C.grn; }
-                else if (isSel) { bg = "rgba(231,76,60,0.15)"; bd = C.red; }
-              } else if (isSel) { bg = "rgba(27,79,114,0.5)"; bd = "#5DA5BA"; }
+                if (isAns) { bg = "rgba(39,174,96,0.2)"; bd = C.grn; badgeBg = C.grn; badgeColor = "#fff"; }
+                else if (isSel) { bg = "rgba(231,76,60,0.2)"; bd = C.red; badgeBg = C.red; badgeColor = "#fff"; }
+              } else if (isSel) { bg = "rgba(93,165,186,0.25)"; bd = "#5DA5BA"; badgeBg = "#5DA5BA"; badgeColor = "#fff"; }
 
               return (
                 <div key={opt.dl} role="radio" aria-checked={isSel} aria-label={`Option ${opt.dl}`}
@@ -1046,20 +1047,20 @@ export default function App() {
                   onKeyDown={e=>e.key===" " && !locked && setPicked(opt.dl)}
                   style={{
                     display:"flex",gap:12,alignItems:"flex-start",
-                    background:bg,borderRadius:11,padding:"13px 15px",
+                    background:bg,borderRadius:11,padding:"14px 16px",
                     border:`2px solid ${bd}`,cursor:locked?"default":"pointer",
-                    transition:"all 0.15s",opacity:locked&&!isAns&&!isSel?0.4:1
+                    transition:"all 0.15s",opacity:locked&&!isAns&&!isSel?0.35:1
                   }}>
                   <div style={{
-                    minWidth:30,height:30,borderRadius:7,
+                    minWidth:32,height:32,borderRadius:8,
                     display:"flex",alignItems:"center",justifyContent:"center",
                     fontSize:13,fontWeight:700,
-                    background:locked?(isAns?C.grn:isSel?C.red:"rgba(255,255,255,0.12)"):(isSel?"#5DA5BA":"rgba(255,255,255,0.12)"),
-                    color:"#fff"
+                    background:badgeBg,
+                    color:badgeColor
                   }}>
                     {locked && isAns ? "✓" : locked && isSel && !isAns ? "✗" : opt.dl}
                   </div>
-                  <p style={{fontSize:14,lineHeight:1.55,color:"#fff",margin:0,paddingTop:4}}>{opt.text}</p>
+                  <p style={{fontSize:14,lineHeight:1.55,color:"rgba(255,255,255,0.92)",margin:0,paddingTop:5}}>{opt.text}</p>
                 </div>
               );
             })}
@@ -1195,39 +1196,40 @@ export default function App() {
                 </div>
                 <p style={{fontSize:14,lineHeight:1.65,color:C.dk,margin:"0 0 12px"}}>{q.question}</p>
 
-                <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
+                <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:12}}>
                   {Object.entries(q.options).map(([letter, text]) => {
                     const isCorrect = letter === q.correct;
                     const isPicked = letter === a.picked;
-                    let bg = "rgba(255,255,255,0.08)", bd = "rgba(255,255,255,0.15)", fg = "#fff";
-                    if (isCorrect) { bg = "rgba(39,174,96,0.15)"; bd = C.grn; }
-                    else if (isPicked && !isCorrect) { bg = "rgba(231,76,60,0.15)"; bd = C.red; }
+                    let bg = "rgba(255,255,255,0.05)", bd = "rgba(255,255,255,0.15)";
+                    let badgeBg = "rgba(255,255,255,0.15)", badgeColor = "rgba(255,255,255,0.6)";
+                    if (isCorrect) { bg = "rgba(39,174,96,0.18)"; bd = C.grn; badgeBg = C.grn; badgeColor = "#fff"; }
+                    else if (isPicked && !isCorrect) { bg = "rgba(231,76,60,0.18)"; bd = C.red; badgeBg = C.red; badgeColor = "#fff"; }
 
                     return (
-                      <div key={letter} style={{display:"flex",gap:10,alignItems:"flex-start",background:bg,borderRadius:8,padding:"10px 12px",border:`1.5px solid ${bd}`,opacity:!isCorrect&&!isPicked?0.5:1}}>
+                      <div key={letter} style={{display:"flex",gap:10,alignItems:"flex-start",background:bg,borderRadius:8,padding:"10px 12px",border:`1.5px solid ${bd}`,opacity:!isCorrect&&!isPicked?0.35:1}}>
                         <div style={{minWidth:26,height:26,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,
-                          background:isCorrect?C.grn:isPicked?C.red:"rgba(255,255,255,0.12)",color:isCorrect||isPicked?"#fff":C.dk}}>
+                          background:badgeBg,color:badgeColor}}>
                           {isCorrect?"✓":isPicked?"✗":letter}
                         </div>
                         <div>
-                          <p style={{fontSize:13,lineHeight:1.5,color:fg,margin:0}}>{text}</p>
-                          {isPicked && !isCorrect && <div style={{fontSize:11,color:C.red,fontWeight:600,marginTop:4}}>← Your answer</div>}
-                          {isCorrect && <div style={{fontSize:11,color:C.grn,fontWeight:600,marginTop:4}}>← Correct answer</div>}
+                          <p style={{fontSize:13,lineHeight:1.5,color:"rgba(255,255,255,0.9)",margin:0}}>{text}</p>
+                          {isPicked && !isCorrect && <div style={{fontSize:11,color:C.red,fontWeight:600,marginTop:4}}>Your answer</div>}
+                          {isCorrect && <div style={{fontSize:11,color:C.grn,fontWeight:600,marginTop:4}}>Correct answer</div>}
                         </div>
                       </div>
                     );
                   })}
                 </div>
 
-                <div style={{background:C.inp,borderRadius:10,padding:"12px 14px",border:`1px solid ${C.bdr}`,marginBottom:q.tip?8:0}}>
-                  <div style={{fontSize:11,fontWeight:700,color:C.navy,marginBottom:4}}>EXPLANATION</div>
-                  <p style={{fontSize:12,lineHeight:1.6,color:C.dk,margin:0}}>{q.explanation}</p>
+                <div style={{background:"rgba(255,255,255,0.06)",borderRadius:10,padding:"12px 14px",border:`1px solid rgba(255,255,255,0.1)`,marginBottom:q.tip?8:0}}>
+                  <div style={{fontSize:11,fontWeight:700,color:"#5DA5BA",marginBottom:4}}>EXPLANATION</div>
+                  <p style={{fontSize:12,lineHeight:1.6,color:"rgba(255,255,255,0.85)",margin:0}}>{q.explanation}</p>
                 </div>
 
                 {q.tip && (
-                  <div style={{background:C.goldBg,borderRadius:10,padding:"12px 14px",border:`1px solid ${C.gold}40`}}>
+                  <div style={{background:C.goldBg,borderRadius:10,padding:"12px 14px",border:`1px solid ${C.gold}30`}}>
                     <div style={{fontSize:11,fontWeight:700,color:C.gold,marginBottom:4}}>🧱 NS TIP</div>
-                    <p style={{fontSize:12,lineHeight:1.6,color:C.dk,margin:0,fontStyle:"italic"}}>{q.tip}</p>
+                    <p style={{fontSize:12,lineHeight:1.6,color:"rgba(255,255,255,0.85)",margin:0,fontStyle:"italic"}}>{q.tip}</p>
                   </div>
                 )}
               </div>
