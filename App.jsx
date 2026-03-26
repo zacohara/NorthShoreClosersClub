@@ -1887,7 +1887,7 @@ export default function App() {
       Chicago: [41.88, -87.72, 10],
       Milwaukee: [43.05, -87.93, 11],
       Dallas: [32.85, -96.85, 10],
-      Indy: [41.07, -85.15, 11],
+      Indy: [39.77, -86.16, 11],
     };
 
     const renderMap = () => {
@@ -1930,6 +1930,34 @@ export default function App() {
       });
     };
 
+    const locateMe = () => {
+      if (!navigator.geolocation) { alert("Geolocation not supported by your browser."); return; }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          if (!mapInstanceRef.current || !window.L) return;
+          const L = window.L;
+          mapInstanceRef.current.setView([latitude, longitude], 14);
+          // Remove old location marker if exists
+          if (window._locMarker) { window._locMarker.remove(); window._locMarker = null; }
+          const locIcon = L.divIcon({
+            className: '',
+            html: '<div style="position:relative;width:18px;height:18px;"><div style="position:absolute;inset:0;border-radius:50%;background:rgba(46,204,113,0.25);animation:locPulse 2s infinite;"></div><div style="position:absolute;top:4px;left:4px;width:10px;height:10px;border-radius:50%;background:#2ECC71;border:2.5px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,0.3);"></div></div>',
+            iconSize: [18, 18],
+            iconAnchor: [9, 9],
+          });
+          window._locMarker = L.marker([latitude, longitude], { icon: locIcon, zIndexOffset: 1000 }).addTo(mapInstanceRef.current);
+          window._locMarker.bindPopup('<div style="font-family:Outfit,sans-serif;font-size:13px;font-weight:700;color:#2ECC71;">You are here</div>', {closeButton:false});
+        },
+        (err) => {
+          if (err.code === 1) alert("Location access denied. Enable location in your browser settings.");
+          else if (err.code === 2) alert("Location unavailable. Make sure GPS is enabled.");
+          else alert("Could not get location. Try again.");
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    };
+
     // Render map after DOM paint
     setTimeout(renderMap, 100);
 
@@ -1938,9 +1966,9 @@ export default function App() {
     return (
       <div style={{minHeight:"100vh",background:"#0B1929",fontFamily:"'DM Sans','Outfit',sans-serif",display:"flex",flexDirection:"column"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-        <style>{CSS}</style>
+        <style>{CSS + `@keyframes locPulse{0%{transform:scale(1);opacity:0.7}50%{transform:scale(2.2);opacity:0}100%{transform:scale(1);opacity:0}}`}</style>
         <NavBar
-          left={<button onClick={()=>{if(mapInstanceRef.current){mapInstanceRef.current.remove();mapInstanceRef.current=null;}setScreen("home");}} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>← Back</button>}
+          left={<button onClick={()=>{if(mapInstanceRef.current){mapInstanceRef.current.remove();mapInstanceRef.current=null;}if(window._locMarker){window._locMarker=null;}setScreen("home");}} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>{"\u2190"} Back</button>}
           center="Heat Map"
           right={<span/>}
         />
@@ -1958,11 +1986,17 @@ export default function App() {
           ))}
         </div>
 
-        {/* Stats row */}
-        <div style={{display:"flex",gap:8,padding:"10px 16px",background:C.card,borderBottom:`1px solid ${C.bdr}`}}>
+        {/* Stats + Locate Me row */}
+        <div style={{display:"flex",gap:8,padding:"10px 16px",background:C.card,borderBottom:`1px solid ${C.bdr}`,alignItems:"center"}}>
           <div style={{flex:1,textAlign:"center"}}>
             <div style={{fontSize:20,fontWeight:800,color:C.dk}}>{marketJobs.length}</div>
             <div style={{fontSize:11,color:C.mut}}>Approved Jobs</div>
+          </div>
+          <div onClick={locateMe}
+            style={{display:"flex",alignItems:"center",gap:6,padding:"8px 14px",borderRadius:8,
+              background:"rgba(46,204,113,0.15)",border:"1px solid rgba(46,204,113,0.3)",
+              color:"#2ECC71",fontSize:12,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap"}}>
+            <span style={{fontSize:16}}>{"\ud83d\udccd"}</span> Locate Me
           </div>
         </div>
 
