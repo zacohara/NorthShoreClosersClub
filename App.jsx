@@ -10,16 +10,15 @@ const USERS = ["Devin","Jace","Les","Zac","Luke","Paul","Carlos","BJ"];
 const PASS = 5;
 const ADMIN_PW = "buildinggreatness";
 const B = {
-  navy:"#1B4F72",navyL:"#2471A3",sky:"#5DA5BA",skyL:"#D6EAF8",
+  navy:"#1B4F72",navyL:"#2471A3",sky:"#5DA5BA",skyL:"rgba(93,165,186,0.15)",
   grn:"#27AE60",grnBg:"rgba(39,174,96,0.12)",red:"#E74C3C",redBg:"rgba(231,76,60,0.12)",
   gold:"#F39C12",goldBg:"rgba(243,156,18,0.1)"
 };
 const LIGHT = {bg:"#0B1929",card:"rgba(255,255,255,0.04)",dk:"#fff",bdr:"rgba(255,255,255,0.08)",mut:"rgba(255,255,255,0.4)",inp:"rgba(255,255,255,0.06)"};
-const DARK = {bg:"#0B1929",card:"rgba(255,255,255,0.04)",dk:"#fff",bdr:"rgba(255,255,255,0.08)",mut:"rgba(255,255,255,0.4)",inp:"rgba(255,255,255,0.06)"};
 const DB = {
   Beginner:{bg:"#E8F8F5",fg:"#1ABC9C",bd:"#A3E4D7"},
-  Intermediate:{bg:"#FEF9E7",fg:"#D4AC0D",bd:"#F9E79F"},
-  Advanced:{bg:"#FDEDEC",fg:"#E74C3C",bd:"#F5B7B1"}
+  Intermediate:{bg:"rgba(212,172,13,0.15)",fg:"#F1C40F",bd:"rgba(241,196,15,0.3)"},
+  Advanced:{bg:"rgba(231,76,60,0.15)",fg:"#E74C3C",bd:"rgba(231,76,60,0.3)"}
 };
 const CI = {"Up-Front Contract":"🤝","Decision":"⚖️","Pain / Pain Funnel":"🎯","Budget":"💰","Fulfillment":"✅","Post-Sell":"🛡️","Bonding & Rapport":"💬","Advanced Techniques":"🧠","Negative Reverse Selling":"🔀","Sandler Rules & Principles":"📖","Transactional Analysis / DISC":"🧬"};
 
@@ -166,7 +165,7 @@ export default function App() {
   const [darkMode, setDarkMode] = useState(() => {
     try { return window.matchMedia('(prefers-color-scheme: dark)').matches; } catch(e) { return false; }
   });
-  const C = {...B, ...(darkMode ? DARK : LIGHT)};
+  const C = {...B, ...LIGHT};
   useEffect(() => { document.body.style.background = C.bg; document.body.style.colorScheme = darkMode ? 'dark' : 'light'; }, [darkMode]);
   const [loading, setLoading] = useState(true);
   const [screen, setScreen] = useState("login");
@@ -428,7 +427,7 @@ export default function App() {
           <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.8)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
             <div style={{background:"#132F44",borderRadius:20,maxWidth:380,width:"100%",padding:"32px 24px",boxShadow:"0 24px 48px rgba(0,0,0,0.5)",border:"1px solid rgba(255,255,255,0.06)"}}>
               <div style={{textAlign:"center",marginBottom:20}}>
-                <div style={{fontSize:40,marginBottom:8}}>{passwordMode==="set"?"\ud83d\udd10":"\ud83d\udd11"}</div>
+                <div style={{fontSize:40,marginBottom:8}}>{passwordMode==="set"?"🔐":"🔑"}</div>
                 <div style={{fontSize:20,fontWeight:800,color:"#fff"}}>{passwordMode==="set"?"Create Your Password":"Enter Password"}</div>
                 <div style={{fontSize:13,color:"rgba(255,255,255,0.4)",marginTop:4}}>{passwordMode==="set"?"Set a password for your account":"Welcome back, "+user}</div>
               </div>
@@ -622,7 +621,7 @@ export default function App() {
               <span style={{color:"#fff",fontSize:20,fontWeight:800,letterSpacing:-0.3,textShadow:"0 2px 8px rgba(0,0,0,0.4)"}}>{user}'s Dashboard</span>
             </div>
             <div style={{display:"flex",gap:6,alignItems:"center"}}>
-              <button onClick={()=>setDarkMode(d=>!d)} style={{background:"none",border:"none",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:14,padding:4}}>{darkMode ? "\u2600\ufe0f" : "\ud83c\udf19"}</button>
+              
               <button onClick={() => { loadAllProgress().then(d => setAllProg(d)); loadAllProfiles().then(d=>setProfiles(d)); setUser(null); setScreen("login"); setShowWelcome(true); }}
                 style={{background:"rgba(255,255,255,0.06)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,0.1)",color:"rgba(255,255,255,0.6)",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>Logout</button>
             </div>
@@ -728,7 +727,7 @@ export default function App() {
           <div style={{display:"flex",gap:8,marginBottom:16}}>
             <div onClick={()=>setScreen("objections")} className="card-hover"
               style={{flex:1,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:14,padding:"16px 18px",cursor:"pointer",boxShadow:"0 2px 12px rgba(0,0,0,0.15)"}}>
-              <div style={{fontSize:16,fontWeight:700,color:"#fff"}}>{"\ud83d\udde3\ufe0f"} Objection Playbook</div>
+              <div style={{fontSize:16,fontWeight:700,color:"#fff"}}>{"🗣️"} Objection Playbook</div>
               <div style={{fontSize:13,color:"rgba(255,255,255,0.4)",marginTop:3}}>16 rebuttals with scripts</div>
             </div>
             <div onClick={()=>setShowQR(0)} className="card-hover"
@@ -742,7 +741,7 @@ export default function App() {
                 </svg>
                 <span style={{fontSize:16}}>⭐</span>
               </div>
-              <div style={{fontSize:13,fontWeight:700,color:"#2C3E50"}}>Get a Review</div>
+              <div style={{fontSize:13,fontWeight:700,color:"#fff"}}>Get a Review</div>
             </div>
           </div>
 
@@ -910,7 +909,7 @@ export default function App() {
                       boxShadow:isActive?"0 0 0 4px "+C.navy+"30":"none",
                       flexShrink:0
                     }}>
-                      {done ? "\u2713" : i+1}
+                      {done ? "✓" : i+1}
                     </div>
                     {i < Q.length - 1 && (
                       <div style={{flex:1,height:3,background:done?C.grn:C.bdr,borderRadius:2,margin:"0 2px",minWidth:8}}/>
@@ -946,7 +945,7 @@ export default function App() {
                         background:p?.passed?C.grn:p?C.gold:i===nextQuiz?C.navy:"transparent",
                         color:p||i===nextQuiz?"#fff":C.mut,
                         border:!p&&i!==nextQuiz?`2px solid ${C.bdr}`:"none"}}>
-                        {p?.passed?"\u2713":quiz.quiz_number}
+                        {p?.passed?"✓":quiz.quiz_number}
                       </div>
                       <div>
                         <div style={{fontSize:15,fontWeight:800,color:C.dk}}>Day {quiz.quiz_number}</div>
@@ -959,8 +958,8 @@ export default function App() {
                   </div>
                   <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:12}}>
                     {cats.map((c,j)=>(
-                      <span key={j} style={{fontSize:9,color:C.mut,background:darkMode?"#1A2332":"#F4F6F8",borderRadius:6,padding:"3px 8px",whiteSpace:"nowrap",fontWeight:600}}>
-                        {CI[c.trim()]||"\ud83d\udccb"} {c.trim()}
+                      <span key={j} style={{fontSize:9,color:C.mut,background:"rgba(255,255,255,0.08)",borderRadius:6,padding:"3px 8px",whiteSpace:"nowrap",fontWeight:600}}>
+                        {CI[c.trim()]||"📋"} {c.trim()}
                       </span>
                     ))}
                     {extra > 0 && <span style={{fontSize:9,color:C.mut,padding:"3px 4px",fontWeight:600}}>+{extra}</span>}
@@ -1715,7 +1714,7 @@ export default function App() {
           {(scorecard.length > 0 || script) && !showExpanded && (
             <button onClick={()=>setShowExpanded(true)}
               style={{width:"100%",padding:"14px",borderRadius:12,background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",color:"rgba(255,255,255,0.5)",fontSize:14,fontWeight:600,cursor:"pointer",marginBottom:16}}>
-              Expand Full Analysis \u25bc
+              Expand Full Analysis ▼
             </button>
           )}
 
@@ -1724,7 +1723,7 @@ export default function App() {
             <div style={{animation:"slideUp 0.3s ease"}}>
               <button onClick={()=>setShowExpanded(false)}
                 style={{width:"100%",padding:"10px",borderRadius:12,background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",color:"rgba(255,255,255,0.4)",fontSize:13,fontWeight:600,cursor:"pointer",marginBottom:16}}>
-                Collapse \u25b2
+                Collapse ▲
               </button>
 
               {/* SANDLER STEP BREAKDOWN */}
@@ -1828,7 +1827,7 @@ export default function App() {
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:8}}>
               <span style={{fontSize:13,color:C.mut}}>{bsTranscript.length > 0 ? `${bsTranscript.length} chars` : 'Min 50 characters'}</span>
               <button onClick={analyzeTranscript} disabled={bsAnalyzing || bsTranscript.trim().length < 50} className="btn-primary"
-                style={{padding:"12px 24px",borderRadius:10,background:bsAnalyzing?C.mut:(bsTranscript.trim().length>=50?C.navy:"#CBD5E1"),color:"#fff",border:"none",fontSize:15,fontWeight:700,cursor:bsAnalyzing||bsTranscript.trim().length<50?"not-allowed":"pointer"}}>
+                style={{padding:"12px 24px",borderRadius:10,background:bsAnalyzing?C.mut:(bsTranscript.trim().length>=50?C.navy:"rgba(255,255,255,0.15)"),color:"#fff",border:"none",fontSize:15,fontWeight:700,cursor:bsAnalyzing||bsTranscript.trim().length<50?"not-allowed":"pointer"}}>
                 {bsAnalyzing ? "Analyzing..." : "Analyze Appointment"}
               </button>
             </div>
@@ -1968,7 +1967,7 @@ export default function App() {
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS + `@keyframes locPulse{0%{transform:scale(1);opacity:0.7}50%{transform:scale(2.2);opacity:0}100%{transform:scale(1);opacity:0}}`}</style>
         <NavBar
-          left={<button onClick={()=>{if(mapInstanceRef.current){mapInstanceRef.current.remove();mapInstanceRef.current=null;}if(window._locMarker){window._locMarker=null;}setScreen("home");}} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>{"\u2190"} Back</button>}
+          left={<button onClick={()=>{if(mapInstanceRef.current){mapInstanceRef.current.remove();mapInstanceRef.current=null;}if(window._locMarker){window._locMarker=null;}setScreen("home");}} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>{"←"} Back</button>}
           center="Heat Map"
           right={<span/>}
         />
@@ -1996,7 +1995,7 @@ export default function App() {
             style={{display:"flex",alignItems:"center",gap:6,padding:"8px 14px",borderRadius:8,
               background:"rgba(46,204,113,0.15)",border:"1px solid rgba(46,204,113,0.3)",
               color:"#2ECC71",fontSize:12,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap"}}>
-            <span style={{fontSize:16}}>{"\ud83d\udccd"}</span> Locate Me
+            <span style={{fontSize:16}}>{"📍"}</span> Locate Me
           </div>
         </div>
 
@@ -2227,7 +2226,7 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
-          left={<button onClick={()=>{setEstScopes([]);setEstInput("");setScreen("home");}} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>{"\u2190 Back"}</button>}
+          left={<button onClick={()=>{setEstScopes([]);setEstInput("");setScreen("home");}} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>{"← Back"}</button>}
           center="Estimator"
           right={<span/>}
         />
@@ -2280,7 +2279,7 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
                   background:estRecording?"#E74C3C":"rgba(93,165,186,0.15)",
                   border:"1px solid "+(estRecording?"#E74C3C":"rgba(93,165,186,0.2)"),
                   color:estRecording?"#fff":"#5DA5BA",fontSize:12,fontWeight:700,cursor:"pointer"}}>
-                <span style={{fontSize:16}}>{estRecording ? "\u23f9" : "\ud83c\udfa4"}</span>
+                <span style={{fontSize:16}}>{estRecording ? "⏹" : "🎤"}</span>
                 {estRecording ? "Stop" : "Voice"}
               </div>
             </div>
@@ -2288,14 +2287,14 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
               placeholder={"e.g. 3-flat needs tuckpointing on rear and south elevations, 2 lintels at 6ft, chimney cap repair, and about 15 loose bricks on the front..."}
               style={{width:"100%",minHeight:120,padding:"14px",borderRadius:10,border:`1px solid ${C.bdr}`,fontSize:16,fontFamily:"inherit",lineHeight:1.6,resize:"vertical",outline:"none",color:C.dk,background:C.inp,boxSizing:"border-box"}}/>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:10}}>
-              <div style={{fontSize:11,color:C.mut}}>AI-powered pricing from 845 approved estimates</div>
+              <div style={{fontSize:11,color:C.mut}}>AI-powered scope detection and pricing</div>
               <div style={{display:"flex",gap:6}}>
                 <div onClick={()=>{if(estInput.trim().length>10)runLocalEstimate();}}
-                  style={{padding:"8px 16px",borderRadius:8,background:estInput.trim().length>10?C.card:"#CBD5E1",color:estInput.trim().length>10?C.dk:"#999",border:`1px solid ${C.bdr}`,fontSize:13,fontWeight:600,cursor:estInput.trim().length>10?"pointer":"not-allowed"}}>
+                  style={{padding:"8px 16px",borderRadius:8,background:estInput.trim().length>10?C.card:"rgba(255,255,255,0.15)",color:estInput.trim().length>10?C.dk:C.mut,border:`1px solid ${C.bdr}`,fontSize:13,fontWeight:600,cursor:estInput.trim().length>10?"pointer":"not-allowed"}}>
                   Quick
                 </div>
                 <div onClick={()=>{if(estInput.trim().length>10&&!estLoading)runAIEstimate();}}
-                  style={{padding:"8px 16px",borderRadius:8,background:estInput.trim().length>10&&!estLoading?C.navy:"#CBD5E1",color:"#fff",fontSize:13,fontWeight:700,cursor:estInput.trim().length>10&&!estLoading?"pointer":"not-allowed"}}>
+                  style={{padding:"8px 16px",borderRadius:8,background:estInput.trim().length>10&&!estLoading?C.navy:"rgba(255,255,255,0.15)",color:"#fff",fontSize:13,fontWeight:700,cursor:estInput.trim().length>10&&!estLoading?"pointer":"not-allowed"}}>
                   {estLoading ? "Analyzing..." : "AI Estimate"}
                 </div>
               </div>
@@ -2381,7 +2380,7 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
 
           {estScopes.length === 0 && !estLoading && (
             <div style={{textAlign:"center",padding:"30px 20px",color:C.mut}}>
-              <div style={{fontSize:32,marginBottom:8}}>{"\ud83e\udd16"}</div>
+              <div style={{fontSize:32,marginBottom:8}}>{"🤖"}</div>
               <div style={{fontSize:16,fontWeight:700,color:C.dk,marginBottom:4}}>Describe the job above</div>
               <div style={{fontSize:14,lineHeight:1.6}}>Include building type, elevations, quantities, and specific scopes. The more detail, the tighter the estimate.</div>
               <div style={{fontSize:12,color:C.mut,marginTop:12}}>{"\"Quick\" uses local pattern matching · \"AI Estimate\" uses Claude for smarter parsing"}</div>
@@ -2555,7 +2554,7 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
-          left={<button onClick={()=>{setObjSearch("");setScreen("home");}} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>{"\u2190 Back"}</button>}
+          left={<button onClick={()=>{setObjSearch("");setScreen("home");}} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>{"← Back"}</button>}
           center="Objection Playbook"
           right={<span/>}
         />
