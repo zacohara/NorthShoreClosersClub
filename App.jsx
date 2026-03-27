@@ -2575,7 +2575,7 @@ No markdown. No backticks. No explanation. Raw JSON only.`;
                 {catObjs.map((o, i) => (
                   <details key={i} style={{background:C.card,border:`1px solid ${C.bdr}`,borderRadius:12,marginBottom:8,overflow:"hidden"}}>
                     <summary style={{padding:"14px 16px",cursor:"pointer",fontSize:14,fontWeight:700,color:C.dk,listStyle:"none",display:"flex",alignItems:"center",gap:8}}>
-                      <span style={{color:cc,fontSize:12}}>{"\u25b6"}</span>
+                      <span style={{color:cc,fontSize:12}}>{"▶"}</span>
                       <span>{'"'+o.obj+'"'}</span>
                     </summary>
                     <div style={{padding:"0 16px 16px"}}>
