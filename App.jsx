@@ -2160,12 +2160,12 @@ export default function App() {
           {/* Company Rolling Average Speedometer */}
           <Speedometer speed={speedData?.companyAvg} />
 
-          {/* Personal Best */}
+          {/* Personal Best (5-estimate rolling avg, 12mo) */}
           {myRep?.personalBest && (
             <div style={{background:"rgba(46,204,113,0.08)",border:"1px solid rgba(46,204,113,0.2)",borderRadius:12,padding:"12px 16px",marginBottom:16,textAlign:"center"}}>
               <div style={{fontSize:11,color:"#2ECC71",fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:2}}>Personal Best</div>
-              <div style={{fontSize:18,fontWeight:900,color:"#2ECC71"}}>{myRep.personalBest.days}d</div>
-              <div style={{fontSize:11,color:"rgba(255,255,255,0.4)"}}>{myRep.personalBest.job} \u2014 {myRep.personalBest.date}</div>
+              <div style={{fontSize:22,fontWeight:900,color:"#2ECC71"}}>{myRep.personalBest.avg}d</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,0.4)"}}>Best 5-estimate avg \u2014 {myRep.personalBest.startDate?.slice(0,7)} to {myRep.personalBest.endDate?.slice(0,7)}</div>
             </div>
           )}
 
