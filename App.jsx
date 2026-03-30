@@ -204,6 +204,7 @@ export default function App() {
   const [heatmapData, setHeatmapData] = useState(null);
   const [speedData, setSpeedData] = useState(null);
   const [speedLoading, setSpeedLoading] = useState(false);
+  const [speedSort, setSpeedSort] = useState("speed");
   const [estScopes, setEstScopes] = useState([]);
   const [estInput, setEstInput] = useState("");
   const [estRecording, setEstRecording] = useState(false);
@@ -447,11 +448,11 @@ export default function App() {
                   if (pwInput.length<4) {setPwError("Password must be at least 4 characters");return;}
                   if (pwInput!==pwConfirm) {setPwError("Passwords don't match");return;}
                   const ok = await setPassword(user, pwInput);
-                  if (ok) {setPasswordMode(null);updateStreak(user);setScreen("home");setShowWelcome(true);}
+                  if (ok) {setPasswordMode(null);updateStreak(user);setScreen("home");setShowWelcome(true);fetch("/.netlify/functions/speed").then(r=>r.json()).then(d=>{if(d.leaderboard)setSpeedData(d);}).catch(()=>{});}
                   else setPwError("Failed to save. Try again.");
                 } else {
                   const ok = await checkPassword(user, pwInput);
-                  if (ok) {setPasswordMode(null);updateStreak(user);setScreen("home");setShowWelcome(true);}
+                  if (ok) {setPasswordMode(null);updateStreak(user);setScreen("home");setShowWelcome(true);fetch("/.netlify/functions/speed").then(r=>r.json()).then(d=>{if(d.leaderboard)setSpeedData(d);}).catch(()=>{});}
                   else setPwError("Wrong password");
                 }
               }} style={{width:"100%",padding:"14px",borderRadius:12,background:"linear-gradient(145deg, #5DA5BA 0%, #3D7A8E 100%)",color:"#fff",border:"none",fontSize:16,fontWeight:700,cursor:"pointer",marginBottom:10,boxShadow:"0 4px 16px rgba(93,165,186,0.25)"}}>
@@ -756,7 +757,7 @@ export default function App() {
                 <circle cx="60" cy="60" r="4" fill="#fff"/>
               </svg>
               <div style={{fontSize:19,fontWeight:800,color:"#fff",position:"relative",textShadow:"0 1px 6px rgba(0,0,0,0.4)",letterSpacing:-0.2,textAlign:"center"}}>Speed to Lead</div>
-              <div style={{fontSize:13,color:"rgba(255,255,255,0.55)",fontWeight:500,marginTop:3,position:"relative",textAlign:"center"}}>{speedLoading ? "Loading..." : speedData ? (speedData.leaderboard?.find(r=>r.name===user)?.speed || "--") + "d avg" : "Tap to load"}</div>
+              <div style={{fontSize:13,color:"rgba(255,255,255,0.55)",fontWeight:500,marginTop:3,position:"relative",textAlign:"center"}}>{speedLoading ? "Loading..." : speedData ? (speedData.leaderboard?.find(r=>r.name===user)?.speed ?? "--") + "d avg" : "Loading..."}</div>
             </div>
           </div>
 
@@ -2067,128 +2068,133 @@ export default function App() {
     if (!speedData && !speedLoading) loadSpeed();
 
     const myRep = speedData?.leaderboard?.find(r => r.name === user || r.fullName?.startsWith(user));
-    const lb = speedData?.leaderboard || [];
+    const rawLb = speedData?.leaderboard || [];
 
-    // Speedometer component
-    const Speedometer = ({speed, size=160}) => {
-      const pct = speed ? Math.min(Math.max((speed - 1) / 14, 0), 1) : 0.3;
+    // Sort leaderboard
+    const lb = [...rawLb].sort((a, b) => {
+      const key = speedSort;
+      const av = key === "speed" ? a.speed : key === "overdue" ? a.overdue : a.toShip;
+      const bv = key === "speed" ? b.speed : key === "overdue" ? b.overdue : b.toShip;
+      if (key === "speed") {
+        if (av === null && bv === null) return 0;
+        if (av === null) return 1;
+        if (bv === null) return -1;
+        return av - bv;
+      }
+      return (bv || 0) - (av || 0);
+    });
+
+    // Color by rank position (when sorted by speed): top 2 green, middle 3 yellow, bottom 3 red
+    const speedRanked = [...rawLb].filter(r => r.speed !== null).sort((a,b) => a.speed - b.speed);
+    const getSpeedColor = (rep) => {
+      const idx = speedRanked.findIndex(r => r.name === rep.name);
+      if (idx === -1 || rep.speed === null) return "rgba(255,255,255,0.3)";
+      const total = speedRanked.length;
+      if (total <= 3) return idx === 0 ? "#2ECC71" : idx < 2 ? "#F1C40F" : "#E74C3C";
+      const greenCount = Math.max(2, Math.floor(total * 0.25));
+      const redCount = Math.max(3, Math.ceil(total * 0.375));
+      if (idx < greenCount) return "#2ECC71";
+      if (idx >= total - redCount) return "#E74C3C";
+      return "#F1C40F";
+    };
+
+    // Big speedometer
+    const Speedometer = ({speed, size=200}) => {
+      const maxSpeed = 30;
+      const pct = speed ? Math.min(Math.max((speed - 1) / (maxSpeed - 1), 0), 1) : 0.5;
       const angle = -180 + pct * 180;
       const rad = angle * Math.PI / 180;
-      const cx = size/2, cy = size/2;
-      const r = size * 0.38;
-      const nx = cx + r * 0.8 * Math.cos(rad);
-      const ny = cy + r * 0.8 * Math.sin(rad);
-      const color = speed ? (speed <= 3 ? "#2ECC71" : speed <= 7 ? "#F1C40F" : "#E74C3C") : "#5DA5BA";
+      const cx = size/2, cy = size * 0.48;
+      const r = size * 0.36;
+      const nx = cx + r * 0.75 * Math.cos(rad);
+      const ny = cy + r * 0.75 * Math.sin(rad);
+      const color = speed ? getSpeedColor({name: user, speed}) : "rgba(255,255,255,0.3)";
       return (
-        <div style={{textAlign:"center",marginBottom:8}}>
-          <svg viewBox={`0 0 ${size} ${size*0.55}`} style={{width:size,height:size*0.55}}>
-            <path d={`M ${size*0.08} ${cy} A ${r} ${r} 0 0 1 ${size*0.92} ${cy}`} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth={size*0.06} strokeLinecap="round"/>
-            <path d={`M ${size*0.08} ${cy} A ${r} ${r} 0 0 1 ${cx} ${cy-r}`} fill="none" stroke="#2ECC71" strokeWidth={size*0.06} strokeLinecap="round"/>
-            <path d={`M ${cx} ${cy-r} A ${r} ${r} 0 0 1 ${cx+r*0.7} ${cy-r*0.7}`} fill="none" stroke="#F1C40F" strokeWidth={size*0.06} strokeLinecap="round"/>
-            <path d={`M ${cx+r*0.7} ${cy-r*0.7} A ${r} ${r} 0 0 1 ${size*0.92} ${cy}`} fill="none" stroke="#E74C3C" strokeWidth={size*0.06} strokeLinecap="round"/>
-            <line x1={cx} y1={cy} x2={nx} y2={ny} stroke={color} strokeWidth="3" strokeLinecap="round"/>
-            <circle cx={cx} cy={cy} r={size*0.035} fill="#fff"/>
+        <div style={{textAlign:"center",marginBottom:12}}>
+          <svg viewBox={"0 0 " + size + " " + (size*0.52)} style={{width:"100%",maxWidth:size*1.2,height:"auto"}}>
+            <defs>
+              <linearGradient id="gaugeGreen" x1="0" y1="0" x2="0.4" y2="0"><stop offset="0%" stopColor="#2ECC71"/><stop offset="100%" stopColor="#27AE60"/></linearGradient>
+              <linearGradient id="gaugeYellow" x1="0" y1="0" x2="0.3" y2="0"><stop offset="0%" stopColor="#F1C40F"/><stop offset="100%" stopColor="#E67E22"/></linearGradient>
+              <linearGradient id="gaugeRed" x1="0.6" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#E67E22"/><stop offset="100%" stopColor="#E74C3C"/></linearGradient>
+            </defs>
+            <path d={`M ${size*0.1} ${cy} A ${r} ${r} 0 0 1 ${cx} ${cy-r}`} fill="none" stroke="url(#gaugeGreen)" strokeWidth={size*0.055} strokeLinecap="round" opacity="0.9"/>
+            <path d={`M ${cx} ${cy-r} A ${r} ${r} 0 0 1 ${cx+r*0.87} ${cy-r*0.5}`} fill="none" stroke="url(#gaugeYellow)" strokeWidth={size*0.055} strokeLinecap="round" opacity="0.9"/>
+            <path d={`M ${cx+r*0.87} ${cy-r*0.5} A ${r} ${r} 0 0 1 ${size*0.9} ${cy}`} fill="none" stroke="url(#gaugeRed)" strokeWidth={size*0.055} strokeLinecap="round" opacity="0.9"/>
+            <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#fff" strokeWidth="3" strokeLinecap="round" style={{filter:"drop-shadow(0 1px 4px rgba(0,0,0,0.5))"}}/>
+            <circle cx={cx} cy={cy} r={size*0.03} fill="#fff"/>
+            <text x={size*0.12} y={cy+size*0.08} fill="rgba(255,255,255,0.3)" fontSize={size*0.045} fontWeight="600">1d</text>
+            <text x={size*0.82} y={cy+size*0.08} fill="rgba(255,255,255,0.3)" fontSize={size*0.045} fontWeight="600">30d+</text>
           </svg>
-          <div style={{fontSize:42,fontWeight:900,color,marginTop:-8,letterSpacing:-1}}>{speed ? speed + "d" : "--"}</div>
-          <div style={{fontSize:12,color:"rgba(255,255,255,0.4)",marginTop:2}}>6-month rolling average</div>
+          <div style={{fontSize:52,fontWeight:900,color,marginTop:-4,letterSpacing:-2}}>{speed ? speed + "d" : "--"}</div>
+          <div style={{fontSize:13,color:"rgba(255,255,255,0.4)",marginTop:2}}>6-month rolling average</div>
         </div>
       );
     };
+
+    const getAvatar = (name) => {
+      const p = profiles?.[name];
+      if (p?.avatar) return <img src={p.avatar} alt="" style={{width:28,height:28,borderRadius:"50%",objectFit:"cover",flexShrink:0}}/>;
+      return <div style={{width:28,height:28,borderRadius:"50%",background:"rgba(93,165,186,0.3)",color:"#5DA5BA",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,flexShrink:0}}>{(name||"?")[0]}</div>;
+    };
+
+    const SortHeader = ({label, sortKey, align}) => (
+      <div onClick={()=>setSpeedSort(sortKey)} style={{textAlign:align||"center",cursor:"pointer",display:"flex",alignItems:align==="left"?"flex-start":"center",justifyContent:align==="left"?"flex-start":"center",gap:3}}>
+        {label} {speedSort===sortKey ? "\u25bc" : ""}
+      </div>
+    );
 
     return (
       <div style={{minHeight:"100vh",background:"#0B1929",fontFamily:"'DM Sans','Outfit',sans-serif"}}>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
         <style>{CSS}</style>
         <NavBar
-          left={<button onClick={()=>setScreen("home")} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>{"←"} Back</button>}
+          left={<button onClick={()=>setScreen("home")} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>{"\u2190"} Back</button>}
           center="Speed to Lead"
-          right={<button onClick={()=>loadSpeed(true)} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:11,fontWeight:500}}>{speedLoading ? "..." : "↻"}</button>}
+          right={<button onClick={()=>loadSpeed(true)} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:11,fontWeight:500}}>{speedLoading ? "..." : "\u21bb"}</button>}
         />
         <div style={{maxWidth:600,margin:"0 auto",padding:"16px 16px 48px"}}>
 
-          {/* My Speed */}
+          {/* Big Speedometer */}
           <Speedometer speed={myRep?.speed} />
 
           {/* Personal Best */}
           {myRep?.personalBest && (
-            <div style={{background:myRep.newPersonalBest?"rgba(46,204,113,0.2)":"rgba(46,204,113,0.08)",border:`1px solid ${myRep.newPersonalBest?"rgba(46,204,113,0.5)":"rgba(46,204,113,0.2)"}`,borderRadius:12,padding:"12px 16px",marginBottom:16,textAlign:"center",animation:myRep.newPersonalBest?"popIn 0.5s ease":"none",boxShadow:myRep.newPersonalBest?"0 0 20px rgba(46,204,113,0.3)":"none"}}>
-              <div style={{fontSize:11,color:"#2ECC71",fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:2}}>{myRep.newPersonalBest ? "\ud83c\udf89 New Personal Best!" : "Personal Best"}</div>
+            <div style={{background:"rgba(46,204,113,0.08)",border:"1px solid rgba(46,204,113,0.2)",borderRadius:12,padding:"12px 16px",marginBottom:16,textAlign:"center"}}>
+              <div style={{fontSize:11,color:"#2ECC71",fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:2}}>Personal Best</div>
               <div style={{fontSize:18,fontWeight:900,color:"#2ECC71"}}>{myRep.personalBest.days}d</div>
-              <div style={{fontSize:11,color:"rgba(255,255,255,0.4)"}}>{myRep.personalBest.job} — {myRep.personalBest.date}</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,0.4)"}}>{myRep.personalBest.job} \u2014 {myRep.personalBest.date}</div>
             </div>
           )}
-
-          {/* Monday Morning Digest */}
-          {(() => {
-            const now = new Date();
-            const isMonday = now.getDay() === 1 && now.getHours() >= 8;
-            const pw = speedData?.prevWeek;
-            if (!isMonday || !pw || !pw.length) return null;
-            return (
-              <div style={{background:"linear-gradient(135deg, rgba(93,165,186,0.15), rgba(27,79,114,0.15))",border:"1px solid rgba(93,165,186,0.3)",borderRadius:14,padding:"16px",marginBottom:16}}>
-                <div style={{fontSize:13,fontWeight:800,color:"#5DA5BA",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>
-                  {"📊"} Monday Morning Digest
-                </div>
-                {(speedData?.leaderboard || []).map(rep => {
-                  const prev = pw.find(p => p.name === rep.name || p.fullName === rep.fullName);
-                  if (!prev) return null;
-                  const prevSpeed = prev.speed ?? prev.speed;
-                  const prevRank = prev.rank;
-                  const speedDelta = rep.speed && prevSpeed ? Math.round((rep.speed - prevSpeed) * 10) / 10 : null;
-                  const rankDelta = prevRank && rep.rank ? prevRank - rep.rank : null;
-                  const isMe = rep.name === user || rep.fullName?.startsWith(user);
-                  if (!isMe && !rankDelta && !speedDelta) return null;
-                  return (
-                    <div key={rep.name} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"6px 0",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
-                      <span style={{fontSize:13,fontWeight:isMe?800:500,color:isMe?"#5DA5BA":"#fff"}}>{rep.name}</span>
-                      <div style={{display:"flex",gap:12,alignItems:"center"}}>
-                        {speedDelta !== null && speedDelta !== 0 && (
-                          <span style={{fontSize:12,fontWeight:700,color:speedDelta < 0 ? "#2ECC71" : "#E74C3C"}}>
-                            {speedDelta < 0 ? "↓" : "↑"}{Math.abs(speedDelta)}d
-                          </span>
-                        )}
-                        {rankDelta !== null && rankDelta !== 0 && (
-                          <span style={{fontSize:12,fontWeight:700,color:rankDelta > 0 ? "#2ECC71" : "#E74C3C"}}>
-                            {rankDelta > 0 ? "↑" : "↓"}{Math.abs(rankDelta)} rank{Math.abs(rankDelta)>1?"s":""}
-                          </span>
-                        )}
-                        {speedDelta === 0 && rankDelta === 0 && (
-                          <span style={{fontSize:12,color:"rgba(255,255,255,0.3)"}}>No change</span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })()}
 
           {/* Leaderboard */}
           <div style={{fontSize:16,fontWeight:800,color:C.dk,marginBottom:10}}>Leaderboard</div>
           {speedLoading && !speedData ? (
-            <div style={{textAlign:"center",padding:40,color:C.mut}}>Loading speed data from JobTread...</div>
+            <div style={{textAlign:"center",padding:40,color:C.mut}}>Loading speed data...</div>
           ) : (
             <div style={{background:C.card,borderRadius:14,border:`1px solid ${C.bdr}`,overflow:"hidden"}}>
               {/* Header */}
-              <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",padding:"10px 14px",borderBottom:`1px solid ${C.bdr}`,fontSize:10,fontWeight:700,color:C.mut,textTransform:"uppercase",letterSpacing:0.5}}>
-                <div>Rep</div>
-                <div style={{textAlign:"center"}}>Speed</div>
-                <div style={{textAlign:"center"}}>Overdue</div>
-                <div style={{textAlign:"center"}}>To Ship</div>
+              <div style={{display:"grid",gridTemplateColumns:"2.5fr 1fr 1fr 1fr",padding:"10px 14px",borderBottom:`1px solid ${C.bdr}`,fontSize:10,fontWeight:700,color:C.mut,textTransform:"uppercase",letterSpacing:0.5}}>
+                <SortHeader label="Rep" sortKey="speed" align="left"/>
+                <SortHeader label="Speed" sortKey="speed"/>
+                <SortHeader label="Overdue" sortKey="overdue"/>
+                <SortHeader label="To Ship" sortKey="toShip"/>
               </div>
               {/* Rows */}
               {lb.map((rep, i) => {
                 const isMe = rep.name === user || rep.fullName?.startsWith(user);
-                const speedColor = rep.speed ? (rep.speed <= 3 ? "#2ECC71" : rep.speed <= 7 ? "#F1C40F" : "#E74C3C") : C.mut;
+                const speedColor = getSpeedColor(rep);
                 return (
-                  <div key={rep.name} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",padding:"12px 14px",borderBottom:i<lb.length-1?`1px solid ${C.bdr}`:"none",background:isMe?"rgba(93,165,186,0.1)":"transparent",alignItems:"center"}}>
+                  <div key={rep.name} style={{display:"grid",gridTemplateColumns:"2.5fr 1fr 1fr 1fr",padding:"10px 14px",borderBottom:i<lb.length-1?`1px solid ${C.bdr}`:"none",background:isMe?"rgba(93,165,186,0.1)":"transparent",alignItems:"center"}}>
                     <div style={{display:"flex",alignItems:"center",gap:8}}>
-                      <span style={{fontSize:14,fontWeight:800,color:i===0?"#FFD700":i===1?"#C0C0C0":i===2?"#CD7F32":C.mut,minWidth:18}}>{i+1}</span>
-                      <span style={{fontSize:14,fontWeight:isMe?800:500,color:isMe?"#5DA5BA":C.dk}}>{rep.name}</span>
+                      {getAvatar(rep.name)}
+                      <div>
+                        <div style={{fontSize:14,fontWeight:isMe?800:600,color:isMe?"#5DA5BA":C.dk}}>{rep.name}</div>
+                        <div style={{fontSize:10,color:C.mut}}>{rep.samples} est{rep.samples!==1?"s":""}</div>
+                      </div>
                     </div>
-                    <div style={{textAlign:"center",fontSize:16,fontWeight:800,color:speedColor}}>{rep.speed !== null ? rep.speed + "d" : "--"}</div>
-                    <div style={{textAlign:"center",fontSize:14,fontWeight:700,color:rep.overdue > 5 ? "#E74C3C" : rep.overdue > 0 ? "#F1C40F" : "#2ECC71"}}>{rep.overdue}</div>
-                    <div style={{textAlign:"center",fontSize:14,fontWeight:700,color:rep.toShip > 5 ? "#E74C3C" : rep.toShip > 0 ? "#F1C40F" : "#2ECC71"}}>{rep.toShip}</div>
+                    <div style={{textAlign:"center",fontSize:18,fontWeight:900,color:speedColor}}>{rep.speed !== null ? rep.speed + "d" : "--"}</div>
+                    <div style={{textAlign:"center",fontSize:15,fontWeight:700,color:rep.overdue > 20 ? "#E74C3C" : rep.overdue > 5 ? "#F1C40F" : "#2ECC71"}}>{rep.overdue}</div>
+                    <div style={{textAlign:"center",fontSize:15,fontWeight:700,color:rep.toShip > 10 ? "#E74C3C" : rep.toShip > 3 ? "#F1C40F" : "#2ECC71"}}>{rep.toShip}</div>
                   </div>
                 );
               })}
@@ -2197,11 +2203,12 @@ export default function App() {
 
           {/* Footnote */}
           <div style={{fontSize:10,color:"rgba(255,255,255,0.25)",textAlign:"center",marginTop:12}}>*Speed metric excludes Sundays. Rolling 6-month average.</div>
-          {speedData && <div style={{fontSize:10,color:"rgba(255,255,255,0.15)",textAlign:"center",marginTop:4}}>Last updated: {new Date(speedData.computedAt).toLocaleString()}</div>}
+          {speedData && <div style={{fontSize:10,color:"rgba(255,255,255,0.15)",textAlign:"center",marginTop:4}}>Last updated: {new Date(speedData.computedAt||speedData.cachedAt).toLocaleString()}</div>}
         </div>
       </div>
     );
   }
+
 
 
     // ═══ ESTIMATOR ═══
