@@ -727,9 +727,7 @@ export default function App() {
               if(!speedData && !speedLoading){
                 setSpeedLoading(true);
                 try{const r=await fetch("/.netlify/functions/speed");const d=await r.json();
-                  const reps=d.reps||d.leaderboard||[];
-                  const mapped=reps.map(rep=>({name:rep.name,fullName:rep.fullName||rep.name,mid:rep.mid,speedAvg:rep.speed??rep.speed??null,speedSamples:rep.speedSamples||0,overdueTodos:rep.overdue??rep.overdue??0,estimatesToShip:rep.toShip??rep.toShip??0,personalBest:rep.personalBest?{days:rep.personalBest.speed??rep.personalBest.days,jobName:rep.personalBest.job??rep.personalBest.jobName??"",date:rep.personalBest.date||""}:null,rank:rep.rank,newPersonalBest:rep.newPersonalBest||false}));
-                  setSpeedData({leaderboard:mapped,computedAt:d.computed_at||d.computedAt||new Date().toISOString(),prevWeek:d.prev_week||d.prevWeek||null});
+                  if(d.leaderboard) setSpeedData(d);
                 }catch(e){console.error(e);}
                 setSpeedLoading(false);
               }
@@ -2061,29 +2059,7 @@ export default function App() {
       try {
         const r = await fetch("/.netlify/functions/speed");
         const d = await r.json();
-        // Map from new function format to UI format
-        const reps = d.reps || d.leaderboard || [];
-        const mapped = reps.map(rep => ({
-          name: rep.name,
-          fullName: rep.fullName || rep.name,
-          mid: rep.mid,
-          speedAvg: rep.speed ?? rep.speed ?? null,
-          speedSamples: rep.speedSamples || 0,
-          overdueTodos: rep.overdue ?? rep.overdue ?? 0,
-          estimatesToShip: rep.toShip ?? rep.toShip ?? 0,
-          personalBest: rep.personalBest ? {
-            days: rep.personalBest.speed ?? rep.personalBest.days,
-            jobName: rep.personalBest.job ?? rep.personalBest.jobName ?? "",
-            date: rep.personalBest.date || "",
-          } : null,
-          rank: rep.rank,
-          newPersonalBest: rep.newPersonalBest || false,
-        }));
-        setSpeedData({
-          leaderboard: mapped,
-          computedAt: d.computed_at || d.computedAt || new Date().toISOString(),
-          prevWeek: d.prev_week || d.prevWeek || null,
-        });
+        if (d.leaderboard) setSpeedData(d);
       } catch(e) { console.error(e); }
       setSpeedLoading(false);
     };
@@ -2137,7 +2113,7 @@ export default function App() {
             <div style={{background:myRep.newPersonalBest?"rgba(46,204,113,0.2)":"rgba(46,204,113,0.08)",border:`1px solid ${myRep.newPersonalBest?"rgba(46,204,113,0.5)":"rgba(46,204,113,0.2)"}`,borderRadius:12,padding:"12px 16px",marginBottom:16,textAlign:"center",animation:myRep.newPersonalBest?"popIn 0.5s ease":"none",boxShadow:myRep.newPersonalBest?"0 0 20px rgba(46,204,113,0.3)":"none"}}>
               <div style={{fontSize:11,color:"#2ECC71",fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:2}}>{myRep.newPersonalBest ? "\ud83c\udf89 New Personal Best!" : "Personal Best"}</div>
               <div style={{fontSize:18,fontWeight:900,color:"#2ECC71"}}>{myRep.personalBest.days}d</div>
-              <div style={{fontSize:11,color:"rgba(255,255,255,0.4)"}}>{myRep.personalBest.jobName} — {myRep.personalBest.date}</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,0.4)"}}>{myRep.personalBest.job} — {myRep.personalBest.date}</div>
             </div>
           )}
 
@@ -2155,7 +2131,7 @@ export default function App() {
                 {(speedData?.leaderboard || []).map(rep => {
                   const prev = pw.find(p => p.name === rep.name || p.fullName === rep.fullName);
                   if (!prev) return null;
-                  const prevSpeed = prev.speed ?? prev.speedAvg;
+                  const prevSpeed = prev.speed ?? prev.speed;
                   const prevRank = prev.rank;
                   const speedDelta = rep.speed && prevSpeed ? Math.round((rep.speed - prevSpeed) * 10) / 10 : null;
                   const rankDelta = prevRank && rep.rank ? prevRank - rep.rank : null;
