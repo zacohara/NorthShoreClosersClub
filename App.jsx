@@ -711,7 +711,7 @@ export default function App() {
               <div style={{position:"absolute",bottom:0,left:0,right:0,height:1,background:"linear-gradient(90deg, transparent, #F39C1230, transparent)",pointerEvents:"none"}}/>
               <div style={{fontSize:38,marginBottom:12,position:"relative",filter:"drop-shadow(0 2px 6px rgba(0,0,0,0.3))"}}>🗺️</div>
               <div style={{fontSize:19,fontWeight:800,color:"#fff",position:"relative",textShadow:"0 1px 6px rgba(0,0,0,0.4)",letterSpacing:-0.2}}>Heat Map</div>
-              <div style={{fontSize:13,color:"rgba(255,255,255,0.55)",fontWeight:500,marginTop:3,position:"relative"}}>580+ approved jobs</div>
+              <div style={{fontSize:13,color:"rgba(255,255,255,0.55)",fontWeight:500,marginTop:3,position:"relative"}}>383 approved jobs</div>
             </div>
             <div onClick={()=>setScreen("resources")} className="card-hover"
               style={{background:"linear-gradient(135deg, #8E44AD 0%, #4A235A 100%)",borderRadius:18,padding:"22px 18px",cursor:"pointer",minHeight:145,position:"relative",overflow:"hidden",display:"flex",flexDirection:"column",justifyContent:"flex-end",boxShadow:"0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.08)"}}>
@@ -726,7 +726,11 @@ export default function App() {
             <div onClick={async()=>{
               if(!speedData && !speedLoading){
                 setSpeedLoading(true);
-                try{const r=await fetch("/.netlify/functions/speed");const d=await r.json();if(d.leaderboard)setSpeedData(d);}catch(e){console.error(e);}
+                try{const r=await fetch("/.netlify/functions/speed");const d=await r.json();
+                  const reps=d.reps||d.leaderboard||[];
+                  const mapped=reps.map(rep=>({name:rep.name,fullName:rep.fullName||rep.name,mid:rep.mid,speedAvg:rep.speed??rep.speedAvg??null,speedSamples:rep.speedSamples||0,overdueTodos:rep.overdue??rep.overdueTodos??0,estimatesToShip:rep.toShip??rep.estimatesToShip??0,personalBest:rep.personalBest?{days:rep.personalBest.speed??rep.personalBest.days,jobName:rep.personalBest.job??rep.personalBest.jobName??"",date:rep.personalBest.date||""}:null,rank:rep.rank,newPersonalBest:rep.newPersonalBest||false}));
+                  setSpeedData({leaderboard:mapped,computedAt:d.computed_at||d.computedAt||new Date().toISOString(),prevWeek:d.prev_week||d.prevWeek||null});
+                }catch(e){console.error(e);}
                 setSpeedLoading(false);
               }
               setScreen("speed");
@@ -2057,7 +2061,29 @@ export default function App() {
       try {
         const r = await fetch("/.netlify/functions/speed");
         const d = await r.json();
-        if (d.leaderboard) setSpeedData(d);
+        // Map from new function format to UI format
+        const reps = d.reps || d.leaderboard || [];
+        const mapped = reps.map(rep => ({
+          name: rep.name,
+          fullName: rep.fullName || rep.name,
+          mid: rep.mid,
+          speedAvg: rep.speed ?? rep.speedAvg ?? null,
+          speedSamples: rep.speedSamples || 0,
+          overdueTodos: rep.overdue ?? rep.overdueTodos ?? 0,
+          estimatesToShip: rep.toShip ?? rep.estimatesToShip ?? 0,
+          personalBest: rep.personalBest ? {
+            days: rep.personalBest.speed ?? rep.personalBest.days,
+            jobName: rep.personalBest.job ?? rep.personalBest.jobName ?? "",
+            date: rep.personalBest.date || "",
+          } : null,
+          rank: rep.rank,
+          newPersonalBest: rep.newPersonalBest || false,
+        }));
+        setSpeedData({
+          leaderboard: mapped,
+          computedAt: d.computed_at || d.computedAt || new Date().toISOString(),
+          prevWeek: d.prev_week || d.prevWeek || null,
+        });
       } catch(e) { console.error(e); }
       setSpeedLoading(false);
     };
@@ -2108,12 +2134,57 @@ export default function App() {
 
           {/* Personal Best */}
           {myRep?.personalBest && (
-            <div style={{background:"rgba(46,204,113,0.08)",border:"1px solid rgba(46,204,113,0.2)",borderRadius:12,padding:"12px 16px",marginBottom:16,textAlign:"center"}}>
-              <div style={{fontSize:11,color:"#2ECC71",fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:2}}>Personal Best</div>
+            <div style={{background:myRep.newPersonalBest?"rgba(46,204,113,0.2)":"rgba(46,204,113,0.08)",border:`1px solid ${myRep.newPersonalBest?"rgba(46,204,113,0.5)":"rgba(46,204,113,0.2)"}`,borderRadius:12,padding:"12px 16px",marginBottom:16,textAlign:"center",animation:myRep.newPersonalBest?"popIn 0.5s ease":"none",boxShadow:myRep.newPersonalBest?"0 0 20px rgba(46,204,113,0.3)":"none"}}>
+              <div style={{fontSize:11,color:"#2ECC71",fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:2}}>{myRep.newPersonalBest ? "\ud83c\udf89 New Personal Best!" : "Personal Best"}</div>
               <div style={{fontSize:18,fontWeight:900,color:"#2ECC71"}}>{myRep.personalBest.days}d</div>
               <div style={{fontSize:11,color:"rgba(255,255,255,0.4)"}}>{myRep.personalBest.jobName} — {myRep.personalBest.date}</div>
             </div>
           )}
+
+          {/* Monday Morning Digest */}
+          {(() => {
+            const now = new Date();
+            const isMonday = now.getDay() === 1 && now.getHours() >= 8;
+            const pw = speedData?.prevWeek;
+            if (!isMonday || !pw || !pw.length) return null;
+            return (
+              <div style={{background:"linear-gradient(135deg, rgba(93,165,186,0.15), rgba(27,79,114,0.15))",border:"1px solid rgba(93,165,186,0.3)",borderRadius:14,padding:"16px",marginBottom:16}}>
+                <div style={{fontSize:13,fontWeight:800,color:"#5DA5BA",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>
+                  {"📊"} Monday Morning Digest
+                </div>
+                {(speedData?.leaderboard || []).map(rep => {
+                  const prev = pw.find(p => p.name === rep.name || p.fullName === rep.fullName);
+                  if (!prev) return null;
+                  const prevSpeed = prev.speed ?? prev.speedAvg;
+                  const prevRank = prev.rank;
+                  const speedDelta = rep.speedAvg && prevSpeed ? Math.round((rep.speedAvg - prevSpeed) * 10) / 10 : null;
+                  const rankDelta = prevRank && rep.rank ? prevRank - rep.rank : null;
+                  const isMe = rep.name === user || rep.fullName?.startsWith(user);
+                  if (!isMe && !rankDelta && !speedDelta) return null;
+                  return (
+                    <div key={rep.name} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"6px 0",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
+                      <span style={{fontSize:13,fontWeight:isMe?800:500,color:isMe?"#5DA5BA":"#fff"}}>{rep.name}</span>
+                      <div style={{display:"flex",gap:12,alignItems:"center"}}>
+                        {speedDelta !== null && speedDelta !== 0 && (
+                          <span style={{fontSize:12,fontWeight:700,color:speedDelta < 0 ? "#2ECC71" : "#E74C3C"}}>
+                            {speedDelta < 0 ? "↓" : "↑"}{Math.abs(speedDelta)}d
+                          </span>
+                        )}
+                        {rankDelta !== null && rankDelta !== 0 && (
+                          <span style={{fontSize:12,fontWeight:700,color:rankDelta > 0 ? "#2ECC71" : "#E74C3C"}}>
+                            {rankDelta > 0 ? "↑" : "↓"}{Math.abs(rankDelta)} rank{Math.abs(rankDelta)>1?"s":""}
+                          </span>
+                        )}
+                        {speedDelta === 0 && rankDelta === 0 && (
+                          <span style={{fontSize:12,color:"rgba(255,255,255,0.3)"}}>No change</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
 
           {/* Leaderboard */}
           <div style={{fontSize:16,fontWeight:800,color:C.dk,marginBottom:10}}>Leaderboard</div>
