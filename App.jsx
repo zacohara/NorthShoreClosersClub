@@ -448,11 +448,11 @@ export default function App() {
                   if (pwInput.length<4) {setPwError("Password must be at least 4 characters");return;}
                   if (pwInput!==pwConfirm) {setPwError("Passwords don't match");return;}
                   const ok = await setPassword(user, pwInput);
-                  if (ok) {setPasswordMode(null);updateStreak(user);setScreen("home");setShowWelcome(true);fetch("/.netlify/functions/speed").then(r=>r.json()).then(d=>{if(d.leaderboard)setSpeedData(d);}).catch(()=>{});}
+                  if (ok) {setPasswordMode(null);updateStreak(user);setScreen("home");setShowWelcome(true);fetch("https://wkrtbjvbjebhbcjwurhb.supabase.co/rest/v1/speed_cache?id=eq.current&select=data",{headers:{apikey:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrcnRianZiamViaGJjand1cmhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMzQ0NTQsImV4cCI6MjA4OTcxMDQ1NH0.AX58He7wNdxTu3OoeU2lELxD6HUL6UsBVAkfzftRh4E"}}).then(r=>r.json()).then(rows=>{if(rows&&rows[0]&&rows[0].data){const d=typeof rows[0].data==="string"?JSON.parse(rows[0].data):rows[0].data;setSpeedData(d);}}).catch(()=>{});}
                   else setPwError("Failed to save. Try again.");
                 } else {
                   const ok = await checkPassword(user, pwInput);
-                  if (ok) {setPasswordMode(null);updateStreak(user);setScreen("home");setShowWelcome(true);fetch("/.netlify/functions/speed").then(r=>r.json()).then(d=>{if(d.leaderboard)setSpeedData(d);}).catch(()=>{});}
+                  if (ok) {setPasswordMode(null);updateStreak(user);setScreen("home");setShowWelcome(true);fetch("https://wkrtbjvbjebhbcjwurhb.supabase.co/rest/v1/speed_cache?id=eq.current&select=data",{headers:{apikey:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrcnRianZiamViaGJjand1cmhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMzQ0NTQsImV4cCI6MjA4OTcxMDQ1NH0.AX58He7wNdxTu3OoeU2lELxD6HUL6UsBVAkfzftRh4E"}}).then(r=>r.json()).then(rows=>{if(rows&&rows[0]&&rows[0].data){const d=typeof rows[0].data==="string"?JSON.parse(rows[0].data):rows[0].data;setSpeedData(d);}}).catch(()=>{});}
                   else setPwError("Wrong password");
                 }
               }} style={{width:"100%",padding:"14px",borderRadius:12,background:"linear-gradient(145deg, #5DA5BA 0%, #3D7A8E 100%)",color:"#fff",border:"none",fontSize:16,fontWeight:700,cursor:"pointer",marginBottom:10,boxShadow:"0 4px 16px rgba(93,165,186,0.25)"}}>
@@ -2058,10 +2058,13 @@ export default function App() {
       if (speedLoading) return;
       setSpeedLoading(true);
       try {
-        const opts = force ? {method:"POST"} : {};
-        const r = await fetch("/.netlify/functions/speed", opts);
-        const d = await r.json();
-        if (d.leaderboard) setSpeedData(d);
+        const r = await fetch("https://wkrtbjvbjebhbcjwurhb.supabase.co/rest/v1/speed_cache?id=eq.current&select=data,computed_at",{headers:{apikey:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrcnRianZiamViaGJjand1cmhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMzQ0NTQsImV4cCI6MjA4OTcxMDQ1NH0.AX58He7wNdxTu3OoeU2lELxD6HUL6UsBVAkfzftRh4E"}});
+        const rows = await r.json();
+        if (rows && rows[0] && rows[0].data) {
+          const d = typeof rows[0].data === "string" ? JSON.parse(rows[0].data) : rows[0].data;
+          d.cachedAt = rows[0].computed_at;
+          setSpeedData(d);
+        }
       } catch(e) { console.error(e); }
       setSpeedLoading(false);
     };
