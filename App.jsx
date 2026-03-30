@@ -728,7 +728,7 @@ export default function App() {
                 setSpeedLoading(true);
                 try{const r=await fetch("/.netlify/functions/speed");const d=await r.json();
                   const reps=d.reps||d.leaderboard||[];
-                  const mapped=reps.map(rep=>({name:rep.name,fullName:rep.fullName||rep.name,mid:rep.mid,speedAvg:rep.speed??rep.speedAvg??null,speedSamples:rep.speedSamples||0,overdueTodos:rep.overdue??rep.overdueTodos??0,estimatesToShip:rep.toShip??rep.estimatesToShip??0,personalBest:rep.personalBest?{days:rep.personalBest.speed??rep.personalBest.days,jobName:rep.personalBest.job??rep.personalBest.jobName??"",date:rep.personalBest.date||""}:null,rank:rep.rank,newPersonalBest:rep.newPersonalBest||false}));
+                  const mapped=reps.map(rep=>({name:rep.name,fullName:rep.fullName||rep.name,mid:rep.mid,speedAvg:rep.speed??rep.speed??null,speedSamples:rep.speedSamples||0,overdueTodos:rep.overdue??rep.overdue??0,estimatesToShip:rep.toShip??rep.toShip??0,personalBest:rep.personalBest?{days:rep.personalBest.speed??rep.personalBest.days,jobName:rep.personalBest.job??rep.personalBest.jobName??"",date:rep.personalBest.date||""}:null,rank:rep.rank,newPersonalBest:rep.newPersonalBest||false}));
                   setSpeedData({leaderboard:mapped,computedAt:d.computed_at||d.computedAt||new Date().toISOString(),prevWeek:d.prev_week||d.prevWeek||null});
                 }catch(e){console.error(e);}
                 setSpeedLoading(false);
@@ -747,7 +747,7 @@ export default function App() {
                 <path d="M 85 18 A 50 50 0 0 1 110 60" fill="none" stroke="#E74C3C" strokeWidth="8" strokeLinecap="round"/>
                 {(() => {
                   const myRep = speedData?.leaderboard?.find(r => r.name === user || r.fullName?.startsWith(user));
-                  const speed = myRep?.speedAvg || 5;
+                  const speed = myRep?.speed || 5;
                   const pct = Math.min(Math.max((speed - 1) / 14, 0), 1);
                   const angle = -180 + pct * 180;
                   const rad = angle * Math.PI / 180;
@@ -758,7 +758,7 @@ export default function App() {
                 <circle cx="60" cy="60" r="4" fill="#fff"/>
               </svg>
               <div style={{fontSize:19,fontWeight:800,color:"#fff",position:"relative",textShadow:"0 1px 6px rgba(0,0,0,0.4)",letterSpacing:-0.2,textAlign:"center"}}>Speed to Lead</div>
-              <div style={{fontSize:13,color:"rgba(255,255,255,0.55)",fontWeight:500,marginTop:3,position:"relative",textAlign:"center"}}>{speedLoading ? "Loading..." : speedData ? (speedData.leaderboard?.find(r=>r.name===user)?.speedAvg || "--") + "d avg" : "Tap to load"}</div>
+              <div style={{fontSize:13,color:"rgba(255,255,255,0.55)",fontWeight:500,marginTop:3,position:"relative",textAlign:"center"}}>{speedLoading ? "Loading..." : speedData ? (speedData.leaderboard?.find(r=>r.name===user)?.speed || "--") + "d avg" : "Tap to load"}</div>
             </div>
           </div>
 
@@ -2067,10 +2067,10 @@ export default function App() {
           name: rep.name,
           fullName: rep.fullName || rep.name,
           mid: rep.mid,
-          speedAvg: rep.speed ?? rep.speedAvg ?? null,
+          speedAvg: rep.speed ?? rep.speed ?? null,
           speedSamples: rep.speedSamples || 0,
-          overdueTodos: rep.overdue ?? rep.overdueTodos ?? 0,
-          estimatesToShip: rep.toShip ?? rep.estimatesToShip ?? 0,
+          overdueTodos: rep.overdue ?? rep.overdue ?? 0,
+          estimatesToShip: rep.toShip ?? rep.toShip ?? 0,
           personalBest: rep.personalBest ? {
             days: rep.personalBest.speed ?? rep.personalBest.days,
             jobName: rep.personalBest.job ?? rep.personalBest.jobName ?? "",
@@ -2130,7 +2130,7 @@ export default function App() {
         <div style={{maxWidth:600,margin:"0 auto",padding:"16px 16px 48px"}}>
 
           {/* My Speed */}
-          <Speedometer speed={myRep?.speedAvg} />
+          <Speedometer speed={myRep?.speed} />
 
           {/* Personal Best */}
           {myRep?.personalBest && (
@@ -2157,7 +2157,7 @@ export default function App() {
                   if (!prev) return null;
                   const prevSpeed = prev.speed ?? prev.speedAvg;
                   const prevRank = prev.rank;
-                  const speedDelta = rep.speedAvg && prevSpeed ? Math.round((rep.speedAvg - prevSpeed) * 10) / 10 : null;
+                  const speedDelta = rep.speed && prevSpeed ? Math.round((rep.speed - prevSpeed) * 10) / 10 : null;
                   const rankDelta = prevRank && rep.rank ? prevRank - rep.rank : null;
                   const isMe = rep.name === user || rep.fullName?.startsWith(user);
                   if (!isMe && !rankDelta && !speedDelta) return null;
@@ -2202,16 +2202,16 @@ export default function App() {
               {/* Rows */}
               {lb.map((rep, i) => {
                 const isMe = rep.name === user || rep.fullName?.startsWith(user);
-                const speedColor = rep.speedAvg ? (rep.speedAvg <= 3 ? "#2ECC71" : rep.speedAvg <= 7 ? "#F1C40F" : "#E74C3C") : C.mut;
+                const speedColor = rep.speed ? (rep.speed <= 3 ? "#2ECC71" : rep.speed <= 7 ? "#F1C40F" : "#E74C3C") : C.mut;
                 return (
                   <div key={rep.name} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",padding:"12px 14px",borderBottom:i<lb.length-1?`1px solid ${C.bdr}`:"none",background:isMe?"rgba(93,165,186,0.1)":"transparent",alignItems:"center"}}>
                     <div style={{display:"flex",alignItems:"center",gap:8}}>
                       <span style={{fontSize:14,fontWeight:800,color:i===0?"#FFD700":i===1?"#C0C0C0":i===2?"#CD7F32":C.mut,minWidth:18}}>{i+1}</span>
                       <span style={{fontSize:14,fontWeight:isMe?800:500,color:isMe?"#5DA5BA":C.dk}}>{rep.name}</span>
                     </div>
-                    <div style={{textAlign:"center",fontSize:16,fontWeight:800,color:speedColor}}>{rep.speedAvg !== null ? rep.speedAvg + "d" : "--"}</div>
-                    <div style={{textAlign:"center",fontSize:14,fontWeight:700,color:rep.overdueTodos > 5 ? "#E74C3C" : rep.overdueTodos > 0 ? "#F1C40F" : "#2ECC71"}}>{rep.overdueTodos}</div>
-                    <div style={{textAlign:"center",fontSize:14,fontWeight:700,color:rep.estimatesToShip > 5 ? "#E74C3C" : rep.estimatesToShip > 0 ? "#F1C40F" : "#2ECC71"}}>{rep.estimatesToShip}</div>
+                    <div style={{textAlign:"center",fontSize:16,fontWeight:800,color:speedColor}}>{rep.speed !== null ? rep.speed + "d" : "--"}</div>
+                    <div style={{textAlign:"center",fontSize:14,fontWeight:700,color:rep.overdue > 5 ? "#E74C3C" : rep.overdue > 0 ? "#F1C40F" : "#2ECC71"}}>{rep.overdue}</div>
+                    <div style={{textAlign:"center",fontSize:14,fontWeight:700,color:rep.toShip > 5 ? "#E74C3C" : rep.toShip > 0 ? "#F1C40F" : "#2ECC71"}}>{rep.toShip}</div>
                   </div>
                 );
               })}
