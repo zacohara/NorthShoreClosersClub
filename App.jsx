@@ -2053,11 +2053,12 @@ export default function App() {
 
   // ═══ SPEED TO LEAD ═══
   if (screen === "speed") {
-    const loadSpeed = async () => {
+    const loadSpeed = async (force) => {
       if (speedLoading) return;
       setSpeedLoading(true);
       try {
-        const r = await fetch("/.netlify/functions/speed");
+        const opts = force ? {method:"POST"} : {};
+        const r = await fetch("/.netlify/functions/speed", opts);
         const d = await r.json();
         if (d.leaderboard) setSpeedData(d);
       } catch(e) { console.error(e); }
@@ -2101,7 +2102,7 @@ export default function App() {
         <NavBar
           left={<button onClick={()=>setScreen("home")} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>{"←"} Back</button>}
           center="Speed to Lead"
-          right={<button onClick={loadSpeed} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:11,fontWeight:500}}>{speedLoading ? "..." : "↻"}</button>}
+          right={<button onClick={()=>loadSpeed(true)} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:11,fontWeight:500}}>{speedLoading ? "..." : "↻"}</button>}
         />
         <div style={{maxWidth:600,margin:"0 auto",padding:"16px 16px 48px"}}>
 
