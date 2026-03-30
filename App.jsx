@@ -2126,7 +2126,7 @@ export default function App() {
             <text x={size*0.82} y={cy+size*0.08} fill="rgba(255,255,255,0.3)" fontSize={size*0.045} fontWeight="600">30d+</text>
           </svg>
           <div style={{fontSize:52,fontWeight:900,color,marginTop:-4,letterSpacing:-2}}>{speed ? speed + "d" : "--"}</div>
-          <div style={{fontSize:13,color:"rgba(255,255,255,0.4)",marginTop:2}}>6-month rolling average</div>
+          <div style={{fontSize:13,color:"rgba(255,255,255,0.4)",marginTop:2}}>Company Rolling Average</div>
         </div>
       );
     };
@@ -2154,8 +2154,8 @@ export default function App() {
         />
         <div style={{maxWidth:600,margin:"0 auto",padding:"16px 16px 48px"}}>
 
-          {/* Big Speedometer */}
-          <Speedometer speed={myRep?.speed} />
+          {/* Company Rolling Average Speedometer */}
+          <Speedometer speed={speedData?.companyAvg} />
 
           {/* Personal Best */}
           {myRep?.personalBest && (
