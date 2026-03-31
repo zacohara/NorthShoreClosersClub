@@ -2073,7 +2073,6 @@ export default function App() {
     const myRep = speedData?.leaderboard?.find(r => r.name === user || r.fullName?.startsWith(user));
     const rawLb = speedData?.leaderboard || [];
 
-    // Sort leaderboard
     const lb = [...rawLb].sort((a, b) => {
       const key = speedSort;
       const av = key === "speed" ? a.speed : key === "overdue" ? a.overdue : a.toShip;
@@ -2087,126 +2086,168 @@ export default function App() {
       return (bv || 0) - (av || 0);
     });
 
-    // Color by rank position (when sorted by speed): top 2 green, middle 3 yellow, bottom 3 red
     const speedRanked = [...rawLb].filter(r => r.speed !== null).sort((a,b) => a.speed - b.speed);
     const getSpeedColor = (rep) => {
       const idx = speedRanked.findIndex(r => r.name === rep.name);
       if (idx === -1 || rep.speed === null) return "rgba(255,255,255,0.3)";
       const total = speedRanked.length;
-      if (total <= 3) return idx === 0 ? "#2ECC71" : idx < 2 ? "#F1C40F" : "#E74C3C";
-      const greenCount = Math.max(2, Math.floor(total * 0.25));
-      const redCount = Math.max(3, Math.ceil(total * 0.375));
+      const greenCount = Math.max(2, Math.floor(total * 0.3));
+      const redCount = Math.max(2, Math.ceil(total * 0.3));
       if (idx < greenCount) return "#2ECC71";
       if (idx >= total - redCount) return "#E74C3C";
       return "#F1C40F";
     };
 
-    // Big speedometer
-    const Speedometer = ({speed, size=200}) => {
-      const maxSpeed = 30;
-      const pct = speed ? Math.min(Math.max((speed - 1) / (maxSpeed - 1), 0), 1) : 0.5;
-      const angle = -180 + pct * 180;
-      const rad = angle * Math.PI / 180;
-      const cx = size/2, cy = size * 0.48;
-      const r = size * 0.36;
-      const nx = cx + r * 0.75 * Math.cos(rad);
-      const ny = cy + r * 0.75 * Math.sin(rad);
-      const color = speed ? getSpeedColor({name: user, speed}) : "rgba(255,255,255,0.3)";
+    const getAvatar = (name) => {
+      const p = profiles?.[name];
+      if (p?.avatar) return <img src={p.avatar} alt="" style={{width:36,height:36,borderRadius:"50%",objectFit:"cover",flexShrink:0,border:"2px solid rgba(255,255,255,0.15)"}}/>;
+      return <div style={{width:36,height:36,borderRadius:"50%",background:"linear-gradient(135deg, rgba(93,165,186,0.4), rgba(27,79,114,0.6))",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:800,flexShrink:0,border:"2px solid rgba(255,255,255,0.1)"}}>{(name||"?")[0]}</div>;
+    };
+
+    const rankMedal = (i) => {
+      if (i === 0) return <span style={{fontSize:18}}>{"\ud83e\udd47"}</span>;
+      if (i === 1) return <span style={{fontSize:18}}>{"\ud83e\udd48"}</span>;
+      if (i === 2) return <span style={{fontSize:18}}>{"\ud83e\udd49"}</span>;
+      return <span style={{fontSize:14,fontWeight:800,color:"rgba(255,255,255,0.25)",minWidth:22,textAlign:"center"}}>{i+1}</span>;
+    };
+
+    const companyAvg = speedData?.companyAvg;
+
+    // Gauge SVG
+    const Gauge = ({value, max=25, size=220}) => {
+      const pct = value ? Math.min(value / max, 1) : 0.5;
+      const startAngle = -225;
+      const endAngle = 45;
+      const sweep = endAngle - startAngle;
+      const needleAngle = startAngle + pct * sweep;
+      const rad = needleAngle * Math.PI / 180;
+      const cx = size/2, cy = size*0.48, r = size*0.36;
+      const nx = cx + r*0.72 * Math.cos(rad), ny = cy + r*0.72 * Math.sin(rad);
+
+      const arcPath = (startPct, endPct) => {
+        const a1 = (startAngle + startPct * sweep) * Math.PI / 180;
+        const a2 = (startAngle + endPct * sweep) * Math.PI / 180;
+        const x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
+        const x2 = cx + r * Math.cos(a2), y2 = cy + r * Math.sin(a2);
+        const large = (endPct - startPct) * sweep > 180 ? 1 : 0;
+        return "M " + x1 + " " + y1 + " A " + r + " " + r + " 0 " + large + " 1 " + x2 + " " + y2;
+      };
+
       return (
-        <div style={{textAlign:"center",marginBottom:12}}>
-          <svg viewBox={"0 0 " + size + " " + (size*0.52)} style={{width:"100%",maxWidth:size*1.2,height:"auto"}}>
-            <defs>
-              <linearGradient id="gaugeGreen" x1="0" y1="0" x2="0.4" y2="0"><stop offset="0%" stopColor="#2ECC71"/><stop offset="100%" stopColor="#27AE60"/></linearGradient>
-              <linearGradient id="gaugeYellow" x1="0" y1="0" x2="0.3" y2="0"><stop offset="0%" stopColor="#F1C40F"/><stop offset="100%" stopColor="#E67E22"/></linearGradient>
-              <linearGradient id="gaugeRed" x1="0.6" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#E67E22"/><stop offset="100%" stopColor="#E74C3C"/></linearGradient>
-            </defs>
-            <path d={`M ${size*0.1} ${cy} A ${r} ${r} 0 0 1 ${cx} ${cy-r}`} fill="none" stroke="url(#gaugeGreen)" strokeWidth={size*0.055} strokeLinecap="round" opacity="0.9"/>
-            <path d={`M ${cx} ${cy-r} A ${r} ${r} 0 0 1 ${cx+r*0.87} ${cy-r*0.5}`} fill="none" stroke="url(#gaugeYellow)" strokeWidth={size*0.055} strokeLinecap="round" opacity="0.9"/>
-            <path d={`M ${cx+r*0.87} ${cy-r*0.5} A ${r} ${r} 0 0 1 ${size*0.9} ${cy}`} fill="none" stroke="url(#gaugeRed)" strokeWidth={size*0.055} strokeLinecap="round" opacity="0.9"/>
-            <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#fff" strokeWidth="3" strokeLinecap="round" style={{filter:"drop-shadow(0 1px 4px rgba(0,0,0,0.5))"}}/>
-            <circle cx={cx} cy={cy} r={size*0.03} fill="#fff"/>
-            <text x={size*0.12} y={cy+size*0.08} fill="rgba(255,255,255,0.3)" fontSize={size*0.045} fontWeight="600">1d</text>
-            <text x={size*0.82} y={cy+size*0.08} fill="rgba(255,255,255,0.3)" fontSize={size*0.045} fontWeight="600">30d+</text>
-          </svg>
-          <div style={{fontSize:52,fontWeight:900,color,marginTop:-4,letterSpacing:-2}}>{speed ? speed + "d" : "--"}</div>
-          <div style={{fontSize:13,color:"rgba(255,255,255,0.4)",marginTop:2}}>Company Rolling Average</div>
-        </div>
+        <svg viewBox={"0 0 "+size+" "+(size*0.56)} style={{width:"100%",maxWidth:280}}>
+          <defs>
+            <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <linearGradient id="g1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#00E676"/><stop offset="100%" stopColor="#69F0AE"/></linearGradient>
+            <linearGradient id="g2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#FFD54F"/><stop offset="100%" stopColor="#FFB300"/></linearGradient>
+            <linearGradient id="g3" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#FF7043"/><stop offset="100%" stopColor="#E53935"/></linearGradient>
+          </defs>
+          <path d={arcPath(0, 1)} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={size*0.045} strokeLinecap="round"/>
+          <path d={arcPath(0, 0.33)} fill="none" stroke="url(#g1)" strokeWidth={size*0.045} strokeLinecap="round" opacity="0.85"/>
+          <path d={arcPath(0.33, 0.6)} fill="none" stroke="url(#g2)" strokeWidth={size*0.045} strokeLinecap="round" opacity="0.85"/>
+          <path d={arcPath(0.6, 1)} fill="none" stroke="url(#g3)" strokeWidth={size*0.045} strokeLinecap="round" opacity="0.85"/>
+          <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#fff" strokeWidth="2.5" strokeLinecap="round" filter="url(#glow)"/>
+          <circle cx={cx} cy={cy} r="5" fill="#fff" filter="url(#glow)"/>
+          <text x={size*0.08} y={cy+size*0.1} fill="rgba(255,255,255,0.2)" fontSize="9" fontFamily="monospace">1d</text>
+          <text x={size*0.85} y={cy+size*0.1} fill="rgba(255,255,255,0.2)" fontSize="9" fontFamily="monospace">25d+</text>
+        </svg>
       );
     };
 
-    const getAvatar = (name) => {
-      const p = profiles?.[name];
-      if (p?.avatar) return <img src={p.avatar} alt="" style={{width:28,height:28,borderRadius:"50%",objectFit:"cover",flexShrink:0}}/>;
-      return <div style={{width:28,height:28,borderRadius:"50%",background:"rgba(93,165,186,0.3)",color:"#5DA5BA",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,flexShrink:0}}>{(name||"?")[0]}</div>;
-    };
-
-    const SortHeader = ({label, sortKey, align}) => (
-      <div onClick={()=>setSpeedSort(sortKey)} style={{textAlign:align||"center",cursor:"pointer",display:"flex",alignItems:align==="left"?"flex-start":"center",justifyContent:align==="left"?"flex-start":"center",gap:3}}>
-        {label} {speedSort===sortKey ? "\u25bc" : ""}
-      </div>
-    );
-
     return (
-      <div style={{minHeight:"100vh",background:"#0B1929",fontFamily:"'DM Sans','Outfit',sans-serif"}}>
-        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-        <style>{CSS}</style>
+      <div style={{minHeight:"100vh",background:"linear-gradient(180deg, #060D16 0%, #0B1929 30%, #0F1F33 100%)",fontFamily:"'DM Sans','Outfit',sans-serif"}}>
+        <style>{CSS}{`
+          @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+          @keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(46,204,113,0)}50%{box-shadow:0 0 20px 4px rgba(46,204,113,0.15)}}
+          .speed-row{transition:all 0.2s ease;border-left:3px solid transparent}
+          .speed-row:active{transform:scale(0.98)}
+        `}</style>
         <NavBar
-          left={<button onClick={()=>setScreen("home")} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>{"\u2190"} Back</button>}
-          center="Speed to Lead"
-          right={<button onClick={()=>loadSpeed(true)} style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"#fff",borderRadius:8,padding:"6px 14px",cursor:"pointer",fontSize:11,fontWeight:500}}>{speedLoading ? "..." : "\u21bb"}</button>}
+          left={<button onClick={()=>setScreen("home")} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",color:"rgba(255,255,255,0.7)",borderRadius:10,padding:"7px 14px",cursor:"pointer",fontSize:13,fontWeight:500}}>{"\u2190"}</button>}
+          center={<span style={{letterSpacing:1.5,fontSize:13,fontWeight:700,textTransform:"uppercase",color:"rgba(255,255,255,0.85)"}}>{"\u26a1"} Speed to Lead</span>}
+          right={<button onClick={()=>loadSpeed(true)} style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",color:"rgba(255,255,255,0.5)",borderRadius:10,padding:"7px 14px",cursor:"pointer",fontSize:13}}>{speedLoading ? "..." : "\u21bb"}</button>}
         />
-        <div style={{maxWidth:600,margin:"0 auto",padding:"16px 16px 48px"}}>
 
-          {/* Company Rolling Average Speedometer */}
-          <Speedometer speed={speedData?.companyAvg} />
+        <div style={{maxWidth:500,margin:"0 auto",padding:"20px 16px 60px"}}>
 
-          {/* Personal Best (5-estimate rolling avg, 12mo) */}
+          {/* Big Gauge */}
+          <div style={{textAlign:"center",marginBottom:4,animation:"slideUp 0.4s ease"}}>
+            <Gauge value={companyAvg} />
+            <div style={{fontSize:56,fontWeight:900,color:"#fff",letterSpacing:-3,marginTop:-8,textShadow:"0 0 40px rgba(255,255,255,0.15)"}}>{companyAvg || "--"}<span style={{fontSize:22,fontWeight:500,color:"rgba(255,255,255,0.4)",letterSpacing:0}}>d</span></div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,0.3)",textTransform:"uppercase",letterSpacing:2,marginTop:4}}>Company Rolling Average</div>
+          </div>
+
+          {/* Personal Best */}
           {myRep?.personalBest && (
-            <div style={{background:"rgba(46,204,113,0.08)",border:"1px solid rgba(46,204,113,0.2)",borderRadius:12,padding:"12px 16px",marginBottom:16,textAlign:"center"}}>
-              <div style={{fontSize:11,color:"#2ECC71",fontWeight:700,textTransform:"uppercase",letterSpacing:1,marginBottom:2}}>Personal Best</div>
-              <div style={{fontSize:22,fontWeight:900,color:"#2ECC71"}}>{myRep.personalBest.avg}d</div>
-              <div style={{fontSize:11,color:"rgba(255,255,255,0.4)"}}>Best 5-estimate avg \u2014 {myRep.personalBest.startDate?.slice(0,7)} to {myRep.personalBest.endDate?.slice(0,7)}</div>
+            <div style={{background:"linear-gradient(135deg, rgba(46,204,113,0.08), rgba(46,204,113,0.03))",border:"1px solid rgba(46,204,113,0.15)",borderRadius:14,padding:"14px 18px",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"space-between",animation:"slideUp 0.5s ease"}}>
+              <div>
+                <div style={{fontSize:10,color:"#2ECC71",fontWeight:700,textTransform:"uppercase",letterSpacing:1.5}}>Your Best Streak</div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,0.35)",marginTop:2}}>{myRep.personalBest.startDate?.slice(5)} to {myRep.personalBest.endDate?.slice(5)}</div>
+              </div>
+              <div style={{fontSize:28,fontWeight:900,color:"#2ECC71",letterSpacing:-1,animation:"pulseGlow 3s infinite"}}>{myRep.personalBest.avg}d</div>
             </div>
           )}
 
-          {/* Leaderboard */}
-          <div style={{fontSize:16,fontWeight:800,color:C.dk,marginBottom:10}}>Leaderboard</div>
-          {speedLoading && !speedData ? (
-            <div style={{textAlign:"center",padding:40,color:C.mut}}>Loading speed data...</div>
-          ) : (
-            <div style={{background:C.card,borderRadius:14,border:`1px solid ${C.bdr}`,overflow:"hidden"}}>
-              {/* Header */}
-              <div style={{display:"grid",gridTemplateColumns:"2.5fr 1fr 1fr 1fr",padding:"10px 14px",borderBottom:`1px solid ${C.bdr}`,fontSize:10,fontWeight:700,color:C.mut,textTransform:"uppercase",letterSpacing:0.5}}>
-                <SortHeader label="Rep" sortKey="speed" align="left"/>
-                <SortHeader label="Speed" sortKey="speed"/>
-                <SortHeader label="Overdue" sortKey="overdue"/>
-                <SortHeader label="To Ship" sortKey="toShip"/>
+          {/* Sort tabs */}
+          <div style={{display:"flex",gap:6,marginBottom:14,animation:"slideUp 0.55s ease"}}>
+            {[{key:"speed",label:"Speed"},{key:"overdue",label:"Overdue"},{key:"toShip",label:"To Ship"}].map(s => (
+              <div key={s.key} onClick={()=>setSpeedSort(s.key)}
+                style={{flex:1,textAlign:"center",padding:"8px 0",borderRadius:8,cursor:"pointer",fontSize:11,fontWeight:700,letterSpacing:0.5,textTransform:"uppercase",transition:"all 0.2s",
+                  background:speedSort===s.key?"rgba(255,255,255,0.08)":"transparent",
+                  color:speedSort===s.key?"#fff":"rgba(255,255,255,0.3)",
+                  border:speedSort===s.key?"1px solid rgba(255,255,255,0.12)":"1px solid transparent"}}>
+                {s.label}
               </div>
-              {/* Rows */}
+            ))}
+          </div>
+
+          {/* Leaderboard */}
+          {speedLoading && !speedData ? (
+            <div style={{textAlign:"center",padding:60,color:"rgba(255,255,255,0.3)"}}>Loading...</div>
+          ) : (
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
               {lb.map((rep, i) => {
                 const isMe = rep.name === user || rep.fullName?.startsWith(user);
                 const speedColor = getSpeedColor(rep);
+                const speedPct = rep.speed ? Math.min(rep.speed / 25, 1) : 0;
                 return (
-                  <div key={rep.name} style={{display:"grid",gridTemplateColumns:"2.5fr 1fr 1fr 1fr",padding:"10px 14px",borderBottom:i<lb.length-1?`1px solid ${C.bdr}`:"none",background:isMe?"rgba(93,165,186,0.1)":"transparent",alignItems:"center"}}>
-                    <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <div key={rep.name} className="speed-row"
+                    style={{background:isMe?"rgba(93,165,186,0.08)":"rgba(255,255,255,0.02)",
+                      border:`1px solid ${isMe?"rgba(93,165,186,0.2)":"rgba(255,255,255,0.04)"}`,
+                      borderLeft:`3px solid ${speedColor}`,
+                      borderRadius:12,padding:"12px 14px",
+                      animation:`slideUp ${0.3 + i * 0.06}s ease`}}>
+                    <div style={{display:"flex",alignItems:"center",gap:10}}>
+                      {rankMedal(i)}
                       {getAvatar(rep.name)}
-                      <div>
-                        <div style={{fontSize:14,fontWeight:isMe?800:600,color:isMe?"#5DA5BA":C.dk}}>{rep.name}</div>
-                        <div style={{fontSize:10,color:C.mut}}>{rep.samples} est{rep.samples!==1?"s":""}</div>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                          <span style={{fontSize:15,fontWeight:isMe?800:600,color:isMe?"#5DA5BA":"#fff"}}>{rep.name}</span>
+                          <span style={{fontSize:22,fontWeight:900,color:speedColor,letterSpacing:-1}}>{rep.speed !== null ? rep.speed + "d" : "--"}</span>
+                        </div>
+                        {/* Speed bar */}
+                        <div style={{height:3,background:"rgba(255,255,255,0.06)",borderRadius:2,marginTop:6,overflow:"hidden"}}>
+                          <div style={{height:"100%",width:(speedPct*100)+"%",background:speedColor,borderRadius:2,transition:"width 0.8s ease"}}/>
+                        </div>
+                        <div style={{display:"flex",justifyContent:"space-between",marginTop:6}}>
+                          <span style={{fontSize:10,color:"rgba(255,255,255,0.25)"}}>{rep.samples||0} sent{rep.liveSamples ? " + "+rep.liveSamples+" pending" : ""}</span>
+                          <div style={{display:"flex",gap:12}}>
+                            <span style={{fontSize:11,fontWeight:600,color:rep.overdue > 20 ? "#E74C3C" : rep.overdue > 5 ? "#F1C40F" : "rgba(255,255,255,0.25)"}}>{rep.overdue} overdue</span>
+                            <span style={{fontSize:11,fontWeight:600,color:rep.toShip > 10 ? "#E74C3C" : rep.toShip > 3 ? "#F1C40F" : "rgba(255,255,255,0.25)"}}>{rep.toShip} to ship</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div style={{textAlign:"center",fontSize:18,fontWeight:900,color:speedColor}}>{rep.speed !== null ? rep.speed + "d" : "--"}</div>
-                    <div style={{textAlign:"center",fontSize:15,fontWeight:700,color:rep.overdue > 20 ? "#E74C3C" : rep.overdue > 5 ? "#F1C40F" : "#2ECC71"}}>{rep.overdue}</div>
-                    <div style={{textAlign:"center",fontSize:15,fontWeight:700,color:rep.toShip > 10 ? "#E74C3C" : rep.toShip > 3 ? "#F1C40F" : "#2ECC71"}}>{rep.toShip}</div>
                   </div>
                 );
               })}
             </div>
           )}
 
-          {/* Footnote */}
-          <div style={{fontSize:10,color:"rgba(255,255,255,0.25)",textAlign:"center",marginTop:12,lineHeight:1.5}}>*Days from your site visit to the estimate hitting the customer's inbox. Sundays excluded. Unsent estimates count against you every day.</div>
-          {speedData && <div style={{fontSize:10,color:"rgba(255,255,255,0.15)",textAlign:"center",marginTop:4}}>Last updated: {new Date(speedData.computedAt||speedData.cachedAt).toLocaleString()}</div>}
+          {/* Footer */}
+          <div style={{fontSize:10,color:"rgba(255,255,255,0.15)",textAlign:"center",marginTop:20,lineHeight:1.6}}>
+            *Days from your site visit to the estimate hitting the customer's inbox.<br/>Sundays excluded. Unsent estimates count against you every day.
+          </div>
+          {speedData && <div style={{fontSize:9,color:"rgba(255,255,255,0.1)",textAlign:"center",marginTop:6}}>{speedData.jobsScanned} jobs analyzed \u00b7 {speedData.speedPoints} data points \u00b7 Updated {new Date(speedData.computedAt||speedData.cachedAt).toLocaleDateString()}</div>}
         </div>
       </div>
     );
