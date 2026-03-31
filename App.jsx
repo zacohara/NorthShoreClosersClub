@@ -2205,7 +2205,7 @@ export default function App() {
           )}
 
           {/* Footnote */}
-          <div style={{fontSize:10,color:"rgba(255,255,255,0.25)",textAlign:"center",marginTop:12}}>*Speed metric excludes Sundays. Rolling 6-month average.</div>
+          <div style={{fontSize:10,color:"rgba(255,255,255,0.25)",textAlign:"center",marginTop:12,lineHeight:1.5}}>*Days from your site visit to the estimate hitting the customer's inbox. Sundays excluded. Unsent estimates count against you every day.</div>
           {speedData && <div style={{fontSize:10,color:"rgba(255,255,255,0.15)",textAlign:"center",marginTop:4}}>Last updated: {new Date(speedData.computedAt||speedData.cachedAt).toLocaleString()}</div>}
         </div>
       </div>
