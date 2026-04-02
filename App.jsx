@@ -2074,20 +2074,19 @@ export default function App() {
     const rawLb = speedData?.leaderboard || [];
     const companyAvg = speedData?.companyAvg;
 
-    // Sort
+    // Sort by active column
     const lb = [...rawLb].sort((a, b) => {
-      const k = speedSort;
-      if (k === "speed") {
+      if (speedSort === "speed") {
         if (a.speed === null && b.speed === null) return 0;
         if (a.speed === null) return 1;
         if (b.speed === null) return -1;
         return a.speed - b.speed;
       }
-      if (k === "overdue") return (b.overdue||0) - (a.overdue||0);
+      if (speedSort === "overdue") return (b.overdue||0) - (a.overdue||0);
       return (b.toShip||0) - (a.toShip||0);
     });
 
-    // Speed color by rank (when sorted by speed)
+    // Speed colors by rank position
     const speedRanked = [...rawLb].filter(r => r.speed !== null).sort((a,b) => a.speed - b.speed);
     const getSpeedColor = (name) => {
       const idx = speedRanked.findIndex(r => r.name === name);
@@ -2098,14 +2097,14 @@ export default function App() {
       return "#FFD740";
     };
 
-    const medal = (i) => i===0?"\ud83e\udd47":i===1?"\ud83e\udd48":i===2?"\ud83e\udd49":null;
-
     const getAvatar = (name) => {
       const p = profiles?.[name];
-      if (p?.avatar) return <img src={p.avatar} alt="" style={{width:32,height:32,borderRadius:"50%",objectFit:"cover",border:"2px solid rgba(255,255,255,0.1)"}}/>;
+      if (p?.avatar) return <img src={p.avatar} alt="" style={{width:28,height:28,borderRadius:"50%",objectFit:"cover",border:"2px solid rgba(255,255,255,0.08)"}}/>;
       const colors = {"Les":"#1B4F72","Luke":"#2E86C1","Paul":"#E74C3C","Carlos":"#F39C12","Jace":"#8E44AD","Devin":"#27AE60","BJ":"#E67E22","Cortney":"#2ECC71"};
-      return <div style={{width:32,height:32,borderRadius:"50%",background:colors[name]||"#5DA5BA",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:800,color:"#fff",border:"2px solid rgba(255,255,255,0.1)"}}>{(name||"?")[0]}</div>;
+      return <div style={{width:28,height:28,borderRadius:"50%",background:colors[name]||"#5DA5BA",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"#fff",border:"2px solid rgba(255,255,255,0.08)"}}>{(name||"?")[0]}</div>;
     };
+
+    const medal = (i) => i===0?"\ud83e\udd47":i===1?"\ud83e\udd48":i===2?"\ud83e\udd49":null;
 
     // Gauge
     const Gauge = ({value, size=200}) => {
@@ -2119,10 +2118,8 @@ export default function App() {
         return "M "+(cx+r*Math.cos(a1))+" "+(cy+r*Math.sin(a1))+" A "+r+" "+r+" 0 "+(((e-s)*sw>180)?1:0)+" 1 "+(cx+r*Math.cos(a2))+" "+(cy+r*Math.sin(a2));
       };
       return (
-        <svg viewBox={"0 0 "+size+" "+(size*0.58)} style={{width:"100%",maxWidth:260}}>
-          <defs>
-            <filter id="ng"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-          </defs>
+        <svg viewBox={"0 0 "+size+" "+(size*0.58)} style={{width:"100%",maxWidth:240}}>
+          <defs><filter id="ng"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
           <path d={arc(0,1)} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth={size*0.04} strokeLinecap="round"/>
           <path d={arc(0,0.3)} fill="none" stroke="#00E676" strokeWidth={size*0.04} strokeLinecap="round" opacity="0.7"/>
           <path d={arc(0.3,0.6)} fill="none" stroke="#FFD740" strokeWidth={size*0.04} strokeLinecap="round" opacity="0.7"/>
@@ -2133,25 +2130,29 @@ export default function App() {
       );
     };
 
+    // Column header — tappable to sort
+    const ColHead = ({label, k, align}) => (
+      <div onClick={()=>setSpeedSort(k)} style={{textAlign:align||"center",cursor:"pointer",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,color:speedSort===k?"#fff":"rgba(255,255,255,0.3)",transition:"color 0.2s",userSelect:"none"}}>
+        {label}{speedSort===k?" \u25be":""}
+      </div>
+    );
+
     return (
       <div style={{minHeight:"100vh",background:"linear-gradient(180deg,#060D16,#0B1929 40%,#0E1A2B)",fontFamily:"'DM Sans',sans-serif"}}>
-        <style>{CSS}{`
-          @keyframes su{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-          .sr{transition:transform 0.15s}.sr:active{transform:scale(0.98)}
-        `}</style>
+        <style>{CSS}{`@keyframes su{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}`}</style>
         <NavBar
           left={<button onClick={()=>setScreen("home")} style={{background:"none",border:"1px solid rgba(255,255,255,0.1)",color:"rgba(255,255,255,0.6)",borderRadius:10,padding:"7px 16px",cursor:"pointer",fontSize:13}}>{"\u2190"}</button>}
           center={<span style={{fontSize:13,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,0.8)"}}>{"\u26a1"} Speed to Lead</span>}
         />
 
-        <div style={{maxWidth:480,margin:"0 auto",padding:"12px 16px 60px"}}>
+        <div style={{maxWidth:500,margin:"0 auto",padding:"12px 16px 60px"}}>
 
-          {/* Gauge + Company Avg */}
-          <div style={{textAlign:"center",marginBottom:8,animation:"su 0.3s ease"}}>
-            <Gauge value={companyAvg} />
+          {/* Gauge */}
+          <div style={{textAlign:"center",marginBottom:4,animation:"su 0.3s ease"}}>
+            <Gauge value={companyAvg}/>
             <div style={{marginTop:-6}}>
               <span style={{fontSize:48,fontWeight:900,color:"#fff",letterSpacing:-2}}>{companyAvg||"--"}</span>
-              <span style={{fontSize:18,fontWeight:400,color:"rgba(255,255,255,0.3)"}}>d</span>
+              <span style={{fontSize:18,color:"rgba(255,255,255,0.3)"}}>d</span>
             </div>
             <div style={{fontSize:10,color:"rgba(255,255,255,0.25)",letterSpacing:2,textTransform:"uppercase",marginTop:2}}>Company Average</div>
           </div>
@@ -2159,70 +2160,63 @@ export default function App() {
           {/* Personal Best */}
           {myRep?.personalBest && (
             <div style={{background:"rgba(0,230,118,0.06)",border:"1px solid rgba(0,230,118,0.12)",borderRadius:12,padding:"10px 16px",marginBottom:14,display:"flex",justifyContent:"space-between",alignItems:"center",animation:"su 0.4s ease"}}>
-              <div><div style={{fontSize:9,color:"#00E676",fontWeight:700,letterSpacing:1.5,textTransform:"uppercase"}}>Your Best Streak</div><div style={{fontSize:10,color:"rgba(255,255,255,0.25)",marginTop:1}}>{myRep.personalBest.startDate?.slice(5)} to {myRep.personalBest.endDate?.slice(5)}</div></div>
+              <div><div style={{fontSize:9,color:"#00E676",fontWeight:700,letterSpacing:1.5,textTransform:"uppercase"}}>Your Best Streak</div><div style={{fontSize:10,color:"rgba(255,255,255,0.25)",marginTop:1}}>5-est avg \u2014 {myRep.personalBest.startDate?.slice(5)} to {myRep.personalBest.endDate?.slice(5)}</div></div>
               <div style={{fontSize:24,fontWeight:900,color:"#00E676"}}>{myRep.personalBest.avg}d</div>
             </div>
           )}
 
-          {/* Sort Tabs */}
-          <div style={{display:"flex",gap:4,marginBottom:10,background:"rgba(255,255,255,0.03)",borderRadius:10,padding:3,animation:"su 0.45s ease"}}>
-            {[{k:"speed",l:"Speed"},{k:"overdue",l:"Overdue"},{k:"toShip",l:"To Ship"}].map(s=>(
-              <div key={s.k} onClick={()=>setSpeedSort(s.k)}
-                style={{flex:1,textAlign:"center",padding:"7px 0",borderRadius:8,cursor:"pointer",fontSize:11,fontWeight:600,letterSpacing:0.3,transition:"all 0.2s",
-                  background:speedSort===s.k?"rgba(255,255,255,0.08)":"transparent",
-                  color:speedSort===s.k?"#fff":"rgba(255,255,255,0.3)"}}>
-                {s.l}{speedSort===s.k?" \u25be":""}
-              </div>
-            ))}
-          </div>
-
-          {/* Scoreboard */}
+          {/* Scoreboard Table */}
           {speedLoading && !speedData ? (
             <div style={{textAlign:"center",padding:60,color:"rgba(255,255,255,0.2)"}}>Loading...</div>
           ) : (
-            <div style={{display:"flex",flexDirection:"column",gap:5}}>
+            <div style={{background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.05)",borderRadius:14,overflow:"hidden",animation:"su 0.45s ease"}}>
+
+              {/* Table Header */}
+              <div style={{display:"grid",gridTemplateColumns:"2fr 1.1fr 1.1fr 1.1fr",padding:"10px 12px",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
+                <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,color:"rgba(255,255,255,0.3)"}}>Rep</div>
+                <ColHead label="Speed" k="speed"/>
+                <ColHead label="Overdue" k="overdue"/>
+                <ColHead label="To Ship" k="toShip"/>
+              </div>
+
+              {/* Rows */}
               {lb.map((rep, i) => {
                 const isMe = rep.name === user || rep.fullName?.startsWith(user);
                 const sc = getSpeedColor(rep.name);
                 const m = medal(i);
-                const pct = rep.speed ? Math.min(rep.speed / 25, 1) : 0;
                 return (
-                  <div key={rep.name} className="sr" style={{
-                    background:isMe?"rgba(93,165,186,0.07)":"rgba(255,255,255,0.015)",
-                    border:isMe?"1px solid rgba(93,165,186,0.15)":"1px solid rgba(255,255,255,0.03)",
-                    borderRadius:14,padding:"12px 14px",
-                    animation:`su ${0.35+i*0.05}s ease`}}>
+                  <div key={rep.name} style={{
+                    display:"grid",gridTemplateColumns:"2fr 1.1fr 1.1fr 1.1fr",
+                    padding:"10px 12px",alignItems:"center",
+                    borderBottom:i<lb.length-1?"1px solid rgba(255,255,255,0.03)":"none",
+                    background:isMe?"rgba(93,165,186,0.06)":"transparent",
+                    animation:`su ${0.3+i*0.04}s ease`}}>
 
-                    {/* Top row: avatar + name + speed */}
-                    <div style={{display:"flex",alignItems:"center",gap:10}}>
+                    {/* Rep */}
+                    <div style={{display:"flex",alignItems:"center",gap:8}}>
                       <div style={{position:"relative"}}>
                         {getAvatar(rep.name)}
-                        {m && <span style={{position:"absolute",top:-6,right:-6,fontSize:14}}>{m}</span>}
+                        {m && <span style={{position:"absolute",top:-5,right:-7,fontSize:12}}>{m}</span>}
                       </div>
-                      <div style={{flex:1}}>
-                        <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between"}}>
-                          <span style={{fontSize:15,fontWeight:isMe?800:600,color:isMe?"#5DA5BA":"#fff"}}>{rep.name}</span>
-                          <div><span style={{fontSize:22,fontWeight:900,color:sc,letterSpacing:-1}}>{rep.speed!==null?rep.speed:"-"}</span><span style={{fontSize:12,color:"rgba(255,255,255,0.2)"}}>d</span></div>
-                        </div>
+                      <div>
+                        <div style={{fontSize:14,fontWeight:isMe?800:600,color:isMe?"#5DA5BA":"#fff",lineHeight:1.2}}>{rep.name}</div>
+                        <div style={{fontSize:9,color:"rgba(255,255,255,0.15)"}}>{(rep.samples||0)+(rep.liveSamples||0)} pts</div>
                       </div>
                     </div>
 
-                    {/* Speed bar */}
-                    <div style={{height:3,background:"rgba(255,255,255,0.04)",borderRadius:2,margin:"8px 0 8px 42px",overflow:"hidden"}}>
-                      <div style={{height:"100%",width:(pct*100)+"%",background:`linear-gradient(90deg, ${sc}, ${sc}88)`,borderRadius:2,transition:"width 0.6s ease"}}/>
+                    {/* Speed */}
+                    <div style={{textAlign:"center"}}>
+                      <div style={{fontSize:18,fontWeight:900,color:sc,letterSpacing:-0.5}}>{rep.speed!==null?rep.speed+"d":"--"}</div>
                     </div>
 
-                    {/* Bottom stats */}
-                    <div style={{display:"flex",gap:16,marginLeft:42}}>
-                      <div style={{display:"flex",alignItems:"center",gap:4}}>
-                        <span style={{fontSize:10,color:"rgba(255,255,255,0.2)"}}>overdue</span>
-                        <span style={{fontSize:13,fontWeight:700,color:rep.overdue>20?"#FF5252":rep.overdue>5?"#FFD740":"rgba(255,255,255,0.2)"}}>{rep.overdue}</span>
-                      </div>
-                      <div style={{display:"flex",alignItems:"center",gap:4}}>
-                        <span style={{fontSize:10,color:"rgba(255,255,255,0.2)"}}>to ship</span>
-                        <span style={{fontSize:13,fontWeight:700,color:rep.toShip>10?"#FF5252":rep.toShip>3?"#FFD740":"rgba(255,255,255,0.2)"}}>{rep.toShip}</span>
-                      </div>
-                      <div style={{marginLeft:"auto",fontSize:10,color:"rgba(255,255,255,0.15)"}}>{rep.samples||0} sent{rep.liveSamples?" + "+rep.liveSamples+" open":""}</div>
+                    {/* Overdue */}
+                    <div style={{textAlign:"center"}}>
+                      <div style={{fontSize:16,fontWeight:700,color:rep.overdue>20?"#FF5252":rep.overdue>5?"#FFD740":"rgba(255,255,255,0.2)"}}>{rep.overdue}</div>
+                    </div>
+
+                    {/* To Ship */}
+                    <div style={{textAlign:"center"}}>
+                      <div style={{fontSize:16,fontWeight:700,color:rep.toShip>10?"#FF5252":rep.toShip>3?"#FFD740":"rgba(255,255,255,0.2)"}}>{rep.toShip}</div>
                     </div>
                   </div>
                 );
@@ -2231,7 +2225,7 @@ export default function App() {
           )}
 
           {/* Footer */}
-          <div style={{textAlign:"center",marginTop:20}}>
+          <div style={{textAlign:"center",marginTop:16}}>
             <div style={{fontSize:10,color:"rgba(255,255,255,0.12)",lineHeight:1.6}}>Days from your site visit to the estimate hitting the customer's inbox.<br/>Sundays excluded. Unsent estimates count against you every day.</div>
             {speedData && <div style={{fontSize:9,color:"rgba(255,255,255,0.08)",marginTop:6}}>{speedData.jobsScanned} jobs \u00b7 {speedData.speedPoints} data points \u00b7 {new Date(speedData.computedAt||speedData.cachedAt).toLocaleDateString()}</div>}
           </div>
