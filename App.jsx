@@ -458,6 +458,12 @@ export default function App() {
               }} style={{width:"100%",padding:"14px",borderRadius:12,background:"linear-gradient(145deg, #5DA5BA 0%, #3D7A8E 100%)",color:"#fff",border:"none",fontSize:16,fontWeight:700,cursor:"pointer",marginBottom:10,boxShadow:"0 4px 16px rgba(93,165,186,0.25)"}}>
                 {passwordMode==="set"?"Create Password":"Login"}
               </button>
+              {passwordMode==="enter" && (
+                <button onClick={()=>{setPasswordMode("set");setPwInput("");setPwConfirm("");setPwError("");}}
+                  style={{width:"100%",padding:"10px",borderRadius:10,background:"transparent",color:"rgba(93,165,186,0.6)",border:"none",fontSize:13,cursor:"pointer",marginBottom:4}}>
+                  Reset Password
+                </button>
+              )}
               <button onClick={()=>{setPasswordMode(null);setUser(null);setPwInput("");setPwConfirm("");setPwError("");}}
                 style={{width:"100%",padding:"10px",borderRadius:10,background:"transparent",color:"rgba(255,255,255,0.35)",border:"none",fontSize:13,cursor:"pointer"}}>
                 Back to user select
