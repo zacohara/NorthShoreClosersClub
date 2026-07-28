@@ -17,6 +17,7 @@ const REPS = [
   {name:"Devin",jt:"Devin O'Hara",mid:"22NztygQhunB"},
   {name:"BJ",jt:"BJ Tippmann",mid:"22PHDEMpwFKR"},
   {name:"Cortney",jt:"Cortney Campbell",mid:"22NxBXSxWBRq"},
+  {name:"Ryan",jt:"Ryan Ratajewski",mid:""},
 ];
 const REP_NAMES = Object.fromEntries(REPS.map(r=>[r.jt,r.name]));
 const REPS_MID = Object.fromEntries(REPS.map(r=>[r.mid,r.name]));
